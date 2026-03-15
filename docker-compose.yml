@@ -12,3 +12,9 @@ services:
       - "127.0.0.1:8081:80"
     env_file:
       - .env
+    networks:
+      - npm_net
+
+networks:
+  npm_net:
+    external: true
