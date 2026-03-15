@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CareerAiHub — AI Career Platform</title>
+  <meta name="robots" content="noindex"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#090C12;color:#E8F0FE;font-family:'DM Mono','Fira Code',monospace;min-height:100vh}
+    #root{min-height:100vh}
+    #boot{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;min-height:100vh;background:#090C12}
+    .boot-logo{font-family:'Syne',sans-serif;font-size:22px;color:#E8F0FE;display:flex;align-items:center;gap:10px}
+    .boot-dot{width:8px;height:8px;border-radius:50%;background:#00D4FF;box-shadow:0 0 10px #00D4FF;animation:pulse 2s ease infinite}
+    .boot-spinner{width:32px;height:32px;border:2px solid #1E2D45;border-top-color:#00D4FF;border-radius:50%;animation:spin .8s linear infinite}
+    .boot-msg{font-size:12px;color:#6B7E9F;letter-spacing:.08em}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div id="boot">
+      <div class="boot-logo"><div class="boot-dot"></div>CareerAiHub</div>
+      <div class="boot-spinner"></div>
+      <div class="boot-msg" id="bootMsg">Loading AI modules...</div>
+    </div>
+  </div>
+
+  <!-- React 18 -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel standalone for JSX transpilation -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Mammoth for DOCX parsing -->
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+
+  <script>
+    // Update boot message
+    const msgs = ['Connecting to database...','Loading AI modules...','Almost ready...'];
+    let mi = 0;
+    const msgEl = document.getElementById('bootMsg');
+    const msgTimer = setInterval(()=>{ mi=(mi+1)%msgs.length; msgEl.textContent=msgs[mi]; }, 1500);
+
+    // Make mammoth available as ES module import replacement
+    window.mammothLoaded = true;
+  </script>
+
+  <!-- Load the JSX app via Babel -->
+  <script type="text/babel" data-type="module" src="./dream-job-ai.jsx"
+    data-presets="react,env"
+    onerror="document.getElementById('bootMsg').textContent='Error loading app. Please refresh.'">
+  </script>
+
+  <script>
+    // After Babel processes, mount React app
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        clearInterval(msgTimer);
+        const bootEl = document.getElementById('boot');
+        if (bootEl && typeof App !== 'undefined') {
+          bootEl.remove();
+          const root = ReactDOM.createRoot(document.getElementById('root'));
+          root.render(React.createElement(App));
+        }
+      }, 2000);
+    });
+  </script>
+</body>
+</html>
