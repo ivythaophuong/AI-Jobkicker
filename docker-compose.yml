@@ -7,8 +7,8 @@ services:
     container_name: career-ai-hub
     restart: unless-stopped
     ports:
-      # Exposes the container's port 80 to the host's port 8080.
-      # Nginx Proxy Manager (NPM) should forward traffic to 127.0.0.1:8080
-      - "127.0.0.1:8080:80"
+      # Exposes the container's port 80 to the host's port 8081.
+      # Nginx Proxy Manager (NPM) should forward traffic to 127.0.0.1:8081
+      - "127.0.0.1:8081:80"
     env_file:
       - .env
