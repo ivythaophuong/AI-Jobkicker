@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import * as mammoth from "mammoth";
+// mammoth loaded via CDN script tag in index.html; access via window.mammoth
+const mammoth = typeof window !== "undefined" && window.mammoth ? window.mammoth : null;
 
 // ── Supabase Client ────────────────────────────────────────────────────────────
 const SUPABASE_URL  = "https://ruibdsvrcctxgxctaxwe.supabase.co";
@@ -161,9 +162,9 @@ const AUTH_MODULES   = Object.entries(ACCESS).filter(([,v])=>v==="AUTH").map(([k
 // ══════════════════════════════════════════════════════════════════════════════
 
 const LLM_KEYS = {
-  claude : "__CLAUDE_KEY_PLACEHOLDER__",   // Anthropic
-  openai : "__OPENAI_KEY_PLACEHOLDER__",       // OpenAI
-  gemini : "__GEMINI_KEY_PLACEHOLDER__",          // Google AI Studio
+  claude : "sk-ant-YOUR_CLAUDE_KEY_HERE",   // Anthropic
+  openai : "sk-YOUR_OPENAI_KEY_HERE",       // OpenAI
+  gemini : "YOUR_GEMINI_KEY_HERE",          // Google AI Studio
 };
 
 // ── MODEL CATALOGUE ───────────────────────────────────────────────────────────
@@ -576,7 +577,7 @@ async function readResumeFile(file) {
   if (ext==="docx" || file.type.includes("wordprocessingml")) {
     return new Promise((resolve,reject)=>{
       const r=new FileReader();
-      r.onload=async e=>{ try{const res=await mammoth.extractRawText({arrayBuffer:e.target.result});resolve({type:"text",content:res.value,fileName:file.name});}catch(err){reject(err);}};
+      r.onload=async e=>{ try{const _m=window.mammoth||mammoth;if(!_m)throw new Error('DOCX parser unavailable');const res=await _m.extractRawText({arrayBuffer:e.target.result});resolve({type:"text",content:res.value,fileName:file.name});}catch(err){reject(err);}};
       r.onerror=reject; r.readAsArrayBuffer(file);
     });
   }
@@ -1691,10 +1692,7 @@ Generate comprehensive job search intelligence. Return ONLY raw JSON:
                         </div>
                       </div>
                       <div style={{display:"flex",gap:6}}>
-                        <a href={buildJobURL(p.id,title,location,keywords)} target="_blank" rel="noopener noreferrer"
-                          style={{flex:1,background:`${p.color}22`,border:`1px solid ${p.color}55`,color:p.color,borderRadius:6,padding:"9px 0",fontSize:11,fontWeight:800,textAlign:"center",textDecoration:"none",letterSpacing:0.5,display:"block"}}>
-                          Search Now →
-                        </a>
+                        <a href={buildJobURL(p.id,title,location,keywords)} target="_blank" rel="noopener noreferrer" style={{flex:1,background:`${p.color}22`,border:`1px solid ${p.color}55`,color:p.color,borderRadius:6,padding:"9px 0",fontSize:11,fontWeight:800,textAlign:"center",textDecoration:"none",letterSpacing:0.5,display:"block"}}>{"Search Now →"}</a>
                         <button onClick={()=>setTracker(prev=>[{id:Date.now(),company:p.name,role:title,status:"Saved",link:buildJobURL(p.id,title,location,keywords),date:new Date().toISOString().split("T")[0],notes:location},...prev])}
                           title="Add to tracker" style={{background:C.surface,border:`1px solid ${C.border}`,color:C.muted,borderRadius:6,padding:"9px 10px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>📌</button>
                       </div>
@@ -1851,11 +1849,7 @@ Generate comprehensive job search intelligence. Return ONLY raw JSON:
                               </div>
                               <div style={{color:C.muted,fontSize:10}}>{c.why}</div>
                             </div>
-                            <a href={`https://www.linkedin.com/company/${encodeURIComponent((c.linkedin||c.company).toLowerCase().replace(/ /g,"-"))}/jobs`}
-                              target="_blank" rel="noopener noreferrer"
-                              style={{background:C.accent+"22",border:`1px solid ${C.accent}44`,color:C.accent,borderRadius:6,padding:"4px 8px",fontSize:9,fontWeight:700,textDecoration:"none",whiteSpace:"nowrap"}}>
-                              Jobs →
-                            </a>
+                            <a href={`https://www.linkedin.com/company/${encodeURIComponent((c.linkedin||c.company).toLowerCase().replace(/ /g,"-"))}/jobs`} target="_blank" rel="noopener noreferrer" style={{background:C.accent+"22",border:`1px solid ${C.accent}44`,color:C.accent,borderRadius:6,padding:"4px 8px",fontSize:9,fontWeight:700,textDecoration:"none",whiteSpace:"nowrap"}}>{"→ Jobs"}</a>
                           </div>
                         ))}
                       </div>
@@ -3326,12 +3320,8 @@ export default function App(){
             ))}
           </div>
 
-          <button
-            onClick={()=>{setSetupDone(true);setActiveModule("scan");}}
-            disabled={!form.role.trim()}
-            style={{width:"100%",background:form.role.trim()?C.accent:"transparent",color:form.role.trim()?"#000":C.muted,border:form.role.trim()?"none":`1px solid ${C.border}`,borderRadius:8,padding:"12px 20px",fontWeight:900,fontSize:14,cursor:form.role.trim()?"pointer":"not-allowed",fontFamily:"inherit",transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:form.role.trim()?`0 0 28px ${C.accent}44`:"none",letterSpacing:"-0.2px"}}
-          >
-            ⚡ Build My Career OS →
+          <button onClick={()=>{setSetupDone(true);setActiveModule("scan");}} disabled={!form.role.trim()} style={{width:"100%",background:form.role.trim()?C.accent:"transparent",color:form.role.trim()?"#000":C.muted,border:form.role.trim()?"none":`1px solid ${C.border}`,borderRadius:8,padding:"12px 20px",fontWeight:900,fontSize:14,cursor:form.role.trim()?"pointer":"not-allowed",fontFamily:"inherit",transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:form.role.trim()?`0 0 28px ${C.accent}44`:"none",letterSpacing:"-0.2px"}}>
+            {"⚡ Build My Career OS →"}
           </button>
         </div>
 
@@ -3517,9 +3507,8 @@ export default function App(){
         {/* ═══ SECTION 9: Final CTA repeat ═══ */}
         <div style={{textAlign:"center",padding:"24px 0 8px"}}>
           <div style={{color:C.muted,fontSize:12,marginBottom:14}}>Ready to build your career OS?</div>
-          <button onClick={()=>{setSetupDone(true);setActiveModule("scan");}} disabled={!form.role.trim()}
-            style={{background:form.role.trim()?C.accent:"transparent",color:form.role.trim()?"#000":C.muted,border:form.role.trim()?"none":`1px solid ${C.border}`,borderRadius:8,padding:"12px 32px",fontWeight:900,fontSize:14,cursor:form.role.trim()?"pointer":"not-allowed",fontFamily:"inherit",boxShadow:form.role.trim()?`0 0 28px ${C.accent}44`:"none",transition:"all 0.15s"}}>
-            ⚡ Start Free — No Card Needed
+          <button onClick={()=>{setSetupDone(true);setActiveModule("scan");}} disabled={!form.role.trim()} style={{background:form.role.trim()?C.accent:"transparent",color:form.role.trim()?"#000":C.muted,border:form.role.trim()?"none":`1px solid ${C.border}`,borderRadius:8,padding:"12px 32px",fontWeight:900,fontSize:14,cursor:form.role.trim()?"pointer":"not-allowed",fontFamily:"inherit",boxShadow:form.role.trim()?`0 0 28px ${C.accent}44`:"none",transition:"all 0.15s"}}>
+            {"⚡ Start Free — No Card Needed"}
           </button>
           <div style={{color:C.muted,fontSize:10,marginTop:12,lineHeight:1.6}}>
             Fill in your role above · Free forever for core features · Pro from $19/month
@@ -3561,22 +3550,10 @@ export default function App(){
     return ()=> window.removeEventListener("keydown", handler);
   },[]);
 
-  // ⌘K / Ctrl+K global keyboard shortcut
+  // Theme side-effect: toggle data-theme attribute
   useEffect(()=>{
-    const handler = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setCmdOpen(o => !o);
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
-
-  // Apply light mode class to body
-  useEffect(()=>{
-    document.body.classList.toggle('light-mode', lightMode);
-  }, [lightMode]);
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
 
   const renderModule = (moduleId) => {
     const access = getAccess(moduleId);
@@ -3695,7 +3672,14 @@ export default function App(){
 
       {/* Ticker */}
       <div style={{background:C.accentGlow,borderBottom:`1px solid ${C.accent}22`,padding:"6px 0"}}>
-        <Ticker text={`CAREER OS — ${form.role.toUpperCase()} — ${form.market.toUpperCase()} — ${user?`SIGNED IN AS ${user.name.toUpperCase()} · FULL ACCESS`:resumeText?"RESUME LOADED · SIGN IN FOR FULL PERSONALIZATION":"JOB SEARCH & MARKET INTEL FREE · SIGN UP TO UNLOCK AI FEATURES"} — 10 MODULES ACTIVE`}/>
+        {(()=>{
+          const tickerStatus = user
+            ? "SIGNED IN AS " + user.name.toUpperCase() + " · FULL ACCESS"
+            : resumeText
+              ? "RESUME LOADED · SIGN IN FOR FULL PERSONALIZATION"
+              : "JOB SEARCH & MARKET INTEL FREE · SIGN UP TO UNLOCK AI FEATURES";
+          return <Ticker text={"CAREER OS — " + form.role.toUpperCase() + " — " + form.market.toUpperCase() + " — " + tickerStatus + " — 10 MODULES ACTIVE"}/>;
+        })()}
       </div>
 
       {/* Main content */}
