@@ -222,6 +222,22 @@ const MODEL_ROUTING = {
   default  : MODELS.claude_haiku,
 };
 
+// ── NETWORK UTILS ───────────────────────────────────────────────────────────
+async function fetchWithTimeout(url, options = {}) {
+  const { timeout = 45000 } = options;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return response;
+  } catch (e) {
+    clearTimeout(id);
+    if (e.name === 'AbortError') throw new Error("Request timed out after 45s. The AI might be slow — please try again.");
+    throw e;
+  }
+}
+
 // ── PROVIDER DETECTION ───────────────────────────────────────────────────────
 function detectProvider(model) {
   if (model.startsWith("claude"))  return "claude";
@@ -239,7 +255,8 @@ async function callClaude(messages, maxTokens=2000, model=MODELS.claude_sonnet) 
     "anthropic-dangerous-direct-browser-access": "true",
     ...(key && !key.includes("YOUR_") ? { "x-api-key": key } : {}),
   };
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  console.log(`[Claude] Fetching ${model}...`);
+  const res = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
     method: "POST", headers,
     body: JSON.stringify({ model, max_tokens: maxTokens, messages }),
   });
@@ -273,7 +290,8 @@ async function callClaude(messages, maxTokens=2000, model=MODELS.claude_sonnet) 
 async function callOpenAI(messages, maxTokens=2000, model=MODELS.gpt4o_mini) {
   const key = LLM_KEYS.openai;
   if (!key || key.includes("YOUR_")) throw new Error("OpenAI API key not set in LLM_KEYS.openai");
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  console.log(`[OpenAI] Fetching ${model}...`);
+  const res = await fetchWithTimeout("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${key}` },
     body: JSON.stringify({ model, max_tokens: maxTokens, messages,
@@ -298,7 +316,8 @@ async function callGemini(messages, maxTokens=2000, model=MODELS.gemini_flash) {
     role: m.role === "assistant" ? "model" : "user",
     parts: [{ text: m.content }]
   }));
-  const res = await fetch(
+  console.log(`[Gemini] Fetching ${model}...`);
+  const res = await fetchWithTimeout(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
     {
       method: "POST",
