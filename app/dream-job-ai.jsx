@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
 // mammoth loaded via CDN script tag in index.html; access via window.mammoth
 const mammoth = typeof window !== "undefined" && window.mammoth ? window.mammoth : null;
 
@@ -2931,7 +2931,7 @@ function UserMenu({ user, onLogout }) {
 }
 
 // ── App ───────────────────────────────────────────────────────────────────────
-export default function App(){
+function App(){
   const [activeModule,setActiveModule]   = useState("jobs");
   const [setupDone,setSetupDone]         = useState(false);
   const [form,setForm]                   = useState({role:"Senior Product Manager",industry:"Fintech",level:"Senior",market:"Singapore",urgency:"7 days"});
