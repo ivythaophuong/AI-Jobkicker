@@ -374,11 +374,21 @@ function ErrCard({ msg }) {
 }
 
 function extractJSON(raw) {
-  const obj = raw.match(/\{[\s\S]*\}/);
-  if (obj) { try { return JSON.parse(obj[0]); } catch {} }
-  const arr = raw.match(/\[[\s\S]*\]/);
-  if (arr) { try { return JSON.parse(arr[0]); } catch {} }
-  return JSON.parse(raw.replace(/```(?:json)?/gi,"").replace(/```/g,"").trim());
+  if (!raw || !raw.trim()) return { error: true, msg: "AI returned an empty response." };
+  try {
+    // 1. Try finding JSON object/array with regex first (best for markdown/noisy output)
+    const match = raw.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+    if (match) {
+      try { return JSON.parse(match[0]); } catch (e) { /* fall through to cleanup method */ }
+    }
+    // 2. Fallback: Cleanup common markdown/noise and parse
+    const clean = raw.replace(/```(?:json)?/gi, "").replace(/```/g, "").trim();
+    return JSON.parse(clean);
+  } catch (e) {
+    console.error("[extractJSON] Parse error. raw:", raw);
+    // Instead of throwing, we return a structured error that ResumeScan can handle
+    return { error: true, msg: "AI response was not in a valid JSON format." };
+  }
 }
 
 
@@ -931,8 +941,11 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
     try{
       const content=resumeText.content||"";
       if(!content||content.trim().length<30)throw new Error("Resume text is empty. Please paste manually.");
+      console.log(`[Scan] Starting scan with content length: ${content.length}`);
       const raw=await callLLM([{role:"user",content:`RESUME:\n\n${content.slice(0,3000)}\n\n---\n\n${buildScanPrompt(form)}`}],2000,"scan");
+      console.log(`[Scan] LLM responded, length: ${raw?.length}`);
       const parsed=extractJSON(raw);
+      if (parsed.error) throw new Error(parsed.msg);
       clearInterval(iv); setProgress(100); setStep("Done.");
       if (updateMemory) updateMemory(m => ({
         scanHistory: [...(m.scanHistory||[]), {
@@ -1087,7 +1100,9 @@ function JDAnalyzer({resumeText,form,memory,updateMemory}){
     const ctx=resumeText?.content?`\nCANDIDATE RESUME:\n${resumeText.content.slice(0,1800)}`:`\nCandidate: ${form.level} ${form.role} in ${form.industry}`;
     try{
     const memCtx = memory ? buildMemoryContext(memory, form) : "";
-    const raw=await callLLM([{role:"user",content:`Expert recruiter. Analyze JD vs candidate.${memCtx}\nJD:\n${jd.slice(0,2500)}${ctx}\nReturn ONLY raw JSON:\n{"matchScore":0-100,"roleTitle":"...","company":"...","keyRequirements":["..."],"candidateStrengths":["..."],"criticalGaps":["..."],"hiddenKeywords":["..."],"redFlags":["..."],"applicationAdvice":"...","interviewFocus":["..."]}`}],2000,"jd");const parsed=extractJSON(raw);
+    const raw=await callLLM([{role:"user",content:`Expert recruiter. Analyze JD vs candidate.${memCtx}\nJD:\n${jd.slice(0,2500)}${ctx}\nReturn ONLY raw JSON:\n{"matchScore":0-100,"roleTitle":"...","company":"...","keyRequirements":["..."],"candidateStrengths":["..."],"criticalGaps":["..."],"hiddenKeywords":["..."],"redFlags":["..."],"applicationAdvice":"...","interviewFocus":["..."]}`}],2000,"jd");
+    const parsed=extractJSON(raw);
+    if (parsed.error) throw new Error(parsed.msg);
     setResult(parsed);
     if(updateMemory) updateMemory(m=>({jdAnalyses:[{date:new Date().toISOString(),company:parsed.company,matchScore:parsed.matchScore,role:parsed.roleTitle},...(m.jdAnalyses||[])].slice(-20)}));}
     catch(e){setErr(e.message);}
