@@ -52,7 +52,10 @@ const sb = {
       headers: { ...sb._h(), "Authorization": `Bearer ${token}`, "Prefer": "resolution=merge-duplicates,return=representation" },
       body: JSON.stringify(data)
     });
-    const d = await r.json();
+    const resText = await r.text();
+    if (r.status === 204 || !resText) return null;
+    let d;
+    try { d = JSON.parse(resText); } catch { d = resText; }
     if (Array.isArray(d) ? false : d?.code) throw new Error(d.message || "DB write failed");
     return d;
   },
@@ -166,6 +169,7 @@ const LLM_KEYS = {
   openai : "__OPENAI_KEY_PLACEHOLDER__",   // OpenAI
   gemini : "__GEMINI_KEY_PLACEHOLDER__",   // Google AI Studio
 };
+if (typeof window !== 'undefined') window._LLM_KEYS = LLM_KEYS;
 
 // ── MODEL CATALOGUE ───────────────────────────────────────────────────────────
 // Easy reference — change these strings to upgrade/downgrade any model
@@ -230,6 +234,9 @@ async function fetchWithTimeout(url, options = {}) {
   try {
     const response = await fetch(url, { ...options, signal: controller.signal });
     clearTimeout(id);
+    if (!response.ok && response.status >= 500) {
+      console.error(`[Network] Server error: ${response.status} at ${url}`);
+    }
     return response;
   } catch (e) {
     clearTimeout(id);
@@ -955,23 +962,46 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
   const runScan=async()=>{
     if(!resumeText)return;
     setScanning(true); setScanResult(null); setProgress(0); setFileErr("");
+    if (onFirstUse) onFirstUse();
+    
     let s=0;
-    const iv=setInterval(()=>{s=Math.min(s+1,steps.length-1);setProgress(Math.round((s/(steps.length-1))*88));setStep(steps[s]);},750);
+    const iv = setInterval(() => {
+      s++;
+      if (s < steps.length) {
+        setProgress(Math.round((s / steps.length) * 92));
+        setStep(steps[s] || "Processing...");
+      } else {
+        // Slow crawl while waiting for LLM
+        setProgress(prev => Math.min(prev + 0.5, 98));
+      }
+    }, 800);
+
     try{
       const content=resumeText.content||"";
       if(!content||content.trim().length<30)throw new Error("Resume text is empty. Please paste manually.");
+      
+      const provider = detectProvider(MODEL_ROUTING.scan);
+      const key = LLM_KEYS[provider];
+      if (!key || key.includes("YOUR_") || key.includes("PLACEHOLDER")) {
+        throw new Error(`API key for ${provider} not configured. Please add it to your .env file.`);
+      }
+
       console.log(`[Scan] Starting scan with content length: ${content.length}`);
       const raw=await callLLM([{role:"user",content:`RESUME:\n\n${content.slice(0,3000)}\n\n---\n\n${buildScanPrompt(form)}`}],2000,"scan");
       console.log(`[Scan] LLM responded, length: ${raw?.length}`);
+      if (!raw) { console.error("[Scan] LLM returned nothing!"); throw new Error("AI returned an empty response."); }
       const parsed=extractJSON(raw);
+      console.log("[Scan] Parsed result:", parsed);
       if (parsed.error) throw new Error(parsed.msg);
       clearInterval(iv); setProgress(100); setStep("Done.");
+      console.log("[Scan] Updating memory...");
       if (updateMemory) updateMemory(m => ({
         scanHistory: [...(m.scanHistory||[]), {
           date: new Date().toISOString(), score: parsed.credibilityScore,
           issues: parsed.issues, fileName: resumeText.fileName
         }].slice(-10)
       }));
+      console.log("[Scan] Scan complete. Showing results.");
       setTimeout(()=>{setScanning(false);setScanResult(parsed);},400);
     }catch(e){clearInterval(iv);setScanning(false);setScanResult({error:true,msg:e.message});}
   };
@@ -2988,15 +3018,19 @@ function App(){
     setMemory(prev => {
       const current = prev || initMemory();
       const next = { ...current, ...updater(current), lastSeen: new Date().toISOString(), totalSessions: (current.totalSessions || 0) + 1 };
-      // Save to Supabase if logged in, localStorage as fallback
-      if (user?.id && user?.token) {
-        saveMemoryToDB(user.id, user.token, next);
-      } else if (user?.email) {
-        saveMemory(user.email, next);
-      }
       return next;
     });
   };
+
+  // ── Sync memory to storage on change ───────────────────────────────────────
+  useEffect(() => {
+    if (!memory) return;
+    if (user?.id && user?.token) {
+      saveMemoryToDB(user.id, user.token, memory);
+    } else if (user?.email) {
+      saveMemory(user.email, memory);
+    }
+  }, [memory, user?.id, user?.token, user?.email]);
 
   const login = async (session) => {
     setUser(session);
@@ -3251,8 +3285,44 @@ function App(){
     if(!document.getElementById("pdfjs-script")){const s=document.createElement("script");s.id="pdfjs-script";s.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";document.head.appendChild(s);}
   },[]);
 
+  // ── Module rendering with access control ────────────────────────────────────
+  const moduleMap = useMemo(()=>MODULES.reduce((acc,m)=>({...acc,[m.id]:m}),{}), []);
+  
+  // Expose navigation + modal triggers globally for child component CTAs
+  useEffect(()=>{
+    window._setActiveModule = setActiveModule;
+    window._setAuthModal = setAuthModal;
+    window._setProModal = setProModal;
+    window._setSetupDone = setSetupDone;
+    return ()=>{ delete window._setActiveModule; delete window._setAuthModal; delete window._setProModal; delete window._setSetupDone; };
+  },[]);
+
+  // ⌘K / Ctrl+K keyboard shortcut for command palette
+  useEffect(()=>{
+    const handler = (e) => {
+      if ((e.metaKey||e.ctrlKey) && e.key==="k") { e.preventDefault(); setCmdOpen(o=>!o); }
+      if (e.key==="Escape") setCmdOpen(false);
+      // Number keys 1-9 switch modules (only when not in input)
+      if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+        const tag = document.activeElement?.tagName;
+        if (tag!=="INPUT" && tag!=="TEXTAREA" && tag!=="SELECT") {
+          const idx = parseInt(e.key) - 1;
+          if (!isNaN(idx) && idx>=0 && idx<MODULES.length) {
+            setActiveModule(MODULES[idx].id);
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return ()=> window.removeEventListener("keydown", handler);
+  },[]);
+
+  // Theme side-effect: toggle data-theme attribute
+  useEffect(()=>{
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
   // ── Setup / Onboarding screen ───────────────────────────────────────────────
-  // ── Setup / Onboarding screen (Platform entry) ────────────────────────────
   if(!setupDone) return(
     <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Mono','Fira Code',monospace",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 16px",position:"relative",overflow:"hidden"}}>
       <style>{css}</style>
@@ -3556,41 +3626,6 @@ function App(){
     </div>
   );
 
-  // ── Module rendering with access control ────────────────────────────────────
-  const moduleMap = MODULES.reduce((acc,m)=>({...acc,[m.id]:m}),{});
-  // Expose navigation + modal triggers globally for child component CTAs
-  useEffect(()=>{
-    window._setActiveModule = setActiveModule;
-    window._setAuthModal = setAuthModal;
-    window._setProModal = setProModal;
-    window._setSetupDone = setSetupDone;
-    return ()=>{ delete window._setActiveModule; delete window._setAuthModal; delete window._setProModal; delete window._setSetupDone; };
-  },[]);
-
-  // ⌘K / Ctrl+K keyboard shortcut for command palette
-  useEffect(()=>{
-    const handler = (e) => {
-      if ((e.metaKey||e.ctrlKey) && e.key==="k") { e.preventDefault(); setCmdOpen(o=>!o); }
-      if (e.key==="Escape") setCmdOpen(false);
-      // Number keys 1-9 switch modules (only when not in input)
-      if (!e.metaKey && !e.ctrlKey && !e.altKey) {
-        const tag = document.activeElement?.tagName;
-        if (tag!=="INPUT" && tag!=="TEXTAREA" && tag!=="SELECT") {
-          const idx = parseInt(e.key) - 1;
-          if (!isNaN(idx) && idx>=0 && idx<MODULES.length) {
-            setActiveModule(MODULES[idx].id);
-          }
-        }
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return ()=> window.removeEventListener("keydown", handler);
-  },[]);
-
-  // Theme side-effect: toggle data-theme attribute
-  useEffect(()=>{
-    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
-  }, [darkMode]);
 
   const renderModule = (moduleId) => {
     const access = getAccess(moduleId);
