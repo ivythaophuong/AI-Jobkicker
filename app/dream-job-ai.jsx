@@ -162,18 +162,18 @@ const AUTH_MODULES   = Object.entries(ACCESS).filter(([,v])=>v==="AUTH").map(([k
 // ══════════════════════════════════════════════════════════════════════════════
 
 const LLM_KEYS = {
-  claude : "sk-ant-YOUR_CLAUDE_KEY_HERE",   // Anthropic
-  openai : "sk-YOUR_OPENAI_KEY_HERE",       // OpenAI
-  gemini : "YOUR_GEMINI_KEY_HERE",          // Google AI Studio
+  claude : "__CLAUDE_KEY_PLACEHOLDER__",   // Anthropic
+  openai : "__OPENAI_KEY_PLACEHOLDER__",   // OpenAI
+  gemini : "__GEMINI_KEY_PLACEHOLDER__",   // Google AI Studio
 };
 
 // ── MODEL CATALOGUE ───────────────────────────────────────────────────────────
 // Easy reference — change these strings to upgrade/downgrade any model
 const MODELS = {
   // Claude (Anthropic) ─────────────────────────────────────────────
-  claude_sonnet  : "claude-sonnet-4-6",            // $3/$15 per 1M — best quality
-  claude_haiku   : "claude-haiku-4-5-20251001",    // $0.80/$4 per 1M — 20x cheaper, great quality
-  claude_opus    : "claude-opus-4-6",              // $15/$75 per 1M — premium
+  claude_sonnet  : "claude-3-5-sonnet-20241022",   // Best quality for complex reasoning
+  claude_haiku   : "claude-3-5-haiku-20241022",    // Great speed/value
+  claude_opus    : "claude-3-opus-20240229",       // High intelligence fallback
 
   // OpenAI ─────────────────────────────────────────────────────────
   gpt4o          : "gpt-4o",                       // $2.50/$10 per 1M — near-Sonnet quality
@@ -243,6 +243,9 @@ async function callClaude(messages, maxTokens=2000, model=MODELS.claude_sonnet) 
     method: "POST", headers,
     body: JSON.stringify({ model, max_tokens: maxTokens, messages }),
   });
+
+  console.log(`[Claude] response status=${res.status}`);
+
   if (!res.ok) {
     const body = await res.text();
     if (res.status === 429) {
@@ -3240,8 +3243,8 @@ export default function App(){
       <ToastProvider/>
       {authModal && <AuthModal initialMode={authModal} onSuccess={login} onClose={()=>setAuthModal(null)}/>}
       {proModal && <ProUpgradeModal reason={proModal} onClose={()=>setProModal(null)} onSignup={()=>{setProModal(null);setAuthModal("register");}}/>}
-      {cmdOpen && <CommandPalette modules={MODULES} setActiveModule={(id)=>{setActiveModule(id);setSetupDone(true);}} setAuthModal={setAuthModal} user={user} onClose={()=>setCmdOpen(false)}/>
-      {showPricing && <PricingModal onClose={()=>setShowPricing(false)} onSignup={()=>{setShowPricing(false);setAuthModal("register");}}/>}}
+      {cmdOpen && <CommandPalette modules={MODULES} setActiveModule={(id)=>{setActiveModule(id);setSetupDone(true);}} setAuthModal={setAuthModal} user={user} onClose={()=>setCmdOpen(false)}/>}
+      {showPricing && <PricingModal onClose={()=>setShowPricing(false)} onSignup={()=>{setShowPricing(false);setAuthModal("register");}}/>}
 
       {/* Background orbs */}
       <div className="setup-orb" style={{width:700,height:700,background:C.accent,opacity:0.05,top:-250,left:-200,zIndex:0}}/>
