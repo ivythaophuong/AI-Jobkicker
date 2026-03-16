@@ -3773,3 +3773,4 @@ function App(){
     </div>
   );
 }
+if (typeof window !== 'undefined') window.App = App;
