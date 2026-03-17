@@ -1,6 +1,11 @@
-const { useState, useEffect, useRef, useMemo, useCallback } = React;
-// mammoth loaded via CDN script tag in index.html; access via window.mammoth
-const mammoth = typeof window !== "undefined" && window.mammoth ? window.mammoth : null;
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import mammoth from 'mammoth';
+import * as pdfjs from 'pdfjs-dist';
+
+// pdf.js worker setup
+if (typeof window !== 'undefined' && !pdfjs.GlobalWorkerOptions.workerSrc) {
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+}
 
 // ── Supabase Client ────────────────────────────────────────────────────────────
 const SUPABASE_URL  = "https://ruibdsvrcctxgxctaxwe.supabase.co";
@@ -601,14 +606,17 @@ async function readResumeFile(file) {
       const r=new FileReader();
       r.onload=async e=>{
         try {
-          const lib=window["pdfjs-dist/build/pdf"];
+          const lib = pdfjs;
           if (!lib) throw new Error("PDF.js not ready");
-          lib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-          const pdf=await lib.getDocument({data:e.target.result}).promise;
+          const loadingTask = lib.getDocument({data:e.target.result});
+          const pdf = await loadingTask.promise;
           let txt="";
           for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const ct=await pg.getTextContent();txt+=ct.items.map(x=>x.str).join(" ")+"\n";}
           resolve({type:"text",content:txt.trim(),fileName:file.name});
-        } catch { resolve({type:"text",content:"",fileName:file.name}); }
+        } catch (err) { 
+          console.error("PDF parse error:", err);
+          resolve({type:"text",content:"",fileName:file.name}); 
+        }
       };
       r.onerror=reject; r.readAsArrayBuffer(file);
     });
@@ -2962,8 +2970,8 @@ function UserMenu({ user, onLogout }) {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 function App(){
-  const [activeModule,setActiveModule]   = useState("jobs");
-  const [setupDone,setSetupDone]         = useState(false);
+  const [activeModule,setActiveModule]   = useState("scan");
+  const [setupDone,setSetupDone]         = useState(true);
   const [form,setForm]                   = useState({role:"Senior Product Manager",industry:"Fintech",level:"Senior",market:"Singapore",urgency:"7 days"});
   const [resumeText,setResumeText]       = useState(null);
   const [scanResult,setScanResult]       = useState(null);
@@ -3773,4 +3781,4 @@ function App(){
     </div>
   );
 }
-if (typeof window !== 'undefined') window.App = App;
+export default App;

@@ -1,3 +1,16 @@
+# Stage 1: Build
+FROM node:20-alpine AS build
+
+# Install dependencies needed for build
+WORKDIR /app
+COPY package.json ./
+RUN npm install
+
+# Copy source and build
+COPY . .
+RUN npm run build
+
+# Stage 2: Serve
 FROM nginx:alpine
 
 # Install sed for our entrypoint script
@@ -9,9 +22,8 @@ WORKDIR /usr/share/nginx/html
 # Clear default nginx html files
 RUN rm -rf ./*
 
-# Copy the static application files to the Nginx html directory
-COPY index.html ./
-COPY app ./app/
+# Copy the built assets from the build stage
+COPY --from=build /app/dist ./
 
 # Copy the custom minimal Nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
