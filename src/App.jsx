@@ -2970,7 +2970,7 @@ function UserMenu({ user, onLogout }) {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 function App(){
-  const [activeModule,setActiveModule]   = useState("scan");
+  const [activeModule,setActiveModule]   = useState("jobs");
   const [setupDone,setSetupDone]         = useState(true);
   const [form,setForm]                   = useState({role:"Senior Product Manager",industry:"Fintech",level:"Senior",market:"Singapore",urgency:"7 days"});
   const [resumeText,setResumeText]       = useState(null);
@@ -3435,7 +3435,7 @@ function App(){
             ))}
           </div>
 
-          <button onClick={()=>{setSetupDone(true);setActiveModule("scan");}} disabled={!form.role.trim()} style={{width:"100%",background:form.role.trim()?C.accent:"transparent",color:form.role.trim()?"#000":C.muted,border:form.role.trim()?"none":`1px solid ${C.border}`,borderRadius:8,padding:"12px 20px",fontWeight:900,fontSize:14,cursor:form.role.trim()?"pointer":"not-allowed",fontFamily:"inherit",transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:form.role.trim()?`0 0 28px ${C.accent}44`:"none",letterSpacing:"-0.2px"}}>
+          <button onClick={()=>{setSetupDone(true);setActiveModule("jobs");}} disabled={!form.role.trim()} style={{width:"100%",background:form.role.trim()?C.accent:"transparent",color:form.role.trim()?"#000":C.muted,border:form.role.trim()?"none":`1px solid ${C.border}`,borderRadius:8,padding:"12px 20px",fontWeight:900,fontSize:14,cursor:form.role.trim()?"pointer":"not-allowed",fontFamily:"inherit",transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:form.role.trim()?`0 0 28px ${C.accent}44`:"none",letterSpacing:"-0.2px"}}>
             {"⚡ Build My Career OS →"}
           </button>
         </div>
