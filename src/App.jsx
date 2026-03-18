@@ -191,7 +191,7 @@ const MODELS = {
 
   // Google Gemini ──────────────────────────────────────────────────
   gemini_pro     : "gemini-1.5-pro",               // $1.25/$5 per 1M — solid quality
-  gemini_flash   : "gemini-1.5-flash",             // $0.075/$0.30 per 1M — absolute cheapest
+  gemini_flash   : "gemini-1.5-flash",          // $0.075/$0.30 per 1M — absolute cheapest
   gemini_flash8b : "gemini-1.5-flash-8b",          // $0.0375/$0.15 per 1M — ultra budget
 };
 
@@ -383,7 +383,7 @@ function parseError(msg) {
   if (msg.startsWith('RATE_LIMIT:')) {
     return { icon: '⏳', title: 'Usage limit reached', body: msg.replace('RATE_LIMIT:', ''), isRateLimit: true };
   }
-  return { icon: '⚠️', title: 'Request failed', body: msg.length > 200 ? 'Unexpected error — please try again.' : msg, isRateLimit: false };
+  return { icon: '⚠️', title: 'Request failed', body: msg, isRateLimit: false };
 }
 
 function ErrCard({ msg }) {
@@ -2150,7 +2150,21 @@ Generate comprehensive job search intelligence. Return ONLY raw JSON:
               </div>
             </>
           )}
-          {salaryData?.error&&<ErrCard msg={salaryData.error}/>}
+          {salaryData?.error && <ErrCard msg={salaryData.error} />}
+        </div>
+      )}
+
+      {/* ── LANDING INFO SECTIONS (below search) ── */}
+      {!searched && activeTab === "search" && (
+        <div style={{ marginTop: 32 }}>
+          <LandingSections
+            setAuthModal={(mode) => window._setAuthModal?.(mode)}
+            setShowPricing={(sh) => window._setShowPricing?.(sh)}
+            setSetupDone={(sd) => window._setSetupDone?.(sd)}
+            setActiveModule={(am) => window._setActiveModule?.(am)}
+            form={form}
+            C={C}
+          />
         </div>
       )}
     </div>
@@ -2410,12 +2424,12 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
         // ── Sign In via Supabase ───────────────────────────────────────────
         const data = await sb.signIn(email.trim().toLowerCase(), pw);
         const session = {
-          email: data.user.email,
-          name: data.user.user_metadata?.full_name || data.user.email.split("@")[0],
-          joinedAt: data.user.created_at,
-          avatar: (data.user.user_metadata?.full_name || data.user.email)[0].toUpperCase(),
-          id: data.user.id,
-          token: data.access_token,
+          email: data?.user?.email || email.trim().toLowerCase(),
+          name: data?.user?.user_metadata?.full_name || data?.user?.email?.split("@")[0] || name || "User",
+          joinedAt: data?.user?.created_at || new Date().toISOString(),
+          avatar: (data?.user?.user_metadata?.full_name || data?.user?.email || email)[0].toUpperCase(),
+          id: data?.user?.id,
+          token: data?.access_token,
         };
         saveToken(data.access_token);
         saveSessionLocal(session);
@@ -2431,12 +2445,12 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
         if (data.session) {
           // Auto-confirmed (email confirm disabled in Supabase settings)
           const session = {
-            email: data.user.email,
+            email: data?.user?.email || email.trim().toLowerCase(),
             name: name.trim(),
-            joinedAt: data.user.created_at,
+            joinedAt: data?.user?.created_at || new Date().toISOString(),
             avatar: name.trim()[0].toUpperCase(),
-            id: data.user.id,
-            token: data.session.access_token,
+            id: data?.user?.id,
+            token: data?.session?.access_token,
           };
           saveToken(data.session.access_token);
           saveSessionLocal(session);
@@ -2471,7 +2485,7 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
           <div style={{ textAlign:"center", marginBottom:24 }}>
             <div style={{ fontSize:32, marginBottom:8 }}>🎯</div>
             <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:900, fontSize:20, color:C.text }}>
-              Dream Job <span style={{ color:C.accent }}>AI</span>
+              CareerAi<span style={{ color:C.accent }}>Hub</span>
             </div>
             <div style={{ color:C.muted, fontSize:12, marginTop:4 }}>
               {mode === "login" ? "Welcome back" : "Create your free account"}
@@ -2772,7 +2786,7 @@ function ProUpgradeModal({ reason, onClose, onSignup }) {
         "🔍 Unlimited JD match analyses",
         "🧬 AI Memory — personalised coaching that improves every session",
       ],
-      comparison: ["One career coaching session", "$200–300", "Dream Job AI Pro / month", "$19"],
+      comparison: ["One career coaching session", "$200–300", "CareerAiHub Pro / month", "$19"],
       color: C.purple,
     },
     hm: {
@@ -2789,7 +2803,7 @@ function ProUpgradeModal({ reason, onClose, onSignup }) {
         "🔍 Unlimited JD analyses + ATS keyword extraction",
         "🧬 AI Career Plan — personalised weekly plan from your full history",
       ],
-      comparison: ["Interviewing.io per session", "$300", "Dream Job AI Pro / month", "$19"],
+      comparison: ["Interviewing.io per session", "$300", "CareerAiHub Pro / month", "$19"],
       color: C.purple,
     },
     salary: {
@@ -2806,7 +2820,7 @@ function ProUpgradeModal({ reason, onClose, onSignup }) {
         "🧠 HM Simulator — walk into the interview ready",
         "🧬 Memory — every session makes the AI smarter about your situation",
       ],
-      comparison: ["Career coach for negotiation prep", "$150–300", "Dream Job AI Pro / month", "$19"],
+      comparison: ["Career coach for negotiation prep", "$150–300", "CareerAiHub Pro / month", "$19"],
       color: C.green,
     },
     limit: {
@@ -2823,7 +2837,7 @@ function ProUpgradeModal({ reason, onClose, onSignup }) {
         "🧠 HM Simulator — mock interviews from your actual resume",
         "☁️ Everything saved to cloud — never lose your progress",
       ],
-      comparison: ["Resume.io + Interviewing.io + LinkedIn Premium", "$70+/mo", "Dream Job AI (free account)", "$0"],
+      comparison: ["Resume.io + Interviewing.io + LinkedIn Premium", "$70+/mo", "CareerAiHub (free account)", "$0"],
       color: C.accent,
     },
   };
@@ -3297,13 +3311,18 @@ function App(){
   const moduleMap = useMemo(()=>MODULES.reduce((acc,m)=>({...acc,[m.id]:m}),{}), []);
   
   // Expose navigation + modal triggers globally for child component CTAs
-  useEffect(()=>{
-    window._setActiveModule = setActiveModule;
+  useEffect(() => {
     window._setAuthModal = setAuthModal;
-    window._setProModal = setProModal;
+    window._setShowPricing = setShowPricing;
     window._setSetupDone = setSetupDone;
-    return ()=>{ delete window._setActiveModule; delete window._setAuthModal; delete window._setProModal; delete window._setSetupDone; };
-  },[]);
+    window._setActiveModule = setActiveModule;
+    window._setProModal = setProModal;
+    return () => {
+      delete window._setAuthModal; delete window._setShowPricing;
+      delete window._setSetupDone; delete window._setActiveModule;
+      delete window._setProModal;
+    };
+  }, []);
 
   // ⌘K / Ctrl+K keyboard shortcut for command palette
   useEffect(()=>{
@@ -3436,7 +3455,7 @@ function App(){
           </div>
 
           <button onClick={()=>{setSetupDone(true);setActiveModule("jobs");}} disabled={!form.role.trim()} style={{width:"100%",background:form.role.trim()?C.accent:"transparent",color:form.role.trim()?"#000":C.muted,border:form.role.trim()?"none":`1px solid ${C.border}`,borderRadius:8,padding:"12px 20px",fontWeight:900,fontSize:14,cursor:form.role.trim()?"pointer":"not-allowed",fontFamily:"inherit",transition:"all 0.15s",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:form.role.trim()?`0 0 28px ${C.accent}44`:"none",letterSpacing:"-0.2px"}}>
-            {"⚡ Build My Career OS →"}
+            {"⚡ Scan my resume to begin →"}
           </button>
         </div>
 
@@ -3708,17 +3727,19 @@ function App(){
       {/* Header */}
       <div style={{borderBottom:`1px solid ${C.border}`,background:darkMode?C.surface:"#FFFFFF",padding:"0 24px",position:"sticky",top:0,zIndex:100,backdropFilter:"blur(12px)"}}>
         <div style={{maxWidth:960,margin:"0 auto"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",height:56}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",minHeight:56,padding:"8px 0",flexWrap:"wrap",gap:12}}>
             {/* Logo */}
-            <div style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer"}} onClick={()=>setSetupDone(false)}>
+            <div style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",flexShrink:0}} onClick={()=>setSetupDone(false)}>
               <div style={{width:8,height:8,borderRadius:"50%",background:C.accent,boxShadow:`0 0 8px ${C.accent}`,animation:"pulse 2s ease infinite",flexShrink:0}}/>
               <span style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:16,letterSpacing:"-0.3px",color:darkMode?C.text:"#0F172A"}}>CareerAiHub</span>
             </div>
 
             {/* Right side — badges + auth */}
-            <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-              <Badge label={form.role} color={C.accent}/>
-              <Badge label={form.market} color={C.gold}/>
+            <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",justifyContent:"flex-end",flex:1}}>
+              <div style={{display:"flex",gap:4}} className="hide-on-mobile">
+                <Badge label={form.role} color={C.accent}/>
+                <Badge label={form.market} color={C.gold}/>
+              </div>
               {resumeText&&<Badge label="Resume ✓" color={C.green}/>}
               {scanResult&&!scanResult.error&&<Badge label={`Score: ${scanResult.credibilityScore}`} color={C.purple}/>}
               <button onClick={()=>setSetupDone(false)} style={{background:"transparent",border:`1px solid ${C.border}`,color:C.muted,borderRadius:6,padding:"4px 10px",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>Edit</button>
@@ -3782,3 +3803,199 @@ function App(){
   );
 }
 export default App;
+
+function LandingSections({ setAuthModal, setShowPricing, setSetupDone, setActiveModule, form, C }) {
+  return (
+    <>
+        {/* ═══ SECTION 3: High-value insight stats ═══ */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:32}} className="grid-3">
+          {[
+            {stat:"75%",  label:"of resumes rejected by ATS before a human reads them",  color:C.red},
+            {stat:"$18K", label:"average salary left on the table without negotiation prep", color:C.gold},
+            {stat:"5 mo", label:"average job search when going in blind with no system",   color:C.muted},
+            {stat:"3.2×", label:"higher return rate when AI memory tracks your progress",  color:C.green},
+          ].map((p,i)=>(
+            <div key={i} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 12px",textAlign:"center"}}>
+              <div style={{fontFamily:"'Syne',sans-serif",fontWeight:900,fontSize:24,color:p.color,lineHeight:1,marginBottom:6}}>{p.stat}</div>
+              <div style={{color:C.muted,fontSize:10,lineHeight:1.45}}>{p.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ═══ SECTION 4: What's Free ═══ */}
+        <div className="divider-line"/>
+        <div className="section-label">What you get for free — no account needed</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:32}} className="grid-2">
+          {[
+            {title:"Job Search",desc:"Search 20+ boards — LinkedIn, Glassdoor, Indeed, Jobstreet and more in one place",color:C.green,tag:"Always Free"},
+            {title:"Resume Scan",desc:"AI credibility score, ATS prediction, specific issues quoted from YOUR resume",color:C.accent,tag:"1 Free Scan"},
+            {title:"Weakness Radar",desc:"7-dimension gap map showing exactly which skills are costing you interviews right now",color:C.red,tag:"1 Free View"},
+            {title:"Market Intel",desc:"Hiring norms, salary context, and interview styles across 6 global regions",color:C.muted,tag:"Always Free"},
+          ].map((f,i)=>(
+            <div key={i} className="feat-card">
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                <div style={{display:"flex",alignItems:"center",gap:7}}>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:f.color,boxShadow:`0 0 6px ${f.color}88`,flexShrink:0}}/>
+                  <div style={{color:C.text,fontWeight:700,fontSize:13}}>{f.title}</div>
+                </div>
+                <span style={{background:f.color+"22",color:f.color,border:`1px solid ${f.color}44`,borderRadius:20,padding:"2px 8px",fontSize:9,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase"}}>{f.tag}</span>
+              </div>
+              <div style={{color:C.muted,fontSize:11,lineHeight:1.55}}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ═══ SECTION 5: Platform modules — account unlocks ═══ */}
+        <div className="divider-line"/>
+        <div className="section-label">Unlock with a free account — still no credit card</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:32}} className="grid-3">
+          {[
+            {title:"JD Analyzer",desc:"Match score + ATS keywords for any job posting",color:C.pink},
+            {title:"STAR Builder",desc:"Refine interview stories, build a persistent bank",color:C.gold},
+            {title:"Pay Coach",desc:"Personalised negotiation scripts in 4 tones",color:C.orange},
+            {title:"Readiness",desc:"Overall interview readiness % across 5 dimensions",color:C.accent},
+            {title:"App Tracker",desc:"Track every application, status, and pipeline",color:C.green},
+            {title:"AI Insights",desc:"Cross-module tips personalised to your activity",color:C.purple},
+          ].map((m,i)=>(
+            <div key={i} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"14px 12px",transition:"border-color 0.2s,transform 0.2s"}}>
+              <div style={{width:5,height:5,borderRadius:"50%",background:m.color,marginBottom:10,boxShadow:`0 0 6px ${m.color}88`}}/>
+              <div style={{color:m.color,fontWeight:700,fontSize:12,marginBottom:3}}>{m.title}</div>
+              <div style={{color:C.muted,fontSize:10,lineHeight:1.5}}>{m.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ═══ SECTION 6: Pro teaser — full pricing in modal ═══ */}
+        <div className="divider-line"/>
+        <div style={{background:`linear-gradient(135deg,${C.accent}06,${C.purple}04)`,border:`1px solid ${C.accent}1A`,borderRadius:14,padding:"20px 24px",marginBottom:32,display:"flex",alignItems:"center",justifyContent:"space-between",gap:16,flexWrap:"wrap"}}>
+          <div>
+            <div style={{color:C.text,fontWeight:800,fontSize:14,marginBottom:4,letterSpacing:"-0.2px"}}>Unlock the full platform</div>
+            <div style={{color:C.muted,fontSize:12,lineHeight:1.6,maxWidth:340}}>HM Simulator, Salary Coach, AI Memory, Rejection Coach and more. One coaching session costs $200. Pro is everything, unlimited.</div>
+          </div>
+          <div style={{display:"flex",gap:8,flexShrink:0}}>
+            <button onClick={()=>setShowPricing(true)} style={{background:"transparent",border:`1px solid ${C.accent}66`,color:C.accent,borderRadius:8,padding:"9px 18px",fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>
+              View pricing →
+            </button>
+            <button onClick={()=>setAuthModal("register")} style={{background:`linear-gradient(135deg,${C.accent},#0096CC)`,color:"#000",border:"none",borderRadius:8,padding:"9px 18px",fontWeight:900,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>
+              Start free
+            </button>
+          </div>
+        </div>
+
+        {/* ═══ SECTION 7: How it works ═══ */}
+        <div className="divider-line"/>
+        <div className="section-label">How it works — 5 steps to your next offer</div>
+        <div style={{display:"flex",flexDirection:"column",gap:0,marginBottom:32}}>
+          {[
+            {n:1,color:C.accent,  title:"Tell us about you",     desc:"Set your role, market, and level. Every module personalises instantly."},
+            {n:2,color:C.green,   title:"Scan your resume",      desc:"AI reads it like a hiring manager. Get a credibility score in 20 seconds."},
+            {n:3,color:C.gold,    title:"See your gaps",         desc:"Weakness Radar shows which skills are costing you interviews right now."},
+            {n:4,color:C.purple,  title:"Prepare to win",        desc:"Mock interviews, STAR stories, and cover letters built from your data."},
+            {n:5,color:C.pink,    title:"Negotiate and close",   desc:"Salary benchmarks, scripts, and live AI roleplay before the real call."},
+          ].map((s,i)=>(
+            <div key={i} style={{display:"flex",gap:14,alignItems:"flex-start",padding:"14px 0",borderBottom:i<4?`1px solid ${C.border}44`:"none"}}>
+              <div className="step-num" style={{background:s.color+"22",color:s.color,border:`1px solid ${s.color}44`}}>{s.n}</div>
+              <div style={{flex:1}}>
+                <div style={{color:C.text,fontWeight:700,fontSize:13,marginBottom:2}}>{s.title}</div>
+                <div style={{color:C.muted,fontSize:11,lineHeight:1.5}}>{s.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ═══ SECTION 8: Company culture reviews ═══ */}
+        <div className="divider-line"/>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+          <div className="section-label" style={{marginBottom:0}}>Company culture intel</div>
+          <div style={{fontSize:10,color:C.muted}}>Powered by CareerAiHub community</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:32}}>
+          {[
+            {
+              company:"Grab",
+              role:"Product Manager",
+              location:"Singapore",
+              rating:4,
+              tags:["Fast-paced","Strong eng culture","Equity upside"],
+              interview:"3 rounds — case study + PM metrics deep-dive + leadership panel. Expect SQL proficiency questions even for PM roles.",
+              culture:"High ownership, cross-functional pods. OKRs are taken seriously. Burnout risk at senior levels.",
+              verdict:"Recommend",
+              verdictColor:C.green,
+            },
+            {
+              company:"Shopee",
+              role:"Senior Data Analyst",
+              location:"Singapore · Remote",
+              rating:3,
+              tags:["High volume","Data-driven","Long hours"],
+              interview:"4 rounds — take-home case, SQL test, stakeholder round, bar-raiser. Turnaround 10 days.",
+              culture:"Metrics obsessed. Good for early career growth. Work-life balance varies heavily by team.",
+              verdict:"Neutral",
+              verdictColor:C.gold,
+            },
+            {
+              company:"Stripe",
+              role:"Software Engineer",
+              location:"US · Remote",
+              rating:5,
+              tags:["Top compensation","Rigorous bar","Strong docs culture"],
+              interview:"5 rounds — Stripe-specific system design, distributed systems, and a writing exercise. Prepare for depth.",
+              culture:"Writing-heavy async culture. Extremely high calibre peers. Comp is top 5% in market.",
+              verdict:"Highly recommend",
+              verdictColor:C.accent,
+            },
+          ].map((r,i)=>(
+            <div key={i} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",transition:"border-color 0.2s"}}>
+              {/* Header row */}
+              <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
+                <div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                    <div style={{color:C.text,fontWeight:800,fontSize:14}}>{r.company}</div>
+                    <div style={{color:C.muted,fontSize:11}}>· {r.role}</div>
+                  </div>
+                  <div style={{fontSize:10,color:C.muted}}>{r.location}</div>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5}}>
+                  <div style={{display:"flex",gap:2}}>
+                    {[1,2,3,4,5].map(s=><div key={s} style={{width:8,height:8,borderRadius:2,background:s<=r.rating?C.gold:C.border}}/>)}
+                  </div>
+                  <span style={{background:`${r.verdictColor}15`,color:r.verdictColor,border:`1px solid ${r.verdictColor}33`,borderRadius:20,padding:"2px 9px",fontSize:9,fontWeight:700,letterSpacing:"0.05em"}}>{r.verdict}</span>
+                </div>
+              </div>
+              {/* Tags */}
+              <div style={{display:"flex",gap:5,marginBottom:10,flexWrap:"wrap"}}>
+                {r.tags.map((t,j)=>(
+                  <span key={j} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 9px",fontSize:9,color:C.muted,fontWeight:600}}>{t}</span>
+                ))}
+              </div>
+              {/* Interview process */}
+              <div style={{marginBottom:7}}>
+                <div style={{fontSize:9,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",color:C.accent,marginBottom:3}}>Interview process</div>
+                <div style={{color:C.muted,fontSize:11,lineHeight:1.55}}>{r.interview}</div>
+              </div>
+              {/* Culture */}
+              <div>
+                <div style={{fontSize:9,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",color:C.purple,marginBottom:3}}>Work culture</div>
+                <div style={{color:C.muted,fontSize:11,lineHeight:1.55}}>{r.culture}</div>
+              </div>
+            </div>
+          ))}
+          {/* Add review CTA */}
+          <button onClick={()=>setAuthModal("register")} style={{background:"transparent",border:`1px dashed ${C.border}`,color:C.muted,borderRadius:12,padding:"14px",fontSize:12,cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s",width:"100%",textAlign:"center"}}>
+            + Share your interview experience → helps the community
+          </button>
+        </div>
+
+        {/* ═══ SECTION 9: Final CTA repeat ═══ */}
+        <div style={{textAlign:"center",padding:"24px 0 8px"}}>
+          <div style={{color:C.muted,fontSize:12,marginBottom:14}}>Ready to build your career OS?</div>
+          <button onClick={()=>{setSetupDone(true);setActiveModule("jobs");}} disabled={!form.role.trim()} style={{background:form.role.trim()?C.accent:"transparent",color:form.role.trim()?"#000":C.muted,border:form.role.trim()?"none":`1px solid ${C.border}`,borderRadius:8,padding:"12px 32px",fontWeight:900,fontSize:14,cursor:form.role.trim()?"pointer":"not-allowed",fontFamily:"inherit",boxShadow:form.role.trim()?`0 0 28px ${C.accent}44`:"none",transition:"all 0.15s"}}>
+            {"⚡ Start Free — No Card Needed"}
+          </button>
+          <div style={{color:C.muted,fontSize:10,marginTop:12,lineHeight:1.6}}>
+            Fill in your role above · Free forever for core features · Pro from $19/month
+          </div>
+        </div>
+    </>
+  );
+}
