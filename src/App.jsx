@@ -336,7 +336,7 @@ async function callGemini(messages, maxTokens=2000, model=MODELS.gemini_flash) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents,
-        generationConfig: { maxOutputTokens: maxTokens, responseMimeType: "application/json" },
+        generationConfig: { maxOutputTokens: maxTokens },
       }),
     }
   );
