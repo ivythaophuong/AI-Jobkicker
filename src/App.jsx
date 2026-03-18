@@ -143,9 +143,9 @@ const ACCESS = {
   jobs:     "FREE",      // Job search boards are public links — no AI cost, always free
   market:   "FREE",      // Static market intel — free to browse
   memory:   "AUTH",      // AI memory dashboard — shows personalized history
-  score:    "PREVIEW",   // 1 free readiness score, then login to re-run
-  radar:    "PREVIEW",   // 1 free radar view, then login
-  scan:     "PREVIEW",   // 1 free resume scan, then login required
+  score:    "AUTH",      // Mandatory login for LLM features
+  radar:    "AUTH",      // Mandatory login for LLM features
+  scan:     "AUTH",      // Mandatory login for LLM features
   jd:       "AUTH",      // JD analysis — AI-heavy, login required
   star:     "AUTH",      // STAR builder — personalised AI, login required
   simulate: "AUTH",      // HM Simulator — deep AI usage, login required
@@ -606,26 +606,44 @@ async function readResumeFile(file) {
       const r=new FileReader();
       r.onload=async e=>{
         try {
-          const lib = pdfjs;
-          if (!lib) throw new Error("PDF.js not ready");
+          const lib = window.pdfjsLib || pdfjs;
+          if (!lib || !lib.getDocument) throw new Error("PDF parser (pdf.js) not ready. Please try again in 5 seconds.");
           const loadingTask = lib.getDocument({data:e.target.result});
           const pdf = await loadingTask.promise;
           let txt="";
-          for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const ct=await pg.getTextContent();txt+=ct.items.map(x=>x.str).join(" ")+"\n";}
+          for(let i=1;i<=pdf.numPages;i++){
+            const pg=await pdf.getPage(i);
+            const ct=await pg.getTextContent();
+            txt+=ct.items.map(x=>x.str).join(" ")+"\n";
+          }
+          if (!txt.trim()) throw new Error("PDF parsing returned no text. The file might be scanned or empty.");
           resolve({type:"text",content:txt.trim(),fileName:file.name});
         } catch (err) { 
           console.error("PDF parse error:", err);
-          resolve({type:"text",content:"",fileName:file.name}); 
+          reject(new Error("PDF Error: " + err.message));
         }
       };
-      r.onerror=reject; r.readAsArrayBuffer(file);
+      r.onerror=()=>reject(new Error("File read error"));
+      r.readAsArrayBuffer(file);
     });
   }
   if (ext==="docx" || file.type.includes("wordprocessingml")) {
     return new Promise((resolve,reject)=>{
       const r=new FileReader();
-      r.onload=async e=>{ try{const _m=window.mammoth||mammoth;if(!_m)throw new Error('DOCX parser unavailable');const res=await _m.extractRawText({arrayBuffer:e.target.result});resolve({type:"text",content:res.value,fileName:file.name});}catch(err){reject(err);}};
-      r.onerror=reject; r.readAsArrayBuffer(file);
+      r.onload=async e=>{
+        try{
+          const _m=window.mammoth||mammoth;
+          if(!_m || !_m.extractRawText) throw new Error('DOCX parser (mammoth) unavailable');
+          const res=await _m.extractRawText({arrayBuffer:e.target.result});
+          if (!res.value.trim()) throw new Error("DOCX parsing returned no text.");
+          resolve({type:"text",content:res.value,fileName:file.name});
+        }catch(err){
+          console.error("DOCX parse error:", err);
+          reject(new Error("DOCX Error: " + err.message));
+        }
+      };
+      r.onerror=()=>reject(new Error("File read error"));
+      r.readAsArrayBuffer(file);
     });
   }
   return new Promise((resolve,reject)=>{
@@ -2430,7 +2448,15 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
           avatar: (data?.user?.user_metadata?.full_name || data?.user?.email || email)[0].toUpperCase(),
           id: data?.user?.id,
           token: data?.access_token,
+          isPro: false,
         };
+        // Fetch real Pro status if profile exists
+        try {
+          const profiles = await sb.select("profiles", { id: `eq.${data.user.id}` }, data.access_token);
+          if (profiles && profiles[0]) {
+            session.isPro = !!profiles[0].is_pro;
+          }
+        } catch (e) { console.warn("Failed to fetch profile:", e.message); }
         saveToken(data.access_token);
         saveSessionLocal(session);
         onSuccess(session);
@@ -2451,6 +2477,7 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
             avatar: name.trim()[0].toUpperCase(),
             id: data?.user?.id,
             token: data?.session?.access_token,
+            isPro: false,
           };
           saveToken(data.session.access_token);
           saveSessionLocal(session);
@@ -2461,6 +2488,7 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
               email: data.user.email,
               full_name: name.trim(),
               joined_at: data.user.created_at,
+              is_pro: false,
             }, data.session.access_token);
           } catch {}
           onSuccess(session);
@@ -2968,7 +2996,14 @@ function UserMenu({ user, onLogout }) {
             <div style={{ color:C.green, fontSize:10, marginTop:2 }}>☁️ Data saved to cloud</div>
           </div>
           <div style={{ marginBottom:8 }}>
-            <div style={{ color:C.green, fontSize:11, fontWeight:700, marginBottom:6 }}>✅ Full access unlocked</div>
+            <div style={{ color:user.isPro?C.green:C.gold, fontSize:11, fontWeight:700, marginBottom:6 }}>
+              {user.isPro ? "✅ Pro Plan — Unlimited Access" : "⚡ Free Plan — 1 use per feature"}
+            </div>
+            {!user.isPro && (
+              <div style={{ color:C.muted, fontSize:10, marginBottom:8 }}>
+                Upgrade to Pro for unlimited AI scans, mock interviews, and career coaching.
+              </div>
+            )}
             {["Resume Scan","JD Analyzer","STAR Builder","HM Simulator","Salary Coach","Cover Letter"].map(f=>(
               <div key={f} style={{ color:C.muted, fontSize:11, marginBottom:2 }}>· {f}</div>
             ))}
@@ -3016,6 +3051,13 @@ function App(){
           const userData = await sb.getUser(token);
           if (userData?.id) {
             const session = { ...cached, id: userData.id, token };
+            // Sync real Pro status from DB
+            try {
+              const profiles = await sb.select("profiles", { id: `eq.${userData.id}` }, token);
+              if (profiles && profiles[0]) {
+                session.isPro = !!profiles[0].is_pro;
+              }
+            } catch (e) { console.warn("Restore profile sync failed:", e.message); }
             setUser(session);
             saveSessionLocal(session);
             // Load memory from DB
@@ -3057,6 +3099,7 @@ function App(){
   const login = async (session) => {
     setUser(session);
     setAuthModal(null);
+    setSetupDone(true); // Redirect to main app if coming from onboarding/signup
     // Load memory from Supabase DB first, fallback to localStorage
     let mem = null;
     if (session.id && session.token) {
@@ -3079,16 +3122,46 @@ function App(){
     localStorage.setItem("djai_preview", JSON.stringify(next));
   };
 
+  // ── Usage Tracking ─────────────────────────────────────────────────────────
+  const isModuleUsed = (moduleId, mem) => {
+    if (!mem) return false;
+    switch (moduleId) {
+      case "scan":
+      case "radar":
+      case "score":
+        return (mem.scanHistory?.length || 0) > 0;
+      case "jd":
+        return (mem.jdAnalyses?.length || 0) > 0;
+      case "star":
+        return (mem.starBank?.length || 0) > 0;
+      case "simulate":
+        return (mem.mockSessions?.length || 0) > 0;
+      case "salary":
+        return (mem.negotiationPractice || 0) > 0;
+      case "cover":
+        return (mem.coverLetters?.length || 0) > 0;
+      default:
+        return false;
+    }
+  };
+
   // ── Determine what a guest can see for each module ──────────────────────────
   // Returns: "allowed" | "preview_gate" | "auth_gate"
   const getAccess = (moduleId) => {
-    if (user) return "allowed";                         // logged-in users: full access
     const policy = ACCESS[moduleId] || "FREE";
     if (policy === "FREE") return "allowed";
-    if (policy === "AUTH") return "auth_gate";
-    if (policy === "PREVIEW") {
-      return (previewUsed[moduleId]||0) >= 1 ? "preview_gate" : "allowed";
+
+    // Mandatory login for all LLM features
+    if (!user) return "auth_gate";
+
+    // Pro users get full access
+    if (user.isPro) return "allowed";
+
+    // Free users (logged in) can use each feature once
+    if (isModuleUsed(moduleId, memory)) {
+      return "preview_gate"; // Triggers Pro upgrade prompt
     }
+
     return "allowed";
   };
 
