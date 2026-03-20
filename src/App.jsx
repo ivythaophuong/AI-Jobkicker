@@ -191,7 +191,7 @@ const MODELS = {
 
   // Google Gemini ──────────────────────────────────────────────────
   gemini_pro     : "gemini-1.5-pro",               // $1.25/$5 per 1M — solid quality
-  gemini_flash   : "gemini-2.0-flash",           // Latest stable flash model
+  gemini_flash   : "gemini-3-flash",             // Latest stable flash model
   gemini_flash8b : "gemini-1.5-flash-8b",          // $0.0375/$0.15 per 1M — ultra budget
 };
 
