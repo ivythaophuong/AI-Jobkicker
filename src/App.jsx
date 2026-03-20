@@ -170,9 +170,9 @@ const AUTH_MODULES   = Object.entries(ACCESS).filter(([,v])=>v==="AUTH").map(([k
 // ══════════════════════════════════════════════════════════════════════════════
 
 const LLM_KEYS = {
-  claude : "__CLAUDE_KEY_PLACEHOLDER__",   // Anthropic
-  openai : "__OPENAI_KEY_PLACEHOLDER__",   // OpenAI
-  gemini : "__GEMINI_KEY_PLACEHOLDER__",   // Google AI Studio
+  claude : import.meta.env.VITE_ANTHROPIC_API_KEY || "__CLAUDE_KEY_PLACEHOLDER__", 
+  openai : import.meta.env.VITE_OPENAI_API_KEY || "__OPENAI_KEY_PLACEHOLDER__", 
+  gemini : import.meta.env.VITE_GEMINI_API_KEY || "__GEMINI_KEY_PLACEHOLDER__", 
 };
 if (typeof window !== 'undefined') window._LLM_KEYS = LLM_KEYS;
 
@@ -336,7 +336,10 @@ async function callGemini(messages, maxTokens=2000, model=MODELS.gemini_flash) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents,
-        generationConfig: { maxOutputTokens: maxTokens },
+        generationConfig: { 
+          maxOutputTokens: maxTokens,
+          response_mime_type: "application/json"
+        },
       }),
     }
   );
@@ -416,18 +419,35 @@ function ErrCard({ msg }) {
 
 function extractJSON(raw) {
   if (!raw || !raw.trim()) return { error: true, msg: "AI returned an empty response." };
+  
+  // Helper to fix common minor JSON errors (like trailing commas)
+  const fixJSON = (str) => {
+    return str
+      .replace(/,\s*([\}\]])/g, '$1') // remove trailing commas
+      .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?\s*:/g, '"$2":') // ensure property names are double-quoted
+      .replace(/:\s*'([^']*)'/g, ':"$1"'); // replace single-quoted values with double-quotes
+  };
+
   try {
     // 1. Try finding JSON object/array with regex first (best for markdown/noisy output)
     const match = raw.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
     if (match) {
-      try { return JSON.parse(match[0]); } catch (e) { /* fall through to cleanup method */ }
+      const candidate = match[0];
+      try { return JSON.parse(candidate); } 
+      catch (e) { 
+        try { return JSON.parse(fixJSON(candidate)); } 
+        catch (e2) { /* fall through */ }
+      }
     }
+    
     // 2. Fallback: Cleanup common markdown/noise and parse
     const clean = raw.replace(/```(?:json)?/gi, "").replace(/```/g, "").trim();
-    return JSON.parse(clean);
+    try { return JSON.parse(clean); } 
+    catch (e) { 
+      return JSON.parse(fixJSON(clean)); 
+    }
   } catch (e) {
     console.error("[extractJSON] Parse error. raw:", raw);
-    // Instead of throwing, we return a structured error that ResumeScan can handle
     return { error: true, msg: "AI response was not in a valid JSON format." };
   }
 }
@@ -2670,7 +2690,7 @@ function AuthGate({ moduleName, moduleIcon, onLogin, onRegister }) {
 
 
 // ── Pricing Modal — full value breakdown with user surplus ────────────────────
-function PricingModal({ onClose, onSignup }) {
+function PricingModal({ user, onClose, onSignup }) {
   return (
     <div onClick={e=>e.target===e.currentTarget&&onClose()} style={{position:"fixed",inset:0,background:"rgba(9,12,18,0.92)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:"20px 16px",backdropFilter:"blur(12px)",animation:"fadeIn 0.2s ease",overflowY:"auto"}}>
       <div style={{width:"100%",maxWidth:640,background:"#0F1520",border:"1px solid #1E2D45",borderRadius:18,overflow:"hidden",boxShadow:"0 40px 100px rgba(0,0,0,0.6)",animation:"fadeIn 0.25s ease",maxHeight:"90vh",overflowY:"auto"}}>
@@ -2817,14 +2837,14 @@ function PricingModal({ onClose, onSignup }) {
 // ── Pro Upgrade Modal ────────────────────────────────────────────────────────
 // Triggered at key conversion moments — NOT a generic paywall.
 // Each reason has tailored copy targeting the specific anxiety/need.
-function ProUpgradeModal({ reason, onClose, onSignup }) {
+function ProUpgradeModal({ user, reason, onClose, onSignup }) {
   const configs = {
     interviewing: {
       icon: "🧠",
       urgency: "You have an interview coming up.",
       headline: "Practice before you walk in.",
       subhead: "Candidates who do 3+ mock interviews are 2.4x more likely to get the offer.",
-      cta: "Unlock HM Simulator — $19/month",
+      cta: user ? "Unlock Pro Features — $19/month" : "Unlock HM Simulator — $19/month",
       features: [
         "🧠 HM Simulator — AI hiring manager grills you on YOUR resume",
         "⭐ Unlimited STAR story refinement + story bank",
@@ -2841,7 +2861,7 @@ function ProUpgradeModal({ reason, onClose, onSignup }) {
       urgency: "The HM Simulator is a Pro feature.",
       headline: "This is where interviews are won.",
       subhead: "4 AI personas. Questions generated from YOUR resume. Real-time scoring. $300/session on Interviewing.io. $19/month here.",
-      cta: "Unlock HM Simulator — $19/month",
+      cta: user ? "Unlock Pro Features — $19/month" : "Unlock HM Simulator — $19/month",
       features: [
         "🧠 HM Simulator — 4 interviewer personas, unlimited sessions",
         "💰 Salary Coach — benchmarks + word-for-word negotiation scripts",
@@ -2858,7 +2878,7 @@ function ProUpgradeModal({ reason, onClose, onSignup }) {
       urgency: "You're about to negotiate your salary.",
       headline: "Don't leave $10,000 on the table.",
       subhead: "The average professional leaves $5,000–15,000 unclaimed per offer. Pro users get exact scripts and live AI roleplay to practice before the real call.",
-      cta: "Unlock Salary Coach — $19/month",
+      cta: user ? "Unlock Pro Features — $19/month" : "Create Free Account to Continue",
       features: [
         "💰 Salary benchmarks by role, level, and market",
         "📝 Word-for-word negotiation scripts — opening, pushback, closing",
@@ -2875,7 +2895,7 @@ function ProUpgradeModal({ reason, onClose, onSignup }) {
       urgency: "You've used your free previews.",
       headline: "You're clearly serious about this.",
       subhead: "You've already scanned your resume, checked your gaps, and seen your readiness score. The next step is fixing them — and that's where Pro comes in.",
-      cta: "Create Free Account to Continue",
+      cta: user ? "Unlock Pro Features — $19/month" : "Create Free Account to Continue",
       features: [
         "⚡ Unlimited resume scans — re-scan after every edit",
         "🔍 JD Analyzer — match any job description in seconds",
@@ -2884,7 +2904,7 @@ function ProUpgradeModal({ reason, onClose, onSignup }) {
         "🧠 HM Simulator — mock interviews from your actual resume",
         "☁️ Everything saved to cloud — never lose your progress",
       ],
-      comparison: ["Resume.io + Interviewing.io + LinkedIn Premium", "$70+/mo", "CareerAiHub (free account)", "$0"],
+      comparison: ["Resume.io + Interviewing.io + LinkedIn Premium", "$70+/mo", user ? "CareerAiHub Pro" : "CareerAiHub (free account)", user ? "$19" : "$0"],
       color: C.accent,
     },
   };
@@ -2951,7 +2971,7 @@ function ProUpgradeModal({ reason, onClose, onSignup }) {
 }
 
 // ── PreviewGate — shown after 1 free use of PREVIEW modules ──────────────────
-function PreviewGate({ moduleName, moduleIcon, onLogin, onRegister }) {
+function PreviewGate({ user, moduleName, moduleIcon, onLogin, onRegister, onUpgrade }) {
   return (
     <Card glow={C.gold} style={{ padding:"24px 28px" }}>
       {/* Top row */}
@@ -2959,10 +2979,10 @@ function PreviewGate({ moduleName, moduleIcon, onLogin, onRegister }) {
         <div style={{ fontSize:28 }}>{moduleIcon}</div>
         <div>
           <div style={{ color:C.gold, fontWeight:900, fontSize:15, marginBottom:2 }}>
-            You've seen what AI finds in your resume.
+            {user ? "You've used your free scan." : "You've seen what AI finds in your resume."}
           </div>
           <div style={{ color:C.muted, fontSize:12 }}>
-            Create a free account to fix it — and unlock 7 more tools.
+            {user ? "Upgrade to Pro for unlimited scans + 7 premium tools." : "Create a free account to fix it — and unlock 7 more tools."}
           </div>
         </div>
       </div>
@@ -2979,12 +2999,20 @@ function PreviewGate({ moduleName, moduleIcon, onLogin, onRegister }) {
 
       {/* CTAs */}
       <div style={{ display:"flex", gap:10 }}>
-        <button onClick={onRegister} style={{ flex:2, background:`linear-gradient(135deg,${C.accent},#0096CC)`, color:"#000", border:"none", borderRadius:8, padding:"12px", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>
-          ✨ Create Free Account →
-        </button>
-        <button onClick={onLogin} style={{ flex:1, background:"transparent", border:`1px solid ${C.border}`, color:C.text, borderRadius:8, padding:"12px", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
-          Sign In
-        </button>
+        {user ? (
+          <button onClick={onUpgrade} style={{ flex:1, background:`linear-gradient(135deg,${C.gold},#B8860B)`, color:"#000", border:"none", borderRadius:8, padding:"12px", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>
+            💎 Upgrade to Pro →
+          </button>
+        ) : (
+          <>
+            <button onClick={onRegister} style={{ flex:2, background:`linear-gradient(135deg,${C.accent},#0096CC)`, color:"#000", border:"none", borderRadius:8, padding:"12px", fontWeight:900, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>
+              ✨ Create Free Account →
+            </button>
+            <button onClick={onLogin} style={{ flex:1, background:"transparent", border:`1px solid ${C.border}`, color:C.text, borderRadius:8, padding:"12px", fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
+              Sign In
+            </button>
+          </>
+        )}
       </div>
       <div style={{ textAlign:"center", marginTop:10, color:C.muted, fontSize:11 }}>
         No credit card · 30 seconds to sign up · Data saved to cloud
@@ -3467,9 +3495,9 @@ function App(){
       `}</style>
       <ToastProvider/>
       {authModal && <AuthModal initialMode={authModal} onSuccess={login} onClose={()=>setAuthModal(null)}/>}
-      {proModal && <ProUpgradeModal reason={proModal} onClose={()=>setProModal(null)} onSignup={()=>{setProModal(null);setAuthModal("register");}}/>}
+      {proModal && <ProUpgradeModal user={user} reason={proModal} onClose={()=>setProModal(null)} onSignup={()=>{setProModal(null);setAuthModal("register");}}/>}
       {cmdOpen && <CommandPalette modules={MODULES} setActiveModule={(id)=>{setActiveModule(id);setSetupDone(true);}} setAuthModal={setAuthModal} user={user} onClose={()=>setCmdOpen(false)}/>}
-      {showPricing && <PricingModal onClose={()=>setShowPricing(false)} onSignup={()=>{setShowPricing(false);setAuthModal("register");}}/>}
+      {showPricing && <PricingModal user={user} onClose={()=>setShowPricing(false)} onSignup={()=>{setShowPricing(false);setAuthModal("register");}}/>}
 
       {/* Background orbs */}
       <div className="setup-orb" style={{width:700,height:700,background:C.accent,opacity:0.05,top:-250,left:-200,zIndex:0}}/>
@@ -3757,8 +3785,9 @@ function App(){
         onLogin={()=>setAuthModal("login")} onRegister={()=>setAuthModal("register")} />;
     }
     if (access === "preview_gate") {
-      return <PreviewGate moduleName={mod.label} moduleIcon={mod.icon}
-        onLogin={()=>setAuthModal("login")} onRegister={()=>setAuthModal("register")} />;
+      return <PreviewGate user={user} moduleName={mod.label} moduleIcon={mod.icon}
+        onLogin={()=>setAuthModal("login")} onRegister={()=>setAuthModal("register")} 
+        onUpgrade={()=>setProModal("limit")} />;
     }
 
     // Wrap PREVIEW modules to mark usage after first render
@@ -3816,7 +3845,7 @@ function App(){
 
       {/* Auth Modal overlay */}
       {authModal && <AuthModal initialMode={authModal} onSuccess={login} onClose={()=>setAuthModal(null)}/>}
-      {proModal && <ProUpgradeModal reason={proModal} onClose={()=>setProModal(null)} onSignup={()=>{setProModal(null);setAuthModal("register");}}/>}
+      {proModal && <ProUpgradeModal user={user} reason={proModal} onClose={()=>setProModal(null)} onSignup={()=>{setProModal(null);setAuthModal("register");}}/>}
 
       {/* Header */}
       <div style={{borderBottom:`1px solid ${C.border}`,background:darkMode?C.surface:"#FFFFFF",padding:"0 24px",position:"sticky",top:0,zIndex:100,backdropFilter:"blur(12px)"}}>
