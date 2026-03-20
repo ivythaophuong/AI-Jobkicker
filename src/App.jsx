@@ -673,7 +673,7 @@ function GlowBar({score,color,delay=0,height=8,showLabel=false}){
       <div style={{background:"#0A1020",borderRadius:4,height,overflow:"hidden"}}>
         <div style={{width:`${w}%`,height:"100%",background:`linear-gradient(90deg,${color}88,${color})`,borderRadius:4,transition:`width 1.1s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,boxShadow:`0 0 10px ${color}44`}}/>
       </div>
-      {showLabel&&<div style={{position:"absolute",right:0,top:-18,fontFamily:"'DM Mono',monospace",fontSize:10,color,fontWeight:700}}>{w}%</div>}
+      {showLabel&&<div style={{position:"absolute",right:0,top:-18,fontFamily:"var(--font-mono)",fontSize:10,color,fontWeight:700}}>{w}%</div>}
     </div>
   );
 }
@@ -892,9 +892,9 @@ function CommandPalette({ modules, setActiveModule, setAuthModal, user, onClose 
             onChange={e=>setQ(e.target.value)}
             onKeyDown={handleKey}
             placeholder="Search modules, actions..."
-            style={{flex:1,background:"transparent",border:"none",color:"#E8F0FE",fontSize:14,fontFamily:"'DM Mono',monospace",outline:"none"}}
+            style={{flex:1,background:"transparent",border:"none",color:"#E8F0FE",fontSize:14,fontFamily:"var(--font-mono)",outline:"none"}}
           />
-          <kbd style={{background:"#131B2A",border:"1px solid #1E2D45",borderRadius:5,padding:"2px 8px",fontSize:10,color:"#6B7E9F",fontFamily:"'DM Mono',monospace"}}>ESC</kbd>
+          <kbd style={{background:"#131B2A",border:"1px solid #1E2D45",borderRadius:5,padding:"2px 8px",fontSize:10,color:"#6B7E9F",fontFamily:"var(--font-mono)"}}>ESC</kbd>
         </div>
         {/* Results */}
         <div style={{maxHeight:380,overflowY:"auto",padding:"6px 0"}}>
@@ -910,7 +910,7 @@ function CommandPalette({ modules, setActiveModule, setAuthModal, user, onClose 
                 <div style={{color:i===sel?"#E8F0FE":"#94A3B8",fontSize:13,fontWeight:600}}>{cmd.label}</div>
                 <div style={{color:"#6B7E9F",fontSize:11,marginTop:2}}>{cmd.desc}</div>
               </div>
-              <span style={{fontSize:10,color:"#6B7E9F",fontFamily:"'DM Mono',monospace",background:"#131B2A",padding:"2px 7px",borderRadius:4,flexShrink:0}}>
+              <span style={{fontSize:10,color:"#6B7E9F",fontFamily:"var(--font-mono)",background:"#131B2A",padding:"2px 7px",borderRadius:4,flexShrink:0}}>
                 {cmd.type === "module" ? "module" : "action"}
               </span>
             </div>
@@ -920,7 +920,7 @@ function CommandPalette({ modules, setActiveModule, setAuthModal, user, onClose 
         <div style={{borderTop:"1px solid #1E2D45",padding:"8px 18px",display:"flex",gap:16}}>
           {[["↑↓","Navigate"],["↵","Select"],["ESC","Close"]].map(([k,l])=>(
             <div key={k} style={{display:"flex",alignItems:"center",gap:5}}>
-              <kbd style={{background:"#131B2A",border:"1px solid #1E2D45",borderRadius:4,padding:"1px 6px",fontSize:10,color:"#6B7E9F",fontFamily:"'DM Mono',monospace"}}>{k}</kbd>
+              <kbd style={{background:"#131B2A",border:"1px solid #1E2D45",borderRadius:4,padding:"1px 6px",fontSize:10,color:"#6B7E9F",fontFamily:"var(--font-mono)"}}>{k}</kbd>
               <span style={{fontSize:10,color:"#6B7E9F"}}>{l}</span>
             </div>
           ))}
@@ -935,7 +935,7 @@ function EmptyState({ icon, title, desc, cta, onCta, ctaColor }) {
   return (
     <div style={{ textAlign:"center", padding:"48px 24px", display:"flex", flexDirection:"column", alignItems:"center", gap:12 }}>
       <div style={{ fontSize:52, lineHeight:1 }}>{icon}</div>
-      <div style={{ color:C.text, fontWeight:800, fontSize:16, fontFamily:"'Syne',sans-serif" }}>{title}</div>
+      <div style={{ color:C.text, fontWeight:800, fontSize:16, fontFamily:"var(--font-display)" }}>{title}</div>
       <div style={{ color:C.muted, fontSize:13, lineHeight:1.7, maxWidth:320 }}>{desc}</div>
       {cta && (
         <button onClick={onCta} style={{
@@ -1035,7 +1035,7 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-        <div><div className="t-h1" style={{color:C.text}}>Resume Deep Scan Engine</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body,'DM Mono',monospace)"}}>Upload your resume. AI interrogates every bullet. No vagueness survives.</div></div>
+        <div><div className="t-h1" style={{color:C.text}}>Resume Deep Scan Engine</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>Upload your resume. AI interrogates every bullet. No vagueness survives.</div></div>
         {resumeText&&<Btn onClick={runScan} disabled={scanning} color={C.accent} dark style={{width:"auto",padding:"10px 20px"}}>{scanning?"Scanning...":scanResult&&!scanResult.error?"Re-Scan":"⚡ Run Deep Scan"}</Btn>}
       </div>
       {resumeText&&(
@@ -1079,9 +1079,9 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <div style={{width:7,height:7,borderRadius:"50%",background:C.accent,animation:"pulse 1s ease infinite"}}/>
-                    <span style={{color:C.accent,fontSize:13,fontFamily:"'DM Mono',monospace"}}>{step}</span>
+                    <span style={{color:C.accent,fontSize:13,fontFamily:"var(--font-mono)"}}>{step}</span>
                   </div>
-                  <span style={{color:C.muted,fontSize:11,fontFamily:"'DM Mono',monospace",fontWeight:700}}>{progress}%</span>
+                  <span style={{color:C.muted,fontSize:11,fontFamily:"var(--font-mono)",fontWeight:700}}>{progress}%</span>
                 </div>
                 <div style={{display:"flex",gap:4,marginBottom:12}}>
                   {steps.map((s,i)=>(
@@ -1094,7 +1094,7 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
                         transition:"background 0.4s ease",
                         boxShadow: i===currentStep ? `0 0 8px ${C.accent}66` : "none",
                       }}/>
-                      <span style={{fontSize:9,color:i<=currentStep?C.accent:C.muted,fontFamily:"'DM Mono',monospace",whiteSpace:"nowrap"}}>{s.label}</span>
+                      <span style={{fontSize:9,color:i<=currentStep?C.accent:C.muted,fontFamily:"var(--font-mono)",whiteSpace:"nowrap"}}>{s.label}</span>
                     </div>
                   ))}
                 </div>
@@ -1104,7 +1104,7 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
           <GlowBar score={progress} color={C.accent} height={6}/>
           {progress>30&&(
             <div style={{marginTop:16}}>
-              <div style={{color:C.muted,fontSize:10,marginBottom:10,textTransform:"uppercase",letterSpacing:1,fontFamily:"'DM Mono',monospace"}}>Detected issues...</div>
+              <div style={{color:C.muted,fontSize:10,marginBottom:10,textTransform:"uppercase",letterSpacing:1,fontFamily:"var(--font-mono)"}}>Detected issues...</div>
               <SkeletonIssue/><SkeletonIssue/>
               {progress>60&&<SkeletonIssue/>}
             </div>
@@ -1147,7 +1147,7 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
             </Card>
           )}
           {scanResult.summary&&<Card glow={C.purple}><div style={{color:C.purple,fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:1}}>🧠 AI Verdict</div><div style={{color:C.text,fontSize:14,lineHeight:1.8}}>{scanResult.summary}</div></Card>}
-          <Card><div style={{color:C.text,fontWeight:700,marginBottom:14,fontSize:14}}>📋 Issue Report</div>{scanResult.issues?.map((issue,i)=><div key={i} style={{background:C.surface,marginBottom:10,border:`1px solid ${issue.severity==="critical"?C.red+"55":issue.severity==="warning"?C.gold+"44":C.green+"44"}`,borderRadius:8,padding:"12px 14px"}}><div style={{display:"flex",gap:8,marginBottom:8}}><Badge label={issue.severity} color={issue.severity==="critical"?C.red:issue.severity==="warning"?C.gold:C.green}/><span style={{color:C.muted,fontSize:11}}>{issue.type}</span></div><div style={{color:C.accent,fontSize:12,fontFamily:"monospace",marginBottom:8,background:"#0A1020",padding:"6px 10px",borderRadius:6}}>"{issue.original}"</div><div style={{color:C.gold,fontSize:12}}>💡 {issue.fix}</div></div>)}</Card>
+          <Card><div style={{color:C.text,fontWeight:700,marginBottom:14,fontSize:14}}>📋 Issue Report</div>{scanResult.issues?.map((issue,i)=><div key={i} style={{background:C.surface,marginBottom:10,border:`1px solid ${issue.severity==="critical"?C.red+"55":issue.severity==="warning"?C.gold+"44":C.green+"44"}`,borderRadius:8,padding:"12px 14px"}}><div style={{display:"flex",gap:8,marginBottom:8}}><Badge label={issue.severity} color={issue.severity==="critical"?C.red:issue.severity==="warning"?C.gold:C.green}/><span style={{color:C.muted,fontSize:11}}>{issue.type}</span></div><div style={{color:C.accent,fontSize:12,fontFamily:"var(--font-mono)",marginBottom:8,background:"#0A1020",padding:"6px 10px",borderRadius:6}}>"{issue.original}"</div><div style={{color:C.gold,fontSize:12}}>💡 {issue.fix}</div></div>)}</Card>
           {/* Post-scan flow nudge */}
           <div style={{background:`linear-gradient(135deg,${C.purple}22,${C.accent}11)`,border:`1px solid ${C.accent}33`,borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
             <div>
@@ -1186,7 +1186,7 @@ function JDAnalyzer({resumeText,form,memory,updateMemory}){
   const mc=result?(result.matchScore>=75?C.green:result.matchScore>=50?C.gold:C.red):C.pink;
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
-      <div><div className="t-h1" style={{color:C.text}}>Job Description Analyzer</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body,'DM Mono',monospace)"}}>Paste any JD. Get match score, ATS keywords, red flags, and your exact positioning strategy.</div></div>
+      <div><div className="t-h1" style={{color:C.text}}>Job Description Analyzer</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>Paste any JD. Get match score, ATS keywords, red flags, and your exact positioning strategy.</div></div>
       <Card><div className="t-label" style={{color:C.muted,marginBottom:8}}>Paste Job Description</div><textarea value={jd} onChange={e=>{setJd(e.target.value);setErr("");}} placeholder="Paste the full job description here..." style={{width:"100%",minHeight:160,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,color:C.text,fontSize:12,padding:12,fontFamily:"inherit",resize:"vertical",lineHeight:1.7,boxSizing:"border-box",display:"block",outline:"none"}}/>{err&&<ErrCard msg={err}/>}<Btn onClick={analyze} disabled={loading||jd.trim().length<50} color={C.pink} style={{marginTop:12}}>{loading?"Analyzing JD...":"🔍 Analyze This Job"}</Btn></Card>
       {loading&&<Card><Spinner label="Matching JD against your profile..."/></Card>}
       {result&&!loading&&(
@@ -1236,7 +1236,7 @@ function STARBuilder({resumeText,form,memory,updateMemory}){
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-        <div><div className="t-h1" style={{color:C.text}}>STAR Story Builder</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body,'DM Mono',monospace)"}}>Build, score, and bank your best interview stories.</div></div>
+        <div><div className="t-h1" style={{color:C.text}}>STAR Story Builder</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>Build, score, and bank your best interview stories.</div></div>
         {(bank.length+(memory?.starBank?.length||0))>0&&<Badge label={`${bank.length+(memory?.starBank?.length||0)} total banked`} color={C.gold}/>}
       </div>
       <Card>{fields.map((f,i)=><div key={f.l} style={{marginBottom:14}}><div style={{display:"flex",gap:8,alignItems:"center",marginBottom:6}}><span style={{background:fc[i]+"22",color:fc[i],borderRadius:4,padding:"2px 8px",fontSize:10,fontWeight:800,letterSpacing:1}}>{f.l.toUpperCase()}</span><span style={{color:C.muted,fontSize:11}}>{f.h}</span></div><textarea value={f.v} onChange={e=>f.set(e.target.value)} rows={f.rows} style={{width:"100%",background:C.surface,border:`1px solid ${fc[i]}44`,borderRadius:8,color:C.text,fontSize:13,padding:"10px 12px",fontFamily:"inherit",resize:"vertical",lineHeight:1.7,boxSizing:"border-box",display:"block",outline:"none"}}/></div>)}<Btn onClick={refine} disabled={loading||!S||!T||!A||!R} color={C.gold} dark>{loading?"Refining...":"⭐ Refine My Story"}</Btn></Card>
@@ -1288,7 +1288,7 @@ function HiringManagerSim({resumeText,scanResult,form,memory,updateMemory,onProT
   };
   const ac=mc[mode]||C.accent;
   const vc={Strong:C.green,Acceptable:C.gold,Weak:C.red,"Critical Gap":C.red};
-  if(!mode)return(<div style={{display:"flex",flexDirection:"column",gap:16}}><div><div className="t-h1" style={{color:C.text}}>Hiring Manager Simulator</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body,'DM Mono',monospace)"}}>{resumeText?"✅ Resume loaded — questions personalized to YOU.":"⚠️ Upload resume for personalized questions."}</div></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>{modes.map(m=><Card key={m.id} glow={m.color} style={{cursor:"pointer"}}><div onClick={()=>pickMode(m.id)}><div style={{fontSize:32,marginBottom:10}}>{m.icon}</div><div style={{color:m.color,fontWeight:800,fontSize:15,marginBottom:4}}>{m.label}</div><div style={{color:C.muted,fontSize:12,marginBottom:12}}>{m.desc}</div><Badge label="Select Mode" color={m.color}/></div></Card>)}</div></div>);
+  if(!mode)return(<div style={{display:"flex",flexDirection:"column",gap:16}}><div><div className="t-h1" style={{color:C.text}}>Hiring Manager Simulator</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>{resumeText?"✅ Resume loaded — questions personalized to YOU.":"⚠️ Upload resume for personalized questions."}</div></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>{modes.map(m=><Card key={m.id} glow={m.color} style={{cursor:"pointer"}}><div onClick={()=>pickMode(m.id)}><div style={{fontSize:32,marginBottom:10}}>{m.icon}</div><div style={{color:m.color,fontWeight:800,fontSize:15,marginBottom:4}}>{m.label}</div><div style={{color:C.muted,fontSize:12,marginBottom:12}}>{m.desc}</div><Badge label="Select Mode" color={m.color}/></div></Card>)}</div></div>);
   const cq=questions[qi];
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
@@ -1328,7 +1328,7 @@ function SalaryCoach({resumeText,form,memory,updateMemory,onProTrigger}){
   };
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div className="t-h1" style={{color:C.text}}>Salary Negotiation Coach</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body,'DM Mono',monospace)"}}>Know your value. Get word-for-word scripts. Roleplay the negotiation live.</div></div><button onClick={()=>setRoleplay(r=>!r)} style={{background:roleplay?C.green+"22":"transparent",border:`1px solid ${roleplay?C.green:C.border}`,color:roleplay?C.green:C.muted,borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{roleplay?"📊 View Analysis":"🎭 Roleplay"}</button></div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div className="t-h1" style={{color:C.text}}>Salary Negotiation Coach</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>Know your value. Get word-for-word scripts. Roleplay the negotiation live.</div></div><button onClick={()=>setRoleplay(r=>!r)} style={{background:roleplay?C.green+"22":"transparent",border:`1px solid ${roleplay?C.green:C.border}`,color:roleplay?C.green:C.muted,borderRadius:6,padding:"6px 14px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{roleplay?"📊 View Analysis":"🎭 Roleplay"}</button></div>
       {!roleplay?(
         <>
           <Card>
@@ -1380,7 +1380,7 @@ function CoverLetterGen({resumeText,form,memory,updateMemory}){
   const copy=()=>{if(result?.coverLetter){navigator.clipboard.writeText(result.coverLetter);setCopied(true);showToast("✉️ Cover letter copied","success");setTimeout(()=>setCopied(false),2000);}};
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
-      <div><div className="t-h1" style={{color:C.text}}>Cover Letter Generator</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body,'DM Mono',monospace)"}}>AI writes a tailored letter from your real resume + JD. No generic templates.</div></div>
+      <div><div className="t-h1" style={{color:C.text}}>Cover Letter Generator</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>AI writes a tailored letter from your real resume + JD. No generic templates.</div></div>
       {!resumeText?.content&&<Card glow={C.gold}><div style={{color:C.gold,fontSize:13}}>⚠️ Upload your resume first for a fully personalized letter.</div></Card>}
       <Card>
         <div className="t-label" style={{color:C.muted,marginBottom:8}}>Tone</div>
@@ -1392,7 +1392,7 @@ function CoverLetterGen({resumeText,form,memory,updateMemory}){
       {loading&&<Card><Spinner label="Crafting your personalized cover letter..."/></Card>}
       {result&&!result.error&&!loading&&(
         <>
-          <Card glow={C.orange}><div style={{color:C.orange,fontWeight:700,fontSize:13,marginBottom:8}}>📧 Email Subject</div><div style={{color:C.text,fontSize:13,background:C.surface,padding:"8px 12px",borderRadius:6,fontFamily:"monospace"}}>{result.subject}</div></Card>
+          <Card glow={C.orange}><div style={{color:C.orange,fontWeight:700,fontSize:13,marginBottom:8}}>📧 Email Subject</div><div style={{color:C.text,fontSize:13,background:C.surface,padding:"8px 12px",borderRadius:6,fontFamily:"var(--font-mono)"}}>{result.subject}</div></Card>
           <Card glow={C.accent}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><div style={{color:C.accent,fontWeight:700,fontSize:13}}>✉️ Your Cover Letter</div><button onClick={copy} style={{background:copied?C.green+"22":"transparent",border:`1px solid ${copied?C.green:C.border}`,color:copied?C.green:C.muted,borderRadius:6,padding:"4px 12px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{copied?"✓ Copied!":"Copy"}</button></div><div style={{color:C.text,fontSize:13,lineHeight:1.9,whiteSpace:"pre-line",background:C.surface,borderRadius:8,padding:16}}>{result.coverLetter}</div></Card>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}><Card><div style={{color:C.green,fontWeight:700,fontSize:12,marginBottom:8}}>💪 Key Selling Points</div>{result.keySellingPoints?.map((p,i)=><div key={i} style={{color:C.text,fontSize:12,marginBottom:4,paddingLeft:10,borderLeft:`2px solid ${C.green}`}}>• {p}</div>)}</Card><Card><div style={{color:C.gold,fontWeight:700,fontSize:12,marginBottom:8}}>🎨 Customize Further</div>{result.customizationTips?.map((t,i)=><div key={i} style={{color:C.text,fontSize:12,marginBottom:4}}>→ {t}</div>)}</Card></div>
           {result.followUpScript&&<Card glow={C.purple}><div style={{color:C.purple,fontWeight:700,fontSize:12,marginBottom:8}}>📬 Follow-Up Email (Day 5)</div><div style={{color:C.text,fontSize:12,lineHeight:1.7,fontStyle:"italic",background:C.surface,padding:"10px 14px",borderRadius:6}}>"{result.followUpScript}"</div></Card>}
@@ -1413,7 +1413,7 @@ function WeaknessRadar({scanResult,memory,onFirstUse}){
   const colored=wk.map(w=>({...w,color:w.s<40?C.red:w.s<70?C.gold:C.green}));
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
-      <div><div className="t-h1" style={{color:C.text}}>Weakness Radar</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body,'DM Mono',monospace)"}}>{scanResult?"✅ Derived from your resume scan.":"Scan your resume for personalized analysis."}</div></div>
+      <div><div className="t-h1" style={{color:C.text}}>Weakness Radar</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>{scanResult?"✅ Derived from your resume scan.":"Scan your resume for personalized analysis."}</div></div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>{[{label:"Critical Gaps",val:colored.filter(w=>w.s<40).length,color:C.red},{label:"Needs Work",val:colored.filter(w=>w.s>=40&&w.s<70).length,color:C.gold},{label:"Strong Areas",val:colored.filter(w=>w.s>=70).length,color:C.green}].map(s=><Card key={s.label} glow={s.color}><div className="t-label" style={{color:C.muted,marginBottom:6}}>{s.label}</div><div style={{color:s.color,fontSize:30,fontWeight:900}}>{s.val}</div></Card>)}</div>
       <Card animate>
         <div className="t-h3" style={{color:C.text,marginBottom:20}}>Competency Breakdown</div>
@@ -1422,10 +1422,10 @@ function WeaknessRadar({scanResult,memory,onFirstUse}){
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
               <span style={{color:C.text,fontSize:13,fontWeight:600}}>{w.l}</span>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <span style={{fontSize:10,color:C.muted,fontFamily:"'DM Mono',monospace"}}>
+                <span style={{fontSize:10,color:C.muted,fontFamily:"var(--font-mono)"}}>
                   {w.s<40?"Critical gap":w.s<70?"Needs work":"Strong"}
                 </span>
-                <span style={{color:w.color,fontSize:14,fontWeight:800,fontFamily:"'DM Mono',monospace",minWidth:36,textAlign:"right"}}>{w.s}%</span>
+                <span style={{color:w.color,fontSize:14,fontWeight:800,fontFamily:"var(--font-mono)",minWidth:36,textAlign:"right"}}>{w.s}%</span>
               </div>
             </div>
             <GlowBar score={w.s} color={w.color} delay={i*80} height={10} showLabel={false}/>
@@ -1463,7 +1463,7 @@ function ReadinessScore({scanResult}){
   const scores=[{label:"Resume Defense",score:Math.round(base*0.8),prev:42},{label:"Skill Mastery",score:Math.min(95,Math.round(base*0.9)),prev:60},{label:"Industry Knowledge",score:Math.min(97,base+15),prev:70},{label:"Communication",score:Math.round(base*0.75),prev:55},{label:"Interview Performance",score:Math.round(base*0.65),prev:38}];
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
-      <div><div className="t-h1" style={{color:C.text}}>Interview Readiness Score</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body,'DM Mono',monospace)"}}>{scanResult?"✅ Based on your resume scan.":"Scan resume for a real score."}</div></div>
+      <div><div className="t-h1" style={{color:C.text}}>Interview Readiness Score</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>{scanResult?"✅ Based on your resume scan.":"Scan resume for a real score."}</div></div>
       <Card glow={C.accent} style={{textAlign:"center",padding:36}} animate>
         <div style={{color:C.muted,fontSize:11,textTransform:"uppercase",letterSpacing:2,marginBottom:12}}>Overall Readiness</div>
         <AnimatedScore value={overall} color={C.accent} size="large"/>
@@ -1476,9 +1476,9 @@ function ReadinessScore({scanResult}){
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
               <span style={{color:C.text,fontSize:13,fontWeight:600}}>{s.label}</span>
               <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                <span style={{color:C.muted,fontSize:10,fontFamily:"'DM Mono',monospace"}}>was {s.prev}</span>
-                <span style={{color:C.green,fontSize:11,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>+{s.score-s.prev}</span>
-                <span style={{color:s.score>=80?C.green:s.score>=60?C.gold:C.red,fontSize:13,fontWeight:800,fontFamily:"'DM Mono',monospace",minWidth:36,textAlign:"right"}}>{s.score}%</span>
+                <span style={{color:C.muted,fontSize:10,fontFamily:"var(--font-mono)"}}>was {s.prev}</span>
+                <span style={{color:C.green,fontSize:11,fontWeight:700,fontFamily:"var(--font-mono)"}}>+{s.score-s.prev}</span>
+                <span style={{color:s.score>=80?C.green:s.score>=60?C.gold:C.red,fontSize:13,fontWeight:800,fontFamily:"var(--font-mono)",minWidth:36,textAlign:"right"}}>{s.score}%</span>
               </div>
             </div>
             <GlowBar score={s.score} color={s.score>=80?C.green:s.score>=60?C.gold:C.red} delay={i*100} height={10}/>
@@ -1495,7 +1495,7 @@ function MarketIntel({form}){
   const [sel,setSel]=useState(()=>{const i=markets.findIndex(m=>m.region.toLowerCase().includes(form.market.toLowerCase().slice(0,4)));return i>=0?i:0;});
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
-      <div><div className="t-h1" style={{color:C.text}}>Market Intelligence</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body,'DM Mono',monospace)"}}>Hiring norms differ radically by region.</div></div>
+      <div><div className="t-h1" style={{color:C.text}}>Market Intelligence</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>Hiring norms differ radically by region.</div></div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>{markets.map((m,i)=><div key={i} onClick={()=>setSel(i)} style={{background:sel===i?C.accentGlow:C.card,border:`1px solid ${sel===i?C.accent:C.border}`,borderRadius:10,padding:"14px 16px",cursor:"pointer",transition:"all 0.2s"}}><div style={{color:C.text,fontWeight:700,fontSize:14,marginBottom:6}}>{m.region}</div><Badge label={m.tag} color={C.accent}/></div>)}</div>
       <Card glow={C.accent}><div style={{color:C.accent,fontWeight:800,fontSize:15,marginBottom:10}}>{markets[sel].region}</div><div style={{color:C.text,fontSize:14,lineHeight:1.8,marginBottom:16}}>{markets[sel].insight}</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>{[["Interview Rounds",["3–5","5–8","3–4","2–4"][sel]],["Decision Speed",["2–3 weeks","2–6 weeks","4–8 weeks","1–3 weeks"][sel]],["Negotiation",["Expected","Aggressive","Moderate","Flexible"][sel]],["Top Signal",["Culture fit","Metrics","Process","Async skills"][sel]]].map(([k,v])=><div key={k} style={{background:C.surface,borderRadius:8,padding:"10px 12px"}}><div style={{color:C.muted,fontSize:10,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>{k}</div><div style={{color:C.text,fontSize:13,fontWeight:700}}>{v}</div></div>)}</div></Card>
     </div>
@@ -1722,7 +1722,7 @@ Generate comprehensive job search intelligence. Return ONLY raw JSON:
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div>
           <div className="t-h1" style={{color:C.text}}>Job Search Engine</div>
-          <div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body,'DM Mono',monospace)"}}>Find live jobs across 20+ platforms. AI suggests smarter searches, salary data, and which companies are hiring now.</div>
+          <div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>Find live jobs across 20+ platforms. AI suggests smarter searches, salary data, and which companies are hiring now.</div>
         </div>
       </div>
 
@@ -2246,7 +2246,7 @@ Return ONLY raw JSON:
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div>
           <div className="t-h1" style={{color:C.text}}>🧬 AI Memory Dashboard</div>
-          <div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body,'DM Mono',monospace)"}}>Your personalized career intelligence — built from {totalActivity} activity events across all sessions.</div>
+          <div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>Your personalized career intelligence — built from {totalActivity} activity events across all sessions.</div>
         </div>
         <div style={{display:"flex",gap:8}}>
           <Btn onClick={getPersonalizedPlan} disabled={loadingSummary||totalActivity<2} color={C.purple} style={{width:"auto",padding:"8px 16px",fontSize:12}}>
@@ -2462,34 +2462,43 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
         onSuccess(session);
       } else {
         // ── Sign Up via Supabase ───────────────────────────────────────────
-        const data = await sb.signUp(email.trim().toLowerCase(), pw, name.trim());
-        if (data.user && !data.session) {
+        const signupData = await sb.signUp(email.trim().toLowerCase(), pw, name.trim());
+        let sessionData = signupData.session;
+        if (!sessionData && signupData.user) {
+          // Attempt immediate sign-in if signUp didn't provide a session
+          try {
+            sessionData = await sb.signIn(email.trim().toLowerCase(), pw);
+          } catch (e) { /* signIn fails if confirmation is required; that's fine, we'll show verifyMsg */ }
+        }
+
+        if (!sessionData && signupData.user) {
           // Email confirmation required
           setVerifyMsg("✅ Account created! Check your email and click the confirmation link, then sign in.");
           setLoading(false); return;
         }
-        if (data.session) {
-          // Auto-confirmed (email confirm disabled in Supabase settings)
+
+        if (sessionData) {
+          // Auto-confirmed or immediate signIn worked
           const session = {
-            email: data?.user?.email || email.trim().toLowerCase(),
+            email: signupData?.user?.email || email.trim().toLowerCase(),
             name: name.trim(),
-            joinedAt: data?.user?.created_at || new Date().toISOString(),
+            joinedAt: signupData?.user?.created_at || new Date().toISOString(),
             avatar: name.trim()[0].toUpperCase(),
-            id: data?.user?.id,
-            token: data?.session?.access_token,
+            id: signupData?.user?.id,
+            token: sessionData?.access_token,
             isPro: false,
           };
-          saveToken(data.session.access_token);
+          saveToken(sessionData.access_token);
           saveSessionLocal(session);
           // Save profile to DB
           try {
             await sb.insert("profiles", {
-              id: data.user.id,
-              email: data.user.email,
+              id: signupData.user.id,
+              email: signupData.user.email,
               full_name: name.trim(),
-              joined_at: data.user.created_at,
+              joined_at: signupData.user.created_at,
               is_pro: false,
-            }, data.session.access_token);
+            }, sessionData.access_token);
           } catch {}
           onSuccess(session);
         }
@@ -2512,7 +2521,7 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
 
           <div style={{ textAlign:"center", marginBottom:24 }}>
             <div style={{ fontSize:32, marginBottom:8 }}>🎯</div>
-            <div style={{ fontFamily:"'Syne',sans-serif", fontWeight:900, fontSize:20, color:C.text }}>
+            <div style={{ fontFamily:"var(--font-display)", fontWeight:900, fontSize:20, color:C.text }}>
               CareerAi<span style={{ color:C.accent }}>Hub</span>
             </div>
             <div style={{ color:C.muted, fontSize:12, marginTop:4 }}>
@@ -2659,7 +2668,7 @@ function PricingModal({ onClose, onSignup }) {
         {/* Header */}
         <div style={{padding:"22px 28px 0",display:"flex",alignItems:"flex-start",justifyContent:"space-between"}}>
           <div>
-            <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:20,color:"#E8F0FE",letterSpacing:"-0.3px",marginBottom:4}}>Simple, honest pricing</div>
+            <div style={{fontFamily:"var(--font-display)",fontWeight:800,fontSize:20,color:"#E8F0FE",letterSpacing:"-0.3px",marginBottom:4}}>Simple, honest pricing</div>
             <div style={{fontSize:12,color:"#6B7E9F",lineHeight:1.5}}>Pay only for what you use. Free forever for core features.</div>
           </div>
           <button onClick={onClose} style={{background:"transparent",border:"1px solid #1E2D45",color:"#6B7E9F",borderRadius:7,padding:"5px 11px",fontSize:13,cursor:"pointer",fontFamily:"inherit",flexShrink:0,marginLeft:16}}>✕</button>
@@ -2689,7 +2698,7 @@ function PricingModal({ onClose, onSignup }) {
           {/* Free */}
           <div style={{background:"#131B2A",border:"1px solid #1E2D45",borderRadius:14,padding:"20px 16px"}}>
             <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"#6B7E9F",marginBottom:10}}>Free</div>
-            <div style={{fontFamily:"'Syne',sans-serif",fontSize:30,fontWeight:900,color:"#E8F0FE",lineHeight:1,marginBottom:3}}>$0</div>
+            <div style={{fontFamily:"var(--font-display)",fontSize:30,fontWeight:900,color:"#E8F0FE",lineHeight:1,marginBottom:3}}>$0</div>
             <div style={{fontSize:11,color:"#6B7E9F",marginBottom:16}}>forever</div>
             <div style={{height:1,background:"#1E2D45",marginBottom:14}}/>
             {[
@@ -2713,7 +2722,7 @@ function PricingModal({ onClose, onSignup }) {
           <div style={{background:"linear-gradient(135deg,rgba(0,212,255,0.06),rgba(0,150,204,0.03))",border:"1px solid rgba(0,212,255,0.35)",borderRadius:14,padding:"20px 16px",position:"relative"}}>
             <div style={{position:"absolute",top:-10,left:"50%",transform:"translateX(-50%)",background:"linear-gradient(135deg,#00D4FF,#0096CC)",color:"#000",borderRadius:100,padding:"2px 12px",fontSize:9,fontWeight:700,letterSpacing:"0.06em",whiteSpace:"nowrap"}}>Most popular</div>
             <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"#00D4FF",marginBottom:10}}>Pro</div>
-            <div style={{fontFamily:"'Syne',sans-serif",fontSize:30,fontWeight:900,color:"#00D4FF",lineHeight:1,marginBottom:3}}>$19</div>
+            <div style={{fontFamily:"var(--font-display)",fontSize:30,fontWeight:900,color:"#00D4FF",lineHeight:1,marginBottom:3}}>$19</div>
             <div style={{fontSize:11,color:"#6B7E9F",marginBottom:16}}>per month · cancel anytime</div>
             <div style={{height:1,background:"rgba(0,212,255,0.2)",marginBottom:14}}/>
             {[
@@ -2740,7 +2749,7 @@ function PricingModal({ onClose, onSignup }) {
           {/* Interview Pack */}
           <div style={{background:"#131B2A",border:"1px solid rgba(255,184,0,0.25)",borderRadius:14,padding:"20px 16px"}}>
             <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"#FFB800",marginBottom:10}}>Interview Pack</div>
-            <div style={{fontFamily:"'Syne',sans-serif",fontSize:30,fontWeight:900,color:"#FFB800",lineHeight:1,marginBottom:3}}>$29</div>
+            <div style={{fontFamily:"var(--font-display)",fontSize:30,fontWeight:900,color:"#FFB800",lineHeight:1,marginBottom:3}}>$29</div>
             <div style={{fontSize:11,color:"#6B7E9F",marginBottom:16}}>one-time · no subscription</div>
             <div style={{height:1,background:"rgba(255,184,0,0.2)",marginBottom:14}}/>
             {[
@@ -2774,7 +2783,7 @@ function PricingModal({ onClose, onSignup }) {
             ].map((s,i)=>(
               <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid rgba(0,232,143,0.08)"}}>
                 <span style={{fontSize:10,color:"#6B7E9F"}}>{s.label}</span>
-                <span style={{fontSize:12,color:s.color,fontWeight:700,fontFamily:"'Syne',sans-serif"}}>{s.val}</span>
+                <span style={{fontSize:12,color:s.color,fontWeight:700,fontFamily:"var(--font-display)"}}>{s.val}</span>
               </div>
             ))}
           </div>
@@ -2887,7 +2896,7 @@ function ProUpgradeModal({ reason, onClose, onSignup }) {
 
           {/* Headline */}
           <div style={{fontSize:22,marginBottom:6}}>{cfg.icon}</div>
-          <div style={{color:C.text,fontWeight:900,fontSize:20,marginBottom:8,lineHeight:1.2,fontFamily:"'Syne',sans-serif"}}>{cfg.headline}</div>
+          <div style={{color:C.text,fontWeight:900,fontSize:20,marginBottom:8,lineHeight:1.2,fontFamily:"var(--font-display)"}}>{cfg.headline}</div>
           <div style={{color:C.muted,fontSize:13,lineHeight:1.7,marginBottom:20}}>{cfg.subhead}</div>
 
           {/* Feature list */}
@@ -3100,6 +3109,8 @@ function App(){
     setUser(session);
     setAuthModal(null);
     setSetupDone(true); // Redirect to main app if coming from onboarding/signup
+    // Ensure they land on a meaningful main page (Jobs module)
+    if (activeModule === "search") setActiveModule("jobs");
     // Load memory from Supabase DB first, fallback to localStorage
     let mem = null;
     if (session.id && session.token) {
@@ -3166,17 +3177,17 @@ function App(){
   };
 
   const css=`
-    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800;900&family=JetBrains+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap');
 
     /* ── Design tokens ─────────────────────────────────── */
     :root {
       --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
       --space-5:20px; --space-6:24px; --space-8:32px; --space-10:40px; --space-12:48px;
       --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-xl:20px; --radius-full:9999px;
-      --font-display:'Syne',sans-serif;
+      --font-display:'Outfit',sans-serif;
       --font-serif:'Instrument Serif',serif;
-      --font-body:'DM Sans',sans-serif;
-      --font-mono:'DM Mono','Fira Code',monospace;
+      --font-body:'Inter',sans-serif;
+      --font-mono:'JetBrains Mono',monospace;
       --transition-fast:all 0.12s ease;
       --transition-base:all 0.2s ease;
       --transition-slow:all 0.35s ease;
@@ -3189,17 +3200,17 @@ function App(){
     ::-webkit-scrollbar-thumb{background:${C.border};border-radius:4px}
 
     /* ── Typography scale ──────────────────────────────── */
-    .t-display{font-family:var(--font-serif);font-size:36px;font-weight:400;letter-spacing:-0.5px;line-height:1.1;font-style:italic}
-    .t-h1{font-family:var(--font-display);font-size:22px;font-weight:800;line-height:1.25;letter-spacing:-0.3px}
-    .t-h2{font-family:var(--font-body);font-size:17px;font-weight:600;line-height:1.3}
-    .t-h3{font-family:var(--font-body);font-size:14px;font-weight:600;line-height:1.4}
+    .t-display{font-family:var(--font-display);font-size:36px;font-weight:900;letter-spacing:-1px;line-height:1.1}
+    .t-h1{font-family:var(--font-display);font-size:24px;font-weight:900;line-height:1.25;letter-spacing:-0.5px}
+    .t-h2{font-family:var(--font-display);font-size:18px;font-weight:800;line-height:1.3;letter-spacing:-0.2px}
+    .t-h3{font-family:var(--font-body);font-size:15px;font-weight:700;line-height:1.4}
     .t-body{font-family:var(--font-body);font-size:13px;font-weight:400;line-height:1.7}
     .t-small{font-family:var(--font-body);font-size:12px;font-weight:400;line-height:1.5}
     .t-caption{font-family:var(--font-body);font-size:11px;font-weight:400;line-height:1.4;letter-spacing:0.02em}
-    .t-label{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase}
+    .t-label{font-family:var(--font-body);font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase}
     .t-serif{font-family:var(--font-serif);font-weight:400;font-style:italic}
-    .t-score{font-family:var(--font-display);font-size:80px;font-weight:900;line-height:1;letter-spacing:-2px}
-    .t-score-sm{font-family:var(--font-display);font-size:52px;font-weight:900;line-height:1;letter-spacing:-1px}
+    .t-score{font-family:var(--font-display);font-size:80px;font-weight:900;line-height:1;letter-spacing:-3px}
+    .t-score-sm{font-family:var(--font-display);font-size:52px;font-weight:900;line-height:1;letter-spacing:-2px}
     .t-mono{font-family:var(--font-mono);font-size:12px}
 
     /* ── Button system ─────────────────────────────────── */
@@ -3295,17 +3306,17 @@ function App(){
     .cmd-box{background:#0F1520;border:1px solid #1E2D45;border-radius:16px;width:100%;max-width:560px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.8);animation:fadeInScale 0.2s ease}
     .cmd-input-wrap{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #1E2D45}
     .cmd-icon{color:#6B7E9F;font-size:16px;flex-shrink:0}
-    .cmd-input{flex:1;background:transparent;border:none;outline:none;color:#E8F0FE;font-family:'DM Mono','Fira Code',monospace;font-size:15px}
+    .cmd-input{flex:1;background:transparent;border:none;outline:none;color:#E8F0FE;font-family:var(--font-mono);font-size:15px}
     .cmd-input::placeholder{color:#6B7E9F}
-    .cmd-hint{font-size:10px;color:#6B7E9F;font-family:'DM Mono','Fira Code',monospace;background:#131B2A;padding:2px 7px;border-radius:4px;flex-shrink:0}
+    .cmd-hint{font-size:10px;color:#6B7E9F;font-family:var(--font-mono);background:#131B2A;padding:2px 7px;border-radius:4px;flex-shrink:0}
     .cmd-results{max-height:320px;overflow-y:auto;padding:8px}
-    .cmd-section{font-size:10px;color:#6B7E9F;letter-spacing:.1em;text-transform:uppercase;padding:8px 12px 4px;font-family:'DM Mono','Fira Code',monospace}
+    .cmd-section{font-size:10px;color:#6B7E9F;letter-spacing:.1em;text-transform:uppercase;padding:8px 12px 4px;font-family:var(--font-mono)}
     .cmd-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background 0.1s}
     .cmd-item:hover,.cmd-item.selected{background:#131B2A}
     .cmd-item-icon{font-size:16px;width:24px;text-align:center;flex-shrink:0}
-    .cmd-item-label{font-size:13px;color:#E8F0FE;flex:1;font-family:'DM Sans','DM Mono',monospace}
-    .cmd-item-hint{font-size:10px;color:#6B7E9F;font-family:'DM Mono','Fira Code',monospace}
-    .cmd-footer{padding:10px 20px;border-top:1px solid #1E2D45;display:flex;gap:16px;font-size:10px;color:#6B7E9F;font-family:'DM Mono','Fira Code',monospace}
+    .cmd-item-label{font-size:13px;color:#E8F0FE;flex:1;font-family:var(--font-body);}
+    .cmd-item-hint{font-size:10px;color:#6B7E9F;font-family:var(--font-mono)}
+    .cmd-footer{padding:10px 20px;border-top:1px solid #1E2D45;display:flex;gap:16px;font-size:10px;color:#6B7E9F;font-family:var(--font-mono)}
     .cmd-key{background:#131B2A;border:1px solid #1E2D45;border-radius:3px;padding:1px 5px}
 
     /* ── Animated radar bar ────────────────────────────── */
@@ -3324,7 +3335,7 @@ function App(){
     }
 
     /* ── Header brand upgrade ──────────────────────────── */
-    .brand-name{font-family:'Instrument Serif',serif;font-size:20px;font-weight:400;letter-spacing:-0.3px}
+    .brand-name{font-family:var(--font-display);font-size:20px;font-weight:400;letter-spacing:-0.3px}
     .brand-dot{width:8px;height:8px;border-radius:50%;animation:pulse 2s ease infinite;flex-shrink:0;margin-top:2px}
 
     /* ── Module nav scrollbar hide ─────────────────────── */
@@ -3424,7 +3435,7 @@ function App(){
 
   // ── Setup / Onboarding screen ───────────────────────────────────────────────
   if(!setupDone) return(
-    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Mono','Fira Code',monospace",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 16px",position:"relative",overflow:"hidden"}}>
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"var(--font-body)",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 16px",position:"relative",overflow:"hidden"}}>
       <style>{css}</style>
       <style>{`
         .setup-input{width:100%;background:${C.surface};border:1px solid ${C.border};border-radius:8px;color:${C.text};font-size:13px;padding:11px 14px;font-family:inherit;box-sizing:border-box;transition:all 0.2s;outline:none}
@@ -3465,7 +3476,7 @@ function App(){
           <div style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:12}}>
             <div style={{width:8,height:8,borderRadius:"50%",background:C.accent,boxShadow:`0 0 10px ${C.accent}`,animation:"pulse 2s ease infinite",flexShrink:0}}/>
             <span style={{
-              fontFamily:"'Syne',sans-serif",fontWeight:900,fontSize:22,letterSpacing:"-0.5px",
+              fontFamily:"var(--font-display)",fontWeight:900,fontSize:22,letterSpacing:"-0.5px",
               background:`linear-gradient(135deg, ${C.accent} 0%, #7B61FF 50%, ${C.pink} 100%)`,
               WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",
               backgroundClip:"text",
@@ -3498,7 +3509,7 @@ function App(){
         {/* ═══ SECTION 2: The Form Card ═══ */}
         <div style={{background:C.card,border:`1px solid ${C.accent}44`,borderRadius:14,padding:28,boxShadow:`0 0 40px ${C.accent}0D`,marginBottom:28}}>
           <div style={{marginBottom:20}}>
-            <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:16,color:C.text,marginBottom:4,letterSpacing:"-0.2px"}}>Build your personalized system</div>
+            <div style={{fontFamily:"var(--font-display)",fontWeight:800,fontSize:16,color:C.text,marginBottom:4,letterSpacing:"-0.2px"}}>Build your personalized system</div>
             <div style={{fontSize:12,color:C.muted}}>Takes 30 seconds. Powers every AI feature.</div>
           </div>
 
@@ -3541,7 +3552,7 @@ function App(){
             {stat:"3.2×", label:"higher return rate when AI memory tracks your progress",  color:C.green},
           ].map((p,i)=>(
             <div key={i} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 12px",textAlign:"center"}}>
-              <div style={{fontFamily:"'Syne',sans-serif",fontWeight:900,fontSize:24,color:p.color,lineHeight:1,marginBottom:6}}>{p.stat}</div>
+              <div style={{fontFamily:"var(--font-display)",fontWeight:900,fontSize:24,color:p.color,lineHeight:1,marginBottom:6}}>{p.stat}</div>
               <div style={{color:C.muted,fontSize:10,lineHeight:1.45}}>{p.label}</div>
             </div>
           ))}
@@ -3790,7 +3801,7 @@ function App(){
   );
 
   return(
-    <div data-theme={darkMode?"dark":"light"} style={{minHeight:"100vh",background:darkMode?C.bg:"#F8FAFC",fontFamily:"'DM Mono','Fira Code',monospace",color:darkMode?C.text:"#0F172A"}}>
+    <div data-theme={darkMode?"dark":"light"} style={{minHeight:"100vh",background:darkMode?C.bg:"#F8FAFC",fontFamily:"var(--font-body)",color:darkMode?C.text:"#0F172A"}}>
       <style>{css}</style>
 
       {/* Auth Modal overlay */}
@@ -3804,7 +3815,7 @@ function App(){
             {/* Logo */}
             <div style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",flexShrink:0}} onClick={()=>setSetupDone(false)}>
               <div style={{width:8,height:8,borderRadius:"50%",background:C.accent,boxShadow:`0 0 8px ${C.accent}`,animation:"pulse 2s ease infinite",flexShrink:0}}/>
-              <span style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:16,letterSpacing:"-0.3px",color:darkMode?C.text:"#0F172A"}}>CareerAiHub</span>
+              <span style={{fontFamily:"var(--font-display)",fontWeight:800,fontSize:16,letterSpacing:"-0.3px",color:darkMode?C.text:"#0F172A"}}>CareerAiHub</span>
             </div>
 
             {/* Right side — badges + auth */}
@@ -3889,7 +3900,7 @@ function LandingSections({ setAuthModal, setShowPricing, setSetupDone, setActive
             {stat:"3.2×", label:"higher return rate when AI memory tracks your progress",  color:C.green},
           ].map((p,i)=>(
             <div key={i} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 12px",textAlign:"center"}}>
-              <div style={{fontFamily:"'Syne',sans-serif",fontWeight:900,fontSize:24,color:p.color,lineHeight:1,marginBottom:6}}>{p.stat}</div>
+              <div style={{fontFamily:"var(--font-display)",fontWeight:900,fontSize:24,color:p.color,lineHeight:1,marginBottom:6}}>{p.stat}</div>
               <div style={{color:C.muted,fontSize:10,lineHeight:1.45}}>{p.label}</div>
             </div>
           ))}
