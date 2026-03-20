@@ -372,9 +372,10 @@ async function callLLM(messages, maxTokens=2000, moduleId="default", modelOverri
       default:        return await callClaude(messages, maxTokens, model);
     }
   } catch (e) {
-    // Implement specified fallbacks: gemini-3-flash-preview for Claude and ChatGPT models
-    if (provider === "claude" || provider === "openai") {
-      console.warn(`[LLM] ${provider} failed, falling back to Gemini Flash... error:`, e.message);
+    // Universal fallback: retry any failed call with Gemini 3 Flash Preview
+    // (unless the original model was already Gemini Flash, in which case we throw)
+    if (model !== MODELS.gemini_flash) {
+      console.warn(`[LLM] ${model} failed, falling back to Gemini Flash... error:`, e.message);
       return await callGemini(messages, maxTokens, MODELS.gemini_flash);
     }
     throw e;
