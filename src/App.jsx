@@ -190,9 +190,9 @@ const MODELS = {
   gpt4_turbo     : "gpt-4-turbo",                  // $10/$30 per 1M — legacy
 
   // Google Gemini ──────────────────────────────────────────────────
-  gemini_pro     : "gemini-1.5-pro",               // $1.25/$5 per 1M — solid quality
-  gemini_flash   : "gemini-3-flash",             // Latest stable flash model
-  gemini_flash8b : "gemini-1.5-flash-8b",          // $0.0375/$0.15 per 1M — ultra budget
+  gemini_pro     : "gemini-3.1-pro-preview",       // Current top-tier Pro preview
+  gemini_flash   : "gemini-3-flash-preview",       // Use -preview for the 3-series Flash
+  gemini_flash8b : "gemini-2.5-flash-lite",        // Use 2.5-flash-lite for stable budget needs
 };
 
 // ── PER-MODULE MODEL ROUTING ──────────────────────────────────────────────────
@@ -364,11 +364,20 @@ async function callLLM(messages, maxTokens=2000, moduleId="default", modelOverri
 
   console.log(`[LLM] module=${moduleId} provider=${provider} model=${model}`);
 
-  switch (provider) {
-    case "openai":  return callOpenAI(messages, maxTokens, model);
-    case "gemini":  return callGemini(messages, maxTokens, model);
-    case "claude":
-    default:        return callClaude(messages, maxTokens, model);
+  try {
+    switch (provider) {
+      case "openai":  return await callOpenAI(messages, maxTokens, model);
+      case "gemini":  return await callGemini(messages, maxTokens, model);
+      case "claude":
+      default:        return await callClaude(messages, maxTokens, model);
+    }
+  } catch (e) {
+    // Implement specified fallbacks: gemini-3-flash-preview for Claude and ChatGPT models
+    if (provider === "claude" || provider === "openai") {
+      console.warn(`[LLM] ${provider} failed, falling back to Gemini Flash... error:`, e.message);
+      return await callGemini(messages, maxTokens, MODELS.gemini_flash);
+    }
+    throw e;
   }
 }
 
