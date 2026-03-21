@@ -471,12 +471,30 @@ async function saveMemoryToDB(userId, token, mem) {
   } catch(e) { console.warn("Memory save failed:", e.message); }
 }
 
-// Legacy local fallback (for guests)
-function loadMemory(uid) {
-  try { return JSON.parse(localStorage.getItem(`djai_mem_${uid}`) || "null"); } catch { return null; }
-}
 function saveMemory(uid, mem) {
-  try { localStorage.setItem(`djai_mem_${uid}`, JSON.stringify(mem)); } catch {}
+  const key = uid ? `djai_mem_${uid}` : "djai_mem_guest";
+  try { localStorage.setItem(key, JSON.stringify(mem)); } catch {}
+}
+
+function loadMemory(uid) {
+  const key = uid ? `djai_mem_${uid}` : "djai_mem_guest";
+  try { return JSON.parse(localStorage.getItem(key) || "null"); } catch { return null; }
+}
+
+function mergeMemory(target, source) {
+  if (!source) return target;
+  return {
+    ...target,
+    scanHistory: [...(target.scanHistory || []), ...(source.scanHistory || [])].slice(-10),
+    starBank: [...(target.starBank || []), ...(source.starBank || [])].slice(-20),
+    mockSessions: [...(target.mockSessions || []), ...(source.mockSessions || [])].slice(-20),
+    applications: [...(target.applications || []), ...(source.applications || [])].slice(-50),
+    rejections: [...(target.rejections || []), ...(source.rejections || [])].slice(-20),
+    negotiationPractice: (target.negotiationPractice || 0) + (source.negotiationPractice || 0),
+    coverLetters: [...(target.coverLetters || []), ...(source.coverLetters || [])].slice(-20),
+    jdAnalyses: [...(target.jdAnalyses || []), ...(source.jdAnalyses || [])].slice(-20),
+    insights: [...(target.insights || []), ...(source.insights || [])].slice(-10),
+  };
 }
 
 function initMemory() {
@@ -1020,6 +1038,13 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
     setScanning(true); setScanResult(null); setProgress(0); setFileErr("");
     if (onFirstUse) onFirstUse();
     
+    // Gating check
+    const isUsed = (memory?.scanHistory?.length || 0) > 0;
+    if (isUsed && window._setProModal) {
+      window._setProModal("limit");
+      return;
+    }
+    
     let s=0;
     const iv = setInterval(() => {
       s++;
@@ -1157,9 +1182,9 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
               {s.content}
             </Card>)}
           </div>
-          {memory?.scanHistory?.length > 1 && (
+          {memory?.scanHistory?.length > 0 && (
             <Card glow={C.gold}>
-              <div style={{color:C.gold,fontWeight:700,fontSize:13,marginBottom:10}}>📈 Your Scan History ({memory.scanHistory.length} scans)</div>
+              <div style={{color:C.gold,fontWeight:700,fontSize:13,marginBottom:10}}>📈 Your Scan History ({memory.scanHistory.length} scan{memory.scanHistory.length!==1?"s":""})</div>
               <div style={{display:"flex",gap:6,alignItems:"flex-end",height:48,marginBottom:8}}>
                 {memory.scanHistory.slice(-8).map((s,i)=>{
                   const h=Math.max(8,Math.round((s.score/100)*48));
@@ -1201,6 +1226,13 @@ function JDAnalyzer({resumeText,form,memory,updateMemory}){
   const [jd,setJd]=useState(""); const [result,setResult]=useState(null); const [loading,setLoading]=useState(false); const [err,setErr]=useState("");
   const analyze=async()=>{
     if(jd.trim().length<50){setErr("Paste a full job description first.");return;}
+    
+    // Gating check
+    if ((memory?.jdAnalyses?.length || 0) > 0 && window._setProModal) {
+      window._setProModal("limit");
+      return;
+    }
+    
     setLoading(true);setResult(null);setErr("");
     const ctx=resumeText?.content?`\nCANDIDATE RESUME:\n${resumeText.content.slice(0,1800)}`:`\nCandidate: ${form.level} ${form.role} in ${form.industry}`;
     try{
@@ -1251,7 +1283,15 @@ function STARBuilder({resumeText,form,memory,updateMemory}){
   const [S,setS]=useState(""); const [T,setT]=useState(""); const [A,setA]=useState(""); const [R,setR]=useState("");
   const [refined,setRefined]=useState(null); const [loading,setLoading]=useState(false); const [bank,setBank]=useState([]);
   const refine=async()=>{
-    if(!S||!T||!A||!R)return; setLoading(true); setRefined(null);
+    if(!S||!T||!A||!R)return; 
+    
+    // Gating check
+    if ((memory?.starBank?.length || 0) > 0 && window._setProModal) {
+      window._setProModal("limit");
+      return;
+    }
+    
+    setLoading(true); setRefined(null);
     const ctx=resumeText?.content?`Resume: ${resumeText.content.slice(0,600)}`:`${form.level} ${form.role}`;
     try{const raw=await callLLM([{role:"user",content:`Expert interview coach. Refine STAR story for ${form.level} ${form.role}, ${form.market}.\n${ctx}\nSituation:${S}\nTask:${T}\nAction:${A}\nResult:${R}\nReturn ONLY raw JSON:\n{"score":0-100,"refined":{"situation":"...","task":"...","action":"3-4 bullet points","result":"quantified result"},"strengths":"...","improvements":"...","bestUsedFor":["q1","q2","q3"],"oneLiner":"punchy 1-sentence version"}`}],1500,"star");
     const p=extractJSON(raw);setRefined(p);
@@ -1310,10 +1350,20 @@ function HiringManagerSim({resumeText,scanResult,form,memory,updateMemory,onProT
   const pickMode=m=>{setMode(m);loadQuestions(m,qType);};
   const changeType=t=>{setQType(t);if(mode)loadQuestions(mode,t);};
   const getFeedback=async()=>{
-    if(!answer.trim()||!questions[qi])return;setLoadFB(true);setFeedback(null);
+    if(!answer.trim()||!questions[qi])return;
+    
+    // Gating check
+    if ((memory?.mockSessions?.length || 0) > 0 && window._setProModal) {
+      window._setProModal("limit");
+      return;
+    }
+    
+    setLoadFB(true);setFeedback(null);
     const ml=modes.find(x=>x.id===mode)?.label;
-    try{const raw=await callLLM([{role:"user",content:`${ml} hiring manager, ${form.level} ${form.role}, ${form.market}.${ctx}\nQ:"${questions[qi].question}"\nA:"${answer}"\nEvaluate harshly. Call out resume inconsistencies.\nReturn ONLY raw JSON:\n{"score":0-100,"verdict":"Strong|Acceptable|Weak|Critical Gap","whatWorked":"...","whatMissed":"...","starGap":"...","resumeDisconnect":"mismatch or Consistent","rewriteTip":"...","followUp":"..."}`}],1000,"simulate");setFeedback(extractJSON(raw));}
-    catch(e){setFeedback({score:0,verdict:"Error",whatWorked:"N/A",whatMissed:e.message,starGap:"N/A",resumeDisconnect:"N/A",rewriteTip:"Try again.",followUp:"N/A"});}
+    try{const raw=await callLLM([{role:"user",content:`${ml} hiring manager, ${form.level} ${form.role}, ${form.market}.${ctx}\nQ:"${questions[qi].question}"\nA:"${answer}"\nEvaluate harshly. Call out resume inconsistencies.\nReturn ONLY raw JSON:\n{"score":0-100,"verdict":"Strong|Acceptable|Weak|Critical Gap","whatWorked":"...","whatMissed":"...","starGap":"...","resumeDisconnect":"mismatch or Consistent","rewriteTip":"...","followUp":"..."}`}],1000,"simulate");
+    const p=extractJSON(raw); setFeedback(p);
+    if(updateMemory && !p.error) updateMemory(m=>({mockSessions:[{date:new Date().toISOString(),mode:modes.find(x=>x.id===mode)?.label,questionsCount:questions.length,avgScore:p.score},...(m.mockSessions||[])].slice(-20)}));
+    } catch(e){setFeedback({score:0,verdict:"Error",whatWorked:"N/A",whatMissed:e.message,starGap:"N/A",resumeDisconnect:"N/A",rewriteTip:"Try again.",followUp:"N/A"});}
     setLoadFB(false);
   };
   const ac=mc[mode]||C.accent;
@@ -1345,14 +1395,30 @@ function SalaryCoach({resumeText,form,memory,updateMemory,onProTrigger}){
   const stages=[{id:"received_offer",label:"Got an Offer",icon:"📩"},{id:"pre_interview",label:"Before Interviews",icon:"🎯"},{id:"negotiating",label:"Mid-Negotiation",icon:"🤝"},{id:"counter_offer",label:"Counter Offer",icon:"⚡"}];
   const ctx=resumeText?.content?resumeText.content.slice(0,600):`${form.level} ${form.role}`;
   const analyze=async()=>{
-    if(!offer.trim())return;setLoading(true);setResult(null);
+    if(!offer.trim())return;
+    
+    // Gating check
+    if ((memory?.negotiationPractice || 0) > 0 && window._setProModal) {
+      window._setProModal("limit");
+      return;
+    }
+    
+    setLoading(true);setResult(null);
     try{const raw=await callLLM([{role:"user",content:`Salary negotiation coach for ${form.market}.\nCandidate: ${form.level} ${form.role}, ${form.industry}\nOffer: ${offer}\nTarget: ${target||"not specified"}\nStage: ${stage}\nResume: ${ctx}\nReturn ONLY raw JSON:\n{"marketMin":"...","marketMid":"...","marketMax":"...","assessment":"...","negotiationRoom":"...","openingAsk":"...","tactics":["..."],"scripts":[{"label":"Opening","text":"..."},{"label":"Handling pushback","text":"..."},{"label":"Closing","text":"..."}],"leveragePoints":["..."],"redLines":["..."],"totalComp":"..."}`}],2000,"salary");const parsed=extractJSON(raw);
     setResult(parsed);
-    if(updateMemory) updateMemory(m=>({jdAnalyses:[{date:new Date().toISOString(),company:parsed.company,matchScore:parsed.matchScore,role:parsed.roleTitle},...(m.jdAnalyses||[])].slice(-20)}));}
+    if(updateMemory && !parsed.error) updateMemory(m=>({negotiationPractice: (m.negotiationPractice||0)+1 }));}
     catch(e){setResult({error:e.message});}setLoading(false);
   };
   const sendChat=async()=>{
-    if(!msg.trim())return;const nc=[...chat,{role:"user",content:msg}];setChat(nc);setMsg("");setChatLoad(true);
+    if(!msg.trim())return;
+    
+    // Gating check for roleplay chat
+    if ((memory?.negotiationPractice || 0) > 0 && window._setProModal) {
+       window._setProModal("limit");
+       return;
+    }
+
+    const nc=[...chat,{role:"user",content:msg}];setChat(nc);setMsg("");setChatLoad(true);
     try{const raw=await callLLM([{role:"user",content:`You are a hiring manager roleplay partner for ${form.level} ${form.role} in ${form.market}. Push back on salary asks realistically. After each exchange add brief coaching tip in [brackets].\n\nConversation:\n${nc.map(m=>`${m.role}: ${m.content}`).join("\n")}\n\nRespond as hiring manager:`}],800,"salary");setChat(p=>[...p,{role:"assistant",content:raw}]);}
     catch(e){setChat(p=>[...p,{role:"assistant",content:"Error: "+e.message}]);}setChatLoad(false);
   };
@@ -1400,11 +1466,16 @@ function CoverLetterGen({resumeText,form,memory,updateMemory}){
   const [result,setResult]=useState(null); const [loading,setLoading]=useState(false); const [copied,setCopied]=useState(false);
   const tones=[{id:"professional",label:"Professional",icon:"👔"},{id:"confident",label:"Confident",icon:"🔥"},{id:"storytelling",label:"Storytelling",icon:"📖"},{id:"concise",label:"Ultra-Concise",icon:"⚡"}];
   const generate=async()=>{
+    // Gating check
+    if ((memory?.coverLetters?.length || 0) > 0 && window._setProModal) {
+      window._setProModal("limit");
+      return;
+    }
     setLoading(true);setResult(null);
     const ctx=resumeText?.content?resumeText.content.slice(0,2000):`${form.level} ${form.role} professional`;
     try{const raw=await callLLM([{role:"user",content:`Expert cover letter writer. Write ${tone} cover letter.\nResume:\n${ctx}\nJob Description:\n${jd||`${form.level} ${form.role} in ${form.industry}, ${form.market}`}\nReturn ONLY raw JSON:\n{"subject":"email subject line","coverLetter":"full 3-4 paragraph letter, no placeholders, fully written","keySellingPoints":["..."],"customizationTips":["..."],"followUpScript":"exact follow-up email for day 5"}`}],2000,"cover");const parsed=extractJSON(raw);
     setResult(parsed);
-    if(updateMemory) updateMemory(m=>({jdAnalyses:[{date:new Date().toISOString(),company:parsed.company,matchScore:parsed.matchScore,role:parsed.roleTitle},...(m.jdAnalyses||[])].slice(-20)}));}
+    if(updateMemory && !parsed.error) updateMemory(m=>({coverLetters:[{date:new Date().toISOString(),company:parsed.company||"Company",tone},...(m.coverLetters||[])].slice(-20)}));}
     catch(e){setResult({error:e.message});}setLoading(false);
   };
   const copy=()=>{if(result?.coverLetter){navigator.clipboard.writeText(result.coverLetter);setCopied(true);showToast("✉️ Cover letter copied","success");setTimeout(()=>setCopied(false),2000);}};
@@ -2546,7 +2617,7 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
       <div style={{ width:"100%", maxWidth:420, animation:"fadeIn 0.3s ease" }}>
         <Card glow={C.accent} style={{ position:"relative" }}>
           {onClose && (
-            <button onClick={onClose} style={{ position:"absolute", top:16, right:16, background:"transparent", border:`1px solid ${C.border}`, color:C.muted, borderRadius:6, padding:"4px 10px", fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>✕ Close</button>
+            <button onClick={onClose} style={{ position:"absolute", top:12, right:12, background:"transparent", border:`1px solid ${C.border}`, color:C.muted, borderRadius:8, padding:"8px 14px", fontSize:13, cursor:"pointer", fontFamily:"inherit", zIndex:10 }}>✕ Close</button>
           )}
 
           <div style={{ textAlign:"center", marginBottom:24 }}>
@@ -2640,14 +2711,27 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
 
 // ── AuthGate — shown when a locked module is accessed without login ─────────
 function AuthGate({ moduleName, moduleIcon, onLogin, onRegister }) {
+  const descriptions = {
+    "Resume Scan": "This module uses your resume + career history to generate coaching that gets more personalised every session.",
+    "AI Memory": "Your personalized career intelligence dashboard, tracking your progress across all modules.",
+    "JD Analyzer": "AI-powered job description analysis to identify exactly how you match and where you should bridge gaps.",
+    "STAR Builder": "Transform your achievements into powerful STAR stories that interviewers love.",
+    "HM Simulator": "Practice with a realistic AI hiring manager and get brutal feedback on your answers.",
+    "Salary Coach": "Get market-driven negotiation strategies and scripts to maximize your compensation.",
+    "Cover Letter": "Generate high-converting, tailored cover letters from your real resume and a job description.",
+    "Weakness Radar": "Visualize your skill and resume gaps to prioritize your learning and career growth.",
+    "Readiness Score": "A quantified metric of your current market value and interview readiness."
+  };
+  const desc = descriptions[moduleName] || "Unlock the full potential of CareerAiHub with a free account. No credit card required.";
+
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16, alignItems:"center", paddingTop:40 }}>
       <div style={{ textAlign:"center", maxWidth:440 }}>
         <div style={{ fontSize:48, marginBottom:12 }}>{moduleIcon}</div>
         <div style={{ color:C.text, fontWeight:800, fontSize:20, marginBottom:8 }}>{moduleName}</div>
         <div style={{ color:C.muted, fontSize:14, lineHeight:1.7, marginBottom:24 }}>
-          This module uses your resume + career history to generate coaching<br/>
-          that gets more personalised every session. Free — no card needed.
+          {desc}<br/>
+          Free — 30 second setup.
         </div>
         <div style={{ display:"flex", gap:10, justifyContent:"center" }}>
           <button onClick={onRegister} style={{ background:`linear-gradient(135deg,${C.accent},#0096CC)`, color:"#000", border:"none", borderRadius:8, padding:"12px 24px", fontWeight:900, fontSize:14, cursor:"pointer", fontFamily:"inherit" }}>
@@ -2667,9 +2751,9 @@ function AuthGate({ moduleName, moduleIcon, onLogin, onRegister }) {
             {[
               { icon:"🔎", label:"Job Search (all boards)", access:"Always Free", color:C.green },
               { icon:"🌏", label:"Market Intel", access:"Always Free", color:C.green },
-              { icon:"⚡", label:"Resume Scan", access:"1 free scan", color:C.gold },
-              { icon:"📡", label:"Weakness Radar", access:"1 free view", color:C.gold },
-              { icon:"🏆", label:"Readiness Score", access:"1 free score", color:C.gold },
+              { icon:"⚡", label:"Resume Scan", access:"1 free usage", color:C.gold },
+              { icon:"📡", label:"Weakness Radar", access:"Auth needed", color:C.gold },
+              { icon:"🏆", label:"Readiness Score", access:"Auth needed", color:C.gold },
               { icon:"🔍", label:"JD Analyzer", access:"Login required", color:C.red },
               { icon:"⭐", label:"STAR Builder", access:"Login required", color:C.red },
               { icon:"🧠", label:"HM Simulator", access:"Login required", color:C.red },
@@ -3109,16 +3193,21 @@ function App(){
             saveSessionLocal(session);
             // Load memory from DB
             const mem = await loadMemoryFromDB(userData.id, token);
-            setMemory(mem || loadMemory(cached.email) || initMemory());
+            // On refresh, we prefer DB but fallback to Local (scoped by ID)
+            setMemory(mem || loadMemory(userData.id) || initMemory());
           } else {
             clearToken();
             setUser(null);
+            setMemory(loadMemory()); // Fallback to guest memory
           }
         } catch {
           // Token likely expired — clear it
           clearToken();
           setUser(null);
+          setMemory(loadMemory()); // Fallback to guest memory
         }
+      } else {
+        setMemory(loadMemory()); // No session, load guest memory
       }
       setAuthLoading(false);
     };
@@ -3138,32 +3227,39 @@ function App(){
     if (!memory) return;
     if (user?.id && user?.token) {
       saveMemoryToDB(user.id, user.token, memory);
-    } else if (user?.email) {
-      saveMemory(user.email, memory);
+      saveMemory(user.id, memory); // Also keep local copy for fast boot
+    } else if (!user) {
+      saveMemory(null, memory); // Save guest memory
     }
-  }, [memory, user?.id, user?.token, user?.email]);
+  }, [memory, user?.id, user?.token]);
 
   const login = async (session) => {
     setUser(session);
     setAuthModal(null);
-    setSetupDone(true); // Redirect to main app if coming from onboarding/signup
-    // Ensure they land on a meaningful main page (Jobs module)
-    if (activeModule === "search") setActiveModule("jobs");
-    // Load memory from Supabase DB first, fallback to localStorage
-    let mem = null;
+    setSetupDone(true); 
+    
+    // Load memory from Supabase DB first
+    let dbMem = null;
     if (session.id && session.token) {
-      mem = await loadMemoryFromDB(session.id, session.token);
+      dbMem = await loadMemoryFromDB(session.id, session.token);
     }
-    if (!mem) mem = loadMemory(session.email);
-    if (!mem) mem = initMemory();
-    setMemory(mem);
+    
+    const guestMem = loadMemory(); // Get what they did as guest
+    let finalMem = dbMem || loadMemory(session.id) || initMemory();
+    
+    if (guestMem) {
+      finalMem = mergeMemory(finalMem, guestMem);
+      localStorage.removeItem("djai_mem_guest"); // Clear guest memory after merging
+    }
+    
+    setMemory(finalMem);
   };
 
   const logout = async () => {
     try { if (user?.token) await sb.signOut(user.token); } catch {}
     clearSession();
     setUser(null);
-    setMemory(null);
+    setMemory(initMemory()); // Fresh start for guest
   };
   const markPreview = (moduleId) => {
     const next = { ...previewUsed, [moduleId]: (previewUsed[moduleId]||0) + 1 };
@@ -3189,6 +3285,10 @@ function App(){
         return (mem.negotiationPractice || 0) > 0;
       case "cover":
         return (mem.coverLetters?.length || 0) > 0;
+      case "memory":
+      case "jobs":
+      case "market":
+        return false;
       default:
         return false;
     }
@@ -3206,11 +3306,7 @@ function App(){
     // Pro users get full access
     if (user.isPro) return "allowed";
 
-    // Free users (logged in) can use each feature once
-    if (isModuleUsed(moduleId, memory)) {
-      return "preview_gate"; // Triggers Pro upgrade prompt
-    }
-
+    // All logged in users can access modules to view history
     return "allowed";
   };
 
@@ -3803,8 +3899,8 @@ function App(){
       simulate: <HiringManagerSim resumeText={resumeText} scanResult={scanResult} form={form} memory={memory} updateMemory={updateMemory} onProTrigger={(reason)=>setProModal(reason)}/>,
       salary:   <SalaryCoach resumeText={resumeText} form={form} memory={memory} updateMemory={updateMemory} onProTrigger={(reason)=>setProModal(reason)}/>,
       cover:    <CoverLetterGen resumeText={resumeText} form={form} memory={memory} updateMemory={updateMemory}/>,
-      radar:    <WeaknessRadar scanResult={scanResult} onFirstUse={onFirstUse} memory={memory}/>,
-      score:    <ReadinessScore scanResult={scanResult} onFirstUse={onFirstUse} memory={memory}/>,
+      radar:    <WeaknessRadar scanResult={scanResult || (memory?.scanHistory?.length ? memory.scanHistory[memory.scanHistory.length-1] : null)} onFirstUse={onFirstUse} memory={memory}/>,
+      score:    <ReadinessScore scanResult={scanResult || (memory?.scanHistory?.length ? memory.scanHistory[memory.scanHistory.length-1] : null)} onFirstUse={onFirstUse} memory={memory}/>,
       market:   <MarketIntel form={form} memory={memory}/>,
       memory:   <MemoryDashboard memory={memory} form={form} updateMemory={updateMemory}/>,
     };
@@ -3846,6 +3942,14 @@ function App(){
       {/* Auth Modal overlay */}
       {authModal && <AuthModal initialMode={authModal} onSuccess={login} onClose={()=>setAuthModal(null)}/>}
       {proModal && <ProUpgradeModal user={user} reason={proModal} onClose={()=>setProModal(null)} onSignup={()=>{setProModal(null);setAuthModal("register");}}/>}
+
+      {/* Persistence Loading Screen */}
+      {authLoading && (
+        <div style={{position:"fixed",inset:0,background:C.bg,zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:20}}>
+          <div style={{width:40,height:40,border:`3px solid ${C.border}`,borderTopColor:C.accent,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+          <div style={{color:C.muted,fontSize:13,letterSpacing:2,fontFamily:"var(--font-mono)"}}>INITIALIZING CAREER OS...</div>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{borderBottom:`1px solid ${C.border}`,background:darkMode?C.surface:"#FFFFFF",padding:"0 24px",position:"sticky",top:0,zIndex:100,backdropFilter:"blur(12px)"}}>
