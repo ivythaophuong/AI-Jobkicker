@@ -62,6 +62,27 @@ const sb = {
     return d; // { access_token, refresh_token, user, ... }
   },
 
+  async resetPasswordForEmail(email) {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+      method: "POST", headers: sb._au(),
+      body: JSON.stringify({ email })
+    });
+    if (r.status >= 400) {
+      const d = await r.json();
+      throw new Error(d.error?.message || d.msg || d.error_description || "Password reset request failed");
+    }
+  },
+
+  async updateUserPassword(token, password) {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: "PUT", headers: { ...sb._au(), "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ password })
+    });
+    const d = await r.json();
+    if (r.status >= 400 || d.error) throw new Error(d.error?.message || d.msg || d.error_description || "Update failed");
+    return d;
+  },
+
   // ── Database helpers ───────────────────────────────────────────────────────
   async upsert(table, data, token) {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
@@ -201,8 +222,8 @@ if (typeof window !== 'undefined') window._LLM_KEYS = LLM_KEYS;
 // Easy reference — change these strings to upgrade/downgrade any model
 const MODELS = {
   // Claude (Anthropic) ─────────────────────────────────────────────
-  claude_sonnet  : "claude-3-5-sonnet-20241022",   // Best quality for complex reasoning
-  claude_haiku   : "claude-3-5-haiku-20241022",    // Great speed/value
+  claude_sonnet  : "claude-sonnet-4-6",            // Best quality for complex reasoning
+  claude_haiku   : "claude-haiku-4-5-20251001",    // Great speed/value
   claude_opus    : "claude-3-opus-20240229",       // High intelligence fallback
 
   // OpenAI ─────────────────────────────────────────────────────────
@@ -2560,7 +2581,17 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
     const e = validate(); if (e) { setErr(e); return; }
     setLoading(true); setErr("");
     try {
-      if (mode === "login") {
+      if (mode === "forgot") {
+        await sb.resetPasswordForEmail(email.trim().toLowerCase());
+        setVerifyMsg("✅ Password reset link sent! Please check your email.");
+      } else if (mode === "update_password") {
+        if (pw !== pw2) throw new Error("Passwords do not match.");
+        const token = getToken();
+        if (!token) throw new Error("Session invalid. Please request a new password reset link.");
+        await sb.updateUserPassword(token, pw);
+        setVerifyMsg("✅ Password updated successfully.");
+        setMode("login");
+      } else if (mode === "login") {
         // ── Sign In via Supabase ───────────────────────────────────────────
         const data = await sb.signIn(email.trim().toLowerCase(), pw);
         saveTokens(data.access_token, data.refresh_token);
@@ -2633,7 +2664,8 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
         }
       }
     } catch(e) {
-      setErr(e.message || "Something went wrong. Please try again.");
+      const msg = e.message || "Something went wrong. Please try again.";
+      setErr(msg.toLowerCase().includes("rate limit") ? "Supabase email rate limit exceeded. Please wait a while or disable 'Confirm Email' in your Supabase dashboard." : msg);
     }
     setLoading(false);
   };
@@ -2654,7 +2686,7 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
               CareerAi<span style={{ color:C.accent }}>Hub</span>
             </div>
             <div style={{ color:C.muted, fontSize:12, marginTop:4 }}>
-              {mode === "login" ? "Welcome back" : "Create your free account"}
+              {mode === "login" ? "Welcome back" : mode === "register" ? "Create your free account" : mode === "forgot" ? "Reset your password" : "Set your new password"}
             </div>
           </div>
 
@@ -2670,11 +2702,21 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
           ) : (
             <>
               <div style={{ display:"flex", background:C.surface, borderRadius:8, padding:4, marginBottom:20, gap:4 }}>
-                {[["login","Sign In"],["register","Create Account"]].map(([m,label]) => (
-                  <button key={m} onClick={() => { setMode(m); setErr(""); }} style={{ flex:1, background:mode===m?C.card:"transparent", border:`1px solid ${mode===m?C.border:"transparent"}`, color:mode===m?C.text:C.muted, borderRadius:6, padding:"8px 0", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s" }}>
-                    {label}
+                {mode === "update_password" ? (
+                  <button style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, color:C.text, borderRadius:6, padding:"8px 0", fontSize:12, fontWeight:700, fontFamily:"inherit" }}>
+                    Update Password
                   </button>
-                ))}
+                ) : mode === "forgot" ? (
+                  <button style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, color:C.text, borderRadius:6, padding:"8px 0", fontSize:12, fontWeight:700, fontFamily:"inherit" }}>
+                    Reset Password
+                  </button>
+                ) : (
+                  [["login","Sign In"],["register","Create Account"]].map(([m,label]) => (
+                    <button key={m} onClick={() => { setMode(m); setErr(""); }} style={{ flex:1, background:mode===m?C.card:"transparent", border:`1px solid ${mode===m?C.border:"transparent"}`, color:mode===m?C.text:C.muted, borderRadius:6, padding:"8px 0", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s" }}>
+                      {label}
+                    </button>
+                  ))
+                )}
               </div>
 
               <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
@@ -2684,20 +2726,24 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
                     <input value={name} onChange={e=>{ setName(e.target.value); setErr(""); }} placeholder="Your full name" style={inputStyle} />
                   </div>
                 )}
-                <div>
-                  <div style={{ color:C.muted, fontSize:11, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Email</div>
-                  <input type="email" value={email} onChange={e=>{ setEmail(e.target.value); setErr(""); }} placeholder="you@email.com" style={inputStyle} onKeyDown={e=>e.key==="Enter"&&submit()} />
-                </div>
-                <div>
-                  <div style={{ color:C.muted, fontSize:11, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Password</div>
-                  <div style={{ position:"relative" }}>
-                    <input type={showPw?"text":"password"} value={pw} onChange={e=>{ setPw(e.target.value); setErr(""); }} placeholder={mode==="register"?"Min. 6 characters":"Your password"} style={{ ...inputStyle, paddingRight:44 }} onKeyDown={e=>e.key==="Enter"&&submit()} />
-                    <button onClick={()=>setShowPw(s=>!s)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"transparent", border:"none", color:C.muted, cursor:"pointer", fontSize:14, fontFamily:"inherit" }}>
-                      {showPw ? "🙈" : "👁"}
-                    </button>
+                {mode !== "update_password" && (
+                  <div>
+                    <div style={{ color:C.muted, fontSize:11, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Email</div>
+                    <input type="email" value={email} onChange={e=>{ setEmail(e.target.value); setErr(""); }} placeholder="you@email.com" style={inputStyle} onKeyDown={e=>e.key==="Enter"&&submit()} />
                   </div>
-                </div>
-                {mode === "register" && (
+                )}
+                {mode !== "forgot" && (
+                  <div>
+                    <div style={{ color:C.muted, fontSize:11, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>{mode === "update_password" ? "New Password" : "Password"}</div>
+                    <div style={{ position:"relative" }}>
+                      <input type={showPw?"text":"password"} value={pw} onChange={e=>{ setPw(e.target.value); setErr(""); }} placeholder={mode==="register"?"Min. 6 characters":"Your password"} style={{ ...inputStyle, paddingRight:44 }} onKeyDown={e=>e.key==="Enter"&&submit()} />
+                      <button onClick={()=>setShowPw(s=>!s)} style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", background:"transparent", border:"none", color:C.muted, cursor:"pointer", fontSize:14, fontFamily:"inherit" }}>
+                        {showPw ? "🙈" : "👁"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {(mode === "register" || mode === "update_password") && (
                   <div>
                     <div style={{ color:C.muted, fontSize:11, textTransform:"uppercase", letterSpacing:1, marginBottom:6 }}>Confirm Password</div>
                     <input type={showPw?"text":"password"} value={pw2} onChange={e=>{ setPw2(e.target.value); setErr(""); }} placeholder="Repeat password" style={inputStyle} onKeyDown={e=>e.key==="Enter"&&submit()} />
@@ -2709,13 +2755,24 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
                 )}
 
                 <button onClick={submit} disabled={loading} style={{ width:"100%", background:loading?C.border:`linear-gradient(135deg,${C.accent},#0096CC)`, color:loading?C.muted:"#000", border:"none", borderRadius:8, padding:"12px", fontWeight:900, fontSize:14, cursor:loading?"not-allowed":"pointer", fontFamily:"inherit", marginTop:4, transition:"all 0.2s" }}>
-                  {loading ? "Connecting to server..." : mode === "login" ? "Sign In →" : "Create Account →"}
+                  {loading ? "Connecting to server..." : mode === "login" ? "Sign In →" : mode === "register" ? "Create Account →" : mode === "forgot" ? "Send Reset Link →" : "Update Password →"}
                 </button>
 
                 {mode === "login" && (
-                  <div style={{ textAlign:"center" }}>
+                  <div style={{ textAlign:"center", marginTop:8, display:"flex", flexDirection:"column", gap:12 }}>
+                    <button onClick={()=>{ setMode("forgot"); setErr(""); }} style={{ background:"transparent", border:"none", color:C.muted, fontSize:12, cursor:"pointer", fontFamily:"inherit", textDecoration:"underline" }}>
+                      Forgot your password?
+                    </button>
                     <button onClick={()=>{ setMode("register"); setErr(""); }} style={{ background:"transparent", border:"none", color:C.muted, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
                       No account? <span style={{ color:C.accent, fontWeight:700 }}>Create one free →</span>
+                    </button>
+                  </div>
+                )}
+                
+                {mode === "forgot" && (
+                  <div style={{ textAlign:"center", marginTop:8 }}>
+                    <button onClick={()=>{ setMode("login"); setErr(""); }} style={{ background:"transparent", border:"none", color:C.muted, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
+                      ← Back to Sign In
                     </button>
                   </div>
                 )}
@@ -3202,6 +3259,21 @@ function App(){
   // ── Restore session from stored token on mount ─────────────────────────────
   useEffect(() => {
     const restore = async () => {
+      // Parse hash for password recovery
+      if (window.location.hash.includes("access_token=")) {
+        const params = new URLSearchParams(window.location.hash.slice(1));
+        const access = params.get("access_token");
+        const refresh = params.get("refresh_token");
+        const type = params.get("type"); 
+        if (access) {
+           saveTokens(access, refresh);
+           window.location.hash = "";
+           if (type === "recovery") {
+              setAuthModal("update_password");
+           }
+        }
+      }
+
       const token = getToken();
       const cached = getSessionLocal();
       if (token && cached) {
