@@ -2586,17 +2586,22 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
       } else {
         // ── Sign Up via Supabase ───────────────────────────────────────────
         const signupData = await sb.signUp(email.trim().toLowerCase(), pw, name.trim());
-        let sessionData = signupData.session;
+        // If email confirmations are OFF, Supabase returns tokens at the root of the response.
+        let sessionData = signupData.access_token ? signupData : signupData.session;
+        
         if (!sessionData && signupData.user) {
           // Attempt immediate sign-in if signUp didn't provide a session
           try {
             sessionData = await sb.signIn(email.trim().toLowerCase(), pw);
-          } catch (e) { /* signIn fails if confirmation is required; that's fine, we'll show verifyMsg */ }
+          } catch (e) {
+            console.warn("[Auth] Immediate signIn after signUp failed:", e.message);
+          }
         }
 
         if (!sessionData && signupData.user) {
-          // Email confirmation required
-          setVerifyMsg("✅ Account created! Check your email and click the confirmation link, then sign in.");
+          // Email confirmation required or immediate signin failed
+          setVerifyMsg("✅ Account created successfully! Please sign in to continue.");
+          setMode("login");
           setLoading(false); return;
         }
 
