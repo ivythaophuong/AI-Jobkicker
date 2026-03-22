@@ -23,7 +23,7 @@ const sb = {
       body: JSON.stringify({ email, password, data: { full_name: name } })
     });
     const d = await r.json();
-    if (d.error) throw new Error(d.error.message || d.msg || "Sign up failed");
+    if (r.status >= 400 || d.error) throw new Error(d.error?.message || d.msg || d.error_description || "Sign up failed");
     return d;
   },
 
@@ -33,7 +33,7 @@ const sb = {
       body: JSON.stringify({ email, password })
     });
     const d = await r.json();
-    if (d.error) throw new Error(d.error.message || d.error_description || "Sign in failed");
+    if (r.status >= 400 || d.error) throw new Error(d.error?.message || d.error_description || d.msg || "Sign in failed");
     return d; // { access_token, user, ... }
   },
 
@@ -47,7 +47,19 @@ const sb = {
     const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       headers: { ...sb._au(), "Authorization": `Bearer ${token}` }
     });
-    return r.json();
+    const d = await r.json();
+    if (r.status >= 400) throw new Error(d.error_description || d.msg || d.error?.message || "Get user failed");
+    return d;
+  },
+
+  async refreshToken(refreshToken) {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST", headers: sb._au(),
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    const d = await r.json();
+    if (r.status >= 400) throw new Error(d.error_description || d.msg || d.error?.message || "Token refresh failed");
+    return d; // { access_token, refresh_token, user, ... }
   },
 
   // ── Database helpers ───────────────────────────────────────────────────────
@@ -105,11 +117,20 @@ const sb = {
 
 // ── Session persistence (token stored in localStorage) ───────────────────────
 const TOKEN_KEY   = "djai_token";
+const REFRESH_KEY = "djai_refresh";
 const SESSION_KEY = "djai_session";
 
-function saveToken(token)  { localStorage.setItem(TOKEN_KEY, token); }
+function saveTokens(access, refresh) { 
+  localStorage.setItem(TOKEN_KEY, access); 
+  if (refresh) localStorage.setItem(REFRESH_KEY, refresh);
+}
 function getToken()        { return localStorage.getItem(TOKEN_KEY); }
-function clearToken()      { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(SESSION_KEY); }
+function getRefreshToken() { return localStorage.getItem(REFRESH_KEY); }
+function clearTokens()     { 
+  localStorage.removeItem(TOKEN_KEY); 
+  localStorage.removeItem(REFRESH_KEY);
+  localStorage.removeItem(SESSION_KEY); 
+}
 function saveSessionLocal(u) { localStorage.setItem(SESSION_KEY, JSON.stringify(u)); }
 function getSessionLocal()   { try { return JSON.parse(localStorage.getItem(SESSION_KEY)||"null"); } catch { return null; } }
 
@@ -1068,7 +1089,7 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
       }
 
       console.log(`[Scan] Starting scan with content length: ${content.length}`);
-      const raw=await callLLM([{role:"user",content:`RESUME:\n\n${content.slice(0,3000)}\n\n---\n\n${buildScanPrompt(form)}`}],2000,"scan");
+      const raw=await callLLM([{role:"user",content:`RESUME:\n\n${content.slice(0,15000)}\n\n---\n\n${buildScanPrompt(form)}`}],2000,"scan");
       console.log(`[Scan] LLM responded, length: ${raw?.length}`);
       if (!raw) { console.error("[Scan] LLM returned nothing!"); throw new Error("AI returned an empty response."); }
       const parsed=extractJSON(raw);
@@ -2513,7 +2534,7 @@ Return ONLY raw JSON:
 // Token stored in localStorage; session object cached for fast reads.
 
 function getSession() { return getSessionLocal(); }
-function clearSession() { clearToken(); }
+function clearSession() { clearTokens(); }
 
 // ── AuthModal (Supabase) ─────────────────────────────────────────────────────
 function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
@@ -2542,6 +2563,7 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
       if (mode === "login") {
         // ── Sign In via Supabase ───────────────────────────────────────────
         const data = await sb.signIn(email.trim().toLowerCase(), pw);
+        saveTokens(data.access_token, data.refresh_token);
         const session = {
           email: data?.user?.email || email.trim().toLowerCase(),
           name: data?.user?.user_metadata?.full_name || data?.user?.email?.split("@")[0] || name || "User",
@@ -2549,6 +2571,7 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
           avatar: (data?.user?.user_metadata?.full_name || data?.user?.email || email)[0].toUpperCase(),
           id: data?.user?.id,
           token: data?.access_token,
+          refresh_token: data?.refresh_token,
           isPro: false,
         };
         // Fetch real Pro status if profile exists
@@ -2558,7 +2581,6 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
             session.isPro = !!profiles[0].is_pro;
           }
         } catch (e) { console.warn("Failed to fetch profile:", e.message); }
-        saveToken(data.access_token);
         saveSessionLocal(session);
         onSuccess(session);
       } else {
@@ -2580,6 +2602,7 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
 
         if (sessionData) {
           // Auto-confirmed or immediate signIn worked
+          saveTokens(sessionData.access_token, sessionData.refresh_token);
           const session = {
             email: signupData?.user?.email || email.trim().toLowerCase(),
             name: name.trim(),
@@ -2587,9 +2610,9 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
             avatar: name.trim()[0].toUpperCase(),
             id: signupData?.user?.id,
             token: sessionData?.access_token,
+            refresh_token: sessionData?.refresh_token,
             isPro: false,
           };
-          saveToken(sessionData.access_token);
           saveSessionLocal(session);
           // Save profile to DB
           try {
@@ -3177,7 +3200,6 @@ function App(){
       const token = getToken();
       const cached = getSessionLocal();
       if (token && cached) {
-        // Verify token is still valid with Supabase
         try {
           const userData = await sb.getUser(token);
           if (userData?.id) {
@@ -3191,20 +3213,45 @@ function App(){
             } catch (e) { console.warn("Restore profile sync failed:", e.message); }
             setUser(session);
             saveSessionLocal(session);
-            // Load memory from DB
             const mem = await loadMemoryFromDB(userData.id, token);
-            // On refresh, we prefer DB but fallback to Local (scoped by ID)
             setMemory(mem || loadMemory(userData.id) || initMemory());
           } else {
-            clearToken();
-            setUser(null);
-            setMemory(loadMemory()); // Fallback to guest memory
+            // No user ID in response, treat as invalid
+            throw new Error("Invalid session");
           }
-        } catch {
-          // Token likely expired — clear it
-          clearToken();
-          setUser(null);
-          setMemory(loadMemory()); // Fallback to guest memory
+        } catch (err) {
+          // Attempt refresh if we have a refresh token
+          const refresh = getRefreshToken() || cached.refresh_token;
+          if (refresh) {
+            try {
+              const data = await sb.refreshToken(refresh);
+              if (data?.access_token) {
+                saveTokens(data.access_token, data.refresh_token);
+                const session = {
+                  ...cached,
+                  id: data.user?.id || cached.id,
+                  token: data.access_token,
+                  refresh_token: data.refresh_token || refresh,
+                };
+                saveSessionLocal(session);
+                setUser(session);
+                const mem = await loadMemoryFromDB(session.id, session.token);
+                setMemory(mem || loadMemory(session.id) || initMemory());
+              } else {
+                throw new Error("Refresh failed");
+              }
+            } catch (re) {
+              console.error("[Auth] Session expired and refresh failed:", re.message);
+              clearTokens();
+              setUser(null);
+              setMemory(loadMemory());
+            }
+          } else {
+            console.warn("[Auth] Session invalid and no refresh token available");
+            clearTokens();
+            setUser(null);
+            setMemory(loadMemory());
+          }
         }
       } else {
         setMemory(loadMemory()); // No session, load guest memory
@@ -3257,7 +3304,7 @@ function App(){
 
   const logout = async () => {
     try { if (user?.token) await sb.signOut(user.token); } catch {}
-    clearSession();
+    clearTokens();
     setUser(null);
     setMemory(initMemory()); // Fresh start for guest
   };
