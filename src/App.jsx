@@ -523,6 +523,16 @@ function loadMemory(uid) {
   try { return JSON.parse(localStorage.getItem(key) || "null"); } catch { return null; }
 }
 
+function saveResume(uid, resume) {
+  if (!uid) return;
+  try { localStorage.setItem(`djai_resume_${uid}`, JSON.stringify(resume)); } catch {}
+}
+
+function loadResume(uid) {
+  if (!uid) return null;
+  try { return JSON.parse(localStorage.getItem(`djai_resume_${uid}`) || "null"); } catch { return null; }
+}
+
 function mergeMemory(target, source) {
   if (!source) return target;
   return {
@@ -553,6 +563,7 @@ function initMemory() {
     totalSessions: 0,
     lastSeen: null,
     profile: {},
+    lastResume: null,       // {type, content, fileName} — last uploaded resume
   };
 }
 
@@ -2568,6 +2579,7 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw]   = useState(false);
   const [verifyMsg, setVerifyMsg] = useState("");
+  const [successBanner, setSuccessBanner] = useState("");
 
   const validate = () => {
     if (mode === "register" && !name.trim()) return "Full name is required.";
@@ -2617,10 +2629,12 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
       } else {
         // ── Sign Up via Supabase ───────────────────────────────────────────
         const signupData = await sb.signUp(email.trim().toLowerCase(), pw, name.trim());
-        // If email confirmations are OFF, Supabase returns tokens at the root of the response.
-        let sessionData = signupData.access_token ? signupData : signupData.session;
-        
-        if (!sessionData && signupData.user) {
+        // Supabase may return tokens at root OR nested under session
+        let sessionData = signupData.access_token ? signupData
+          : signupData.session?.access_token ? signupData.session
+          : null;
+
+        if (!sessionData && (signupData.user || signupData.id)) {
           // Attempt immediate sign-in if signUp didn't provide a session
           try {
             sessionData = await sb.signIn(email.trim().toLowerCase(), pw);
@@ -2629,22 +2643,24 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
           }
         }
 
-        if (!sessionData && signupData.user) {
-          // Email confirmation required or immediate signin failed
-          setVerifyMsg("✅ Account created successfully! Please sign in to continue.");
+        if (!sessionData && (signupData.user || signupData.id)) {
+          // Email confirmation required or immediate sign-in failed — switch to sign-in tab
+          setSuccessBanner("Account created! Please sign in to continue.");
           setMode("login");
+          setPw(""); setPw2("");
           setLoading(false); return;
         }
 
         if (sessionData) {
           // Auto-confirmed or immediate signIn worked
+          const signupUser = signupData?.user || signupData; // handle both response shapes
           saveTokens(sessionData.access_token, sessionData.refresh_token);
           const session = {
-            email: signupData?.user?.email || email.trim().toLowerCase(),
+            email: signupUser?.email || email.trim().toLowerCase(),
             name: name.trim(),
-            joinedAt: signupData?.user?.created_at || new Date().toISOString(),
+            joinedAt: signupUser?.created_at || new Date().toISOString(),
             avatar: name.trim()[0].toUpperCase(),
-            id: signupData?.user?.id,
+            id: signupUser?.id,
             token: sessionData?.access_token,
             refresh_token: sessionData?.refresh_token,
             isPro: false,
@@ -2653,10 +2669,10 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
           // Save profile to DB
           try {
             await sb.insert("profiles", {
-              id: signupData.user.id,
-              email: signupData.user.email,
+              id: signupUser.id,
+              email: signupUser.email,
               full_name: name.trim(),
-              joined_at: signupData.user.created_at,
+              joined_at: signupUser.created_at,
               is_pro: false,
             }, sessionData.access_token);
           } catch {}
@@ -2712,12 +2728,18 @@ function AuthModal({ onSuccess, onClose, initialMode = "login" }) {
                   </button>
                 ) : (
                   [["login","Sign In"],["register","Create Account"]].map(([m,label]) => (
-                    <button key={m} onClick={() => { setMode(m); setErr(""); }} style={{ flex:1, background:mode===m?C.card:"transparent", border:`1px solid ${mode===m?C.border:"transparent"}`, color:mode===m?C.text:C.muted, borderRadius:6, padding:"8px 0", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s" }}>
+                    <button key={m} onClick={() => { setMode(m); setErr(""); setSuccessBanner(""); }} style={{ flex:1, background:mode===m?C.card:"transparent", border:`1px solid ${mode===m?C.border:"transparent"}`, color:mode===m?C.text:C.muted, borderRadius:6, padding:"8px 0", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", transition:"all 0.2s" }}>
                       {label}
                     </button>
                   ))
                 )}
               </div>
+
+              {successBanner && (
+                <div style={{ background:C.green+"15", border:`1px solid ${C.green}44`, borderRadius:8, padding:"10px 14px", color:C.green, fontSize:12, textAlign:"center", marginBottom:4 }}>
+                  {successBanner}
+                </div>
+              )}
 
               <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
                 {mode === "register" && (
@@ -3357,26 +3379,39 @@ function App(){
     }
   }, [memory, user?.id, user?.token]);
 
+  // ── Persist resume text per user (localStorage cache + DB via memory) ───────
+  useEffect(() => {
+    if (!user?.id) return;
+    saveResume(user.id, resumeText); // fast local cache (even when null, to clear old entry)
+    setMemory(prev => prev ? { ...prev, lastResume: resumeText } : prev);
+  }, [resumeText, user?.id]);
+
   const login = async (session) => {
     setUser(session);
     setAuthModal(null);
-    setSetupDone(true); 
-    
+    setSetupDone(true);
+    setScanResult(null);   // Clear any scan result from a previous account
+
     // Load memory from Supabase DB first
     let dbMem = null;
     if (session.id && session.token) {
       dbMem = await loadMemoryFromDB(session.id, session.token);
     }
-    
+
     const guestMem = loadMemory(); // Get what they did as guest
     let finalMem = dbMem || loadMemory(session.id) || initMemory();
-    
+
     if (guestMem) {
       finalMem = mergeMemory(finalMem, guestMem);
       localStorage.removeItem("djai_mem_guest"); // Clear guest memory after merging
     }
-    
+
     setMemory(finalMem);
+
+    // Restore resume: localStorage is the fast cache; DB (via memory.lastResume) is the fallback
+    const cachedResume = loadResume(session.id);
+    const dbResume = finalMem.lastResume || null;
+    setResumeText(cachedResume || dbResume);
   };
 
   const logout = async () => {
@@ -3384,6 +3419,8 @@ function App(){
     clearTokens();
     setUser(null);
     setMemory(initMemory()); // Fresh start for guest
+    setResumeText(null);     // Clear uploaded resume so it doesn't leak to next account
+    setScanResult(null);     // Clear scan results for the same reason
   };
   const markPreview = (moduleId) => {
     const next = { ...previewUsed, [moduleId]: (previewUsed[moduleId]||0) + 1 };
