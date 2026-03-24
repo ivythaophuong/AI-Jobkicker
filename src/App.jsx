@@ -3271,6 +3271,7 @@ function App(){
   const [showPricing,setShowPricing]     = useState(false); // full pricing modal
   const [cmdOpen,setCmdOpen]             = useState(false); // command palette
   const [darkMode,setDarkMode]           = useState(true);  // theme toggle
+  const resumeRestoredRef                = useRef(false);   // guard: don't overwrite cache before restore runs
   const [previewUsed,setPreviewUsed]     = useState(()=>{
     try { return JSON.parse(localStorage.getItem("djai_preview")||"{}"); } catch { return {}; }
   });
@@ -3313,7 +3314,12 @@ function App(){
             setUser(session);
             saveSessionLocal(session);
             const mem = await loadMemoryFromDB(userData.id, token);
-            setMemory(mem || loadMemory(userData.id) || initMemory());
+            const finalMem = mem || loadMemory(userData.id) || initMemory();
+            setMemory(finalMem);
+            // Restore resume from localStorage cache or DB fallback
+            const cachedResume = loadResume(userData.id);
+            resumeRestoredRef.current = true;
+            setResumeText(cachedResume || finalMem.lastResume || null);
           } else {
             // No user ID in response, treat as invalid
             throw new Error("Invalid session");
@@ -3335,7 +3341,12 @@ function App(){
                 saveSessionLocal(session);
                 setUser(session);
                 const mem = await loadMemoryFromDB(session.id, session.token);
-                setMemory(mem || loadMemory(session.id) || initMemory());
+                const finalMem = mem || loadMemory(session.id) || initMemory();
+                setMemory(finalMem);
+                // Restore resume after token refresh
+                const cachedResume = loadResume(session.id);
+                resumeRestoredRef.current = true;
+                setResumeText(cachedResume || finalMem.lastResume || null);
               } else {
                 throw new Error("Refresh failed");
               }
@@ -3380,9 +3391,11 @@ function App(){
   }, [memory, user?.id, user?.token]);
 
   // ── Persist resume text per user (localStorage cache + DB via memory) ───────
+  // Guard with resumeRestoredRef so the effect doesn't fire (and overwrite with null)
+  // before the auto-login restore has had a chance to load the saved resume.
   useEffect(() => {
-    if (!user?.id) return;
-    saveResume(user.id, resumeText); // fast local cache (even when null, to clear old entry)
+    if (!user?.id || !resumeRestoredRef.current) return;
+    saveResume(user.id, resumeText);
     setMemory(prev => prev ? { ...prev, lastResume: resumeText } : prev);
   }, [resumeText, user?.id]);
 
@@ -3411,6 +3424,7 @@ function App(){
     // Restore resume: localStorage is the fast cache; DB (via memory.lastResume) is the fallback
     const cachedResume = loadResume(session.id);
     const dbResume = finalMem.lastResume || null;
+    resumeRestoredRef.current = true;
     setResumeText(cachedResume || dbResume);
   };
 
@@ -4190,7 +4204,35 @@ function App(){
     </div>
   );
 }
-export default App;
+// ── Error Boundary — prevents blank screen on unhandled render errors ─────────
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { crashed: false, msg: "" }; }
+  static getDerivedStateFromError(err) { return { crashed: true, msg: err?.message || "Unknown error" }; }
+  componentDidCatch(err, info) { console.error("[ErrorBoundary]", err, info); }
+  render() {
+    if (!this.state.crashed) return this.props.children;
+    return (
+      <div style={{ minHeight:"100vh", background:"#080C14", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"system-ui,sans-serif", padding:32 }}>
+        <div style={{ maxWidth:420, textAlign:"center" }}>
+          <div style={{ fontSize:48, marginBottom:16 }}>⚠️</div>
+          <div style={{ color:"#E2E8F0", fontSize:20, fontWeight:700, marginBottom:8 }}>Something went wrong</div>
+          <div style={{ color:"#64748B", fontSize:13, marginBottom:24, lineHeight:1.6 }}>{this.state.msg}</div>
+          <button onClick={() => window.location.reload()} style={{ background:"#4F8EF7", color:"#fff", border:"none", borderRadius:8, padding:"12px 28px", fontSize:14, fontWeight:600, cursor:"pointer" }}>
+            Reload App
+          </button>
+        </div>
+      </div>
+    );
+  }
+}
+
+const AppWithBoundary = () => (
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
+);
+
+export default AppWithBoundary;
 
 function LandingSections({ setAuthModal, setShowPricing, setSetupDone, setActiveModule, form, C }) {
   return (
