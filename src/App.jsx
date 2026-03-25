@@ -1730,11 +1730,11 @@ const PLATFORMS={
 
 
 function JobSearch({form,resumeText,memory,updateMemory,onProTrigger}){
-  const [title,setTitle]=useState(form.role);
-  const [location,setLocation]=useState(form.market==="Singapore"?"Singapore":form.market==="US"?"United States":form.market==="Europe"?"London, UK":form.market==="Remote"?"Remote":form.market==="SEA"?"Southeast Asia":form.market);
+  const [title,setTitle]=useState("");
+  const [location,setLocation]=useState("");
   const [keywords,setKeywords]=useState("");
   const [jobType,setJobType]=useState("all");
-  const [expLevel,setExpLevel]=useState(form.level);
+  const [expLevel,setExpLevel]=useState("");
   const [alternatives,setAlternatives]=useState(null);
   const [loadingAlt,setLoadingAlt]=useState(false);
   const [searched,setSearched]=useState(false);
