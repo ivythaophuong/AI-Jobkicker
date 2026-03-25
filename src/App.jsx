@@ -1057,8 +1057,9 @@ function EmptyState({ icon, title, desc, cta, onCta, ctaColor }) {
   );
 }
 // ── Scan prompt ───────────────────────────────────────────────────────────────
-function buildScanPrompt(form){
-  return `You are a ruthless hiring expert. Analyze this resume for ${form.level} ${form.role} in ${form.industry}, ${form.market}.
+function buildScanPrompt(form,targetRole){
+  const role=targetRole||form.role;
+  return `You are a ruthless hiring expert. Analyze this resume for ${form.level} ${role} in ${form.industry}, ${form.market}.
 Return ONLY raw JSON (no markdown, start with {):
 {"credibilityScore":0-100,"metricsFound":0,"summary":"2-3 sentence verdict","issues":[{"severity":"critical|warning|ok","type":"Vague Bullet|Missing Metric|Weak Ownership|Strong Claim","original":"short quote max 8 words","fix":"specific fix"}],"interrogationQuestions":[{"source":"which claim","question":"tough specific question"}]}
 Generate 4-6 issues and 5-7 questions hyper-specific to this resume's actual companies, roles, and claims.`;
@@ -1072,6 +1073,7 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
   const [dragOver,setDragOver]=useState(false);
   const [fileErr,setFileErr]=useState("");
   const [paste,setPaste]=useState("");
+  const [targetRole,setTargetRole]=useState("");
   const fileRef=useRef();
   const steps=["Parsing structure...","Extracting claims...","Detecting vague bullets...","Identifying gaps...","Analyzing stories...","Generating questions...","Computing score..."];
 
@@ -1121,7 +1123,7 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
       }
 
       console.log(`[Scan] Starting scan with content length: ${content.length}`);
-      const raw=await callLLM([{role:"user",content:`RESUME:\n\n${content.slice(0,15000)}\n\n---\n\n${buildScanPrompt(form)}`}],2000,"scan");
+      const raw=await callLLM([{role:"user",content:`RESUME:\n\n${content.slice(0,15000)}\n\n---\n\n${buildScanPrompt(form,targetRole)}`}],2000,"scan");
       console.log(`[Scan] LLM responded, length: ${raw?.length}`);
       if (!raw) { console.error("[Scan] LLM returned nothing!"); throw new Error("AI returned an empty response."); }
       const parsed=extractJSON(raw);
@@ -1145,6 +1147,14 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div><div className="t-h1" style={{color:C.text}}>Resume Deep Scan Engine</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>Upload your resume. AI interrogates every bullet. No vagueness survives.</div></div>
         {resumeText&&<Btn onClick={runScan} disabled={scanning} color={C.accent} dark style={{width:"auto",padding:"10px 20px"}}>{scanning?"Scanning...":scanResult&&!scanResult.error?"Re-Scan":"⚡ Run Deep Scan"}</Btn>}
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <input
+          value={targetRole}
+          onChange={e=>setTargetRole(e.target.value)}
+          placeholder="Target role (optional) — e.g. Senior Product Manager"
+          style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,fontFamily:"inherit",outline:"none"}}
+        />
       </div>
       {resumeText&&(
         <Card style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
