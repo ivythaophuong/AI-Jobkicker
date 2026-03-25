@@ -3269,7 +3269,7 @@ function UserMenu({ user, onLogout }) {
 function App(){
   const [activeModule,setActiveModule]   = useState("jobs");
   const [setupDone,setSetupDone]         = useState(true);
-  const [form,setForm]                   = useState({role:"Senior Product Manager",industry:"Fintech",level:"Senior",market:"Singapore",urgency:"7 days"});
+  const [form,setForm]                   = useState({role:"",industry:"",level:"",market:"",urgency:"7 days"});
   const [resumeText,setResumeText]       = useState(null);
   const [scanResult,setScanResult]       = useState(null);
 
