@@ -501,10 +501,14 @@ function extractJSON(raw) {
 
 async function loadMemoryFromDB(userId, token) {
   try {
-    const rows = await sb.select("user_memory", { user_id: `eq.${userId}` }, token);
+    // Specifically order by updated_at desc to handle cases where upsert might have created multiple rows
+    const rows = await sb.select("user_memory", { user_id: `eq.${userId}`, order: "updated_at.desc", limit: 1 }, token);
     if (Array.isArray(rows) && rows.length > 0) return rows[0].data || null;
     return null;
-  } catch { return null; }
+  } catch(e) { 
+    console.error("[DB] loadMemory failed:", e.message);
+    return null; 
+  }
 }
 
 async function saveMemoryToDB(userId, token, mem) {
@@ -3540,10 +3544,12 @@ function App(){
   useEffect(() => {
     if (!memory) return;
     if (user?.id && user?.token) {
+      // Direct sync to DB and localStorage
       saveMemoryToDB(user.id, user.token, memory);
-      saveMemory(user.id, memory); // Also keep local copy for fast boot
-    } else if (!user) {
-      saveMemory(null, memory); // Save guest memory
+      saveMemory(user.id, memory);
+    } else if (user === null) {
+      // Only save to guest slot if explicitly EXITED from an account
+      saveMemory(null, memory);
     }
   }, [memory, user?.id, user?.token]);
 
@@ -3562,25 +3568,31 @@ function App(){
     setUser(session);
     setAuthModal(null);
     setSetupDone(true);
-    setScanResult(null);   // Clear any scan result from a previous account
+    setScanResult(null);
 
-    // Load memory from Supabase DB first
+    // 1. Load cloud memory
     let dbMem = null;
     if (session.id && session.token) {
       dbMem = await loadMemoryFromDB(session.id, session.token);
     }
 
-    const guestMem = loadMemory(); // Get what they did as guest
+    // 2. Resolve local cache + merge guest progress
+    const guestMem = loadMemory(); 
     let finalMem = dbMem || loadMemory(session.id) || loadMemory(session.email) || initMemory();
 
     if (guestMem) {
       finalMem = mergeMemory(finalMem, guestMem);
-      localStorage.removeItem("djai_mem_guest"); // Clear guest memory after merging
+      localStorage.removeItem("djai_mem_guest"); 
     }
 
+    // 3. Update state + trigger IMMEDIATE sync to ensure it sticks
     setMemory(finalMem);
+    if (session.id && session.token) {
+      saveMemoryToDB(session.id, session.token, finalMem);
+      saveMemory(session.id, finalMem);
+    }
 
-    // Restore resume: localStorage is the fast cache; DB (via memory.lastResume) is the fallback
+    // 4. Restore resume
     const cachedResume = loadResume(session.id);
     const dbResume = finalMem.lastResume || null;
     resumeRestoredRef.current = true;
