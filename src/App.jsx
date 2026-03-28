@@ -1070,36 +1070,36 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
   const [scanning,setScanning]=useState(false);
   const [progress,setProgress]=useState(0);
   const [step,setStep]=useState("");
-  const [dragOver,setDragOver]=useState(false);
   const [fileErr,setFileErr]=useState("");
+  const [dragOver,setDragOver]=useState(false);
   const [paste,setPaste]=useState("");
+  const fileRef=useRef(null);
   const [targetRole,setTargetRole]=useState("");
-  const fileRef=useRef();
-  const steps=["Parsing structure...","Extracting claims...","Detecting vague bullets...","Identifying gaps...","Analyzing stories...","Generating questions...","Computing score..."];
 
   const handleFile=async(file)=>{
+    if(!file)return;
     setFileErr("");
-    try{const r=await readResumeFile(file);if(r.type==="text"&&r.content.trim().length<30){setFileErr("File appears empty — please paste text below.");return;}setResumeText(r);setScanResult(null);setPaste("");}
-    catch(e){setFileErr("Could not read file: "+e.message);}
+    try{
+      const r=await readResumeFile(file);
+      if(r.type==="text"&&r.content.trim().length<30){
+        setFileErr("File appears empty — please paste text below.");
+        return;
+      }
+      setResumeText(r); setScanResult(null); setPaste("");
+    }catch(e){setFileErr(e.message);}
   };
 
   const confirmPaste=()=>{
-    if(paste.trim().length<50){setFileErr("Too short — paste your full resume.");return;}
-    setFileErr(""); setResumeText({type:"text",content:paste.trim(),fileName:"Pasted Resume"}); setScanResult(null);
+    const content=paste.trim();
+    if(content.length<50){setFileErr("Resume text is too short.");return;}
+    setFileErr(""); setResumeText({type:"text",content,fileName:"Pasted Resume"}); setScanResult(null);
   };
 
   const runScan=async()=>{
     if(!resumeText)return;
     setScanning(true); setScanResult(null); setProgress(0); setFileErr("");
-    if (onFirstUse) onFirstUse();
     
-    // Gating check
-    const isUsed = (memory?.scanHistory?.length || 0) > 0;
-    if (isUsed && window._setProModal) {
-      window._setProModal("limit");
-      return;
-    }
-    
+    const steps=["Analyzing layout...","Reading structure...","Detecting keywords...","Calculating impact...","Mapping skills...","Interrogating bullets...","Finalizing scores..."];
     let s=0;
     const iv = setInterval(() => {
       s++;
@@ -1107,7 +1107,6 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
         setProgress(Math.round((s / steps.length) * 92));
         setStep(steps[s] || "Processing...");
       } else {
-        // Slow crawl while waiting for LLM
         setProgress(prev => Math.min(prev + 0.5, 98));
       }
     }, 800);
@@ -1123,166 +1122,296 @@ function ResumeScan({resumeText,setResumeText,scanResult,setScanResult,form,memo
       }
 
       console.log(`[Scan] Starting scan with content length: ${content.length}`);
-      const raw=await callLLM([{role:"user",content:`RESUME:\n\n${content.slice(0,15000)}\n\n---\n\n${buildScanPrompt(form,targetRole)}`}],2000,"scan");
+      const raw=await callLLM([{role:"user",content:`RESUME:\n\n${content.slice(0,15000)}\n\n---\n\n${buildScanPrompt(form,targetRole)}`}], 2500, "scan");
       console.log(`[Scan] LLM responded, length: ${raw?.length}`);
       if (!raw) { console.error("[Scan] LLM returned nothing!"); throw new Error("AI returned an empty response."); }
       const parsed=extractJSON(raw);
       console.log("[Scan] Parsed result:", parsed);
       if (parsed.error) throw new Error(parsed.msg);
+      
       clearInterval(iv); setProgress(100); setStep("Done.");
       console.log("[Scan] Updating memory...");
-      if (updateMemory) updateMemory(m => ({
-        scanHistory: [...(m.scanHistory||[]), {
-          date: new Date().toISOString(), score: parsed.credibilityScore,
-          issues: parsed.issues, fileName: resumeText.fileName
-        }].slice(-10)
-      }));
+      if (updateMemory) updateMemory(m => {
+        const history = m.scanHistory || [];
+        // Check if this scan is already the most recent one to avoid duplicates if possible, 
+        // though usually a new scan means unique timestamp.
+        return {
+          scanHistory: [{
+            date: new Date().toISOString(),
+            score: parsed.credibilityScore,
+            issues: parsed.issues,
+            fileName: resumeText.fileName || "Resume",
+            result: parsed
+          }, ...history].slice(-10)
+        };
+      });
+      
       console.log("[Scan] Scan complete. Showing results.");
-      setTimeout(()=>{setScanning(false);setScanResult(parsed);},400);
-    }catch(e){clearInterval(iv);setScanning(false);setScanResult({error:true,msg:e.message});}
+      setTimeout(()=>{
+        setScanning(false);
+        setScanResult(parsed);
+        if (onFirstUse) onFirstUse();
+      }, 400);
+    }catch(e){
+      clearInterval(iv);
+      setScanning(false);
+      setScanResult({error:true,msg:e.message});
+    }
   };
 
-  return(
-    <div style={{display:"flex",flexDirection:"column",gap:16}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-        <div><div className="t-h1" style={{color:C.text}}>Resume Deep Scan Engine</div><div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>Upload your resume. AI interrogates every bullet. No vagueness survives.</div></div>
-        {resumeText&&<Btn onClick={runScan} disabled={scanning} color={C.accent} dark style={{width:"auto",padding:"10px 20px"}}>{scanning?"Scanning...":scanResult&&!scanResult.error?"Re-Scan":"⚡ Run Deep Scan"}</Btn>}
-      </div>
-      <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <input
-          value={targetRole}
-          onChange={e=>setTargetRole(e.target.value)}
-          placeholder="Target role (optional) — e.g. Senior Product Manager"
-          style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px",color:C.text,fontSize:14,fontFamily:"inherit",outline:"none"}}
-        />
-      </div>
-      {resumeText&&(
-        <Card style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{display:"flex",alignItems:"center",gap:12}}><div style={{fontSize:28}}>📄</div><div><div className="t-h3" style={{color:C.text}}>{resumeText.fileName}</div><div style={{color:C.green,fontSize:12,marginTop:2}}>✓ Loaded — click Run Deep Scan</div></div></div>
-          <button onClick={()=>{setResumeText(null);setScanResult(null);setPaste("");setFileErr("");}} style={{background:"transparent",border:`1px solid ${C.border}`,color:C.muted,borderRadius:6,padding:"6px 12px",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>Remove</button>
-        </Card>
-      )}
-      {!resumeText&&(
-        <>
-          <div onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)} onDrop={e=>{e.preventDefault();setDragOver(false);if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);}} onClick={()=>fileRef.current.click()} style={{border:`2px dashed ${dragOver?C.accent:C.border}`,borderRadius:14,padding:"48px 32px",textAlign:"center",background:dragOver?C.accentGlow:C.surface,cursor:"pointer",transition:"all 0.2s"}}>
-            <div style={{fontSize:48,marginBottom:10}}>📂</div>
-            <div style={{color:C.text,fontWeight:700,fontSize:15,marginBottom:6}}>Drop resume here or click to browse</div>
-            <div style={{color:C.muted,fontSize:12,marginBottom:14}}>PDF · DOCX · DOC · TXT · RTF</div>
-            <Badge label="Browse Files" color={C.accent}/>
-            <input ref={fileRef} type="file" accept=".pdf,.docx,.doc,.txt,.rtf" onChange={e=>{if(e.target.files[0])handleFile(e.target.files[0]);e.target.value="";}} style={{display:"none"}}/>
+  const history = memory?.scanHistory || [];
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:24}}>
+      {/* ── Section 1: Previous Scans (TOP) ──────────────────────────────────── */}
+      {(scanResult || history.length > 0) && !scanResult?.error && (
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          <div style={{display:"flex", alignItems:"center", gap:12}}>
+            <div style={{color:C.text, fontWeight:800, fontSize:18, letterSpacing:"-0.2px"}}>Previous Resume Scans</div>
+            <div style={{flex:1, height:1, background:C.border, opacity:0.5}}/>
           </div>
-          {fileErr&&<div style={{background:C.red+"15",border:`1px solid ${C.red}44`,borderRadius:8,padding:"10px 14px",color:C.red,fontSize:13}}>⚠️ {fileErr}</div>}
-          <div style={{display:"flex",alignItems:"center",gap:12}}><div style={{flex:1,height:1,background:C.border}}/><span style={{color:C.muted,fontSize:11,letterSpacing:2,whiteSpace:"nowrap"}}>OR PASTE TEXT</span><div style={{flex:1,height:1,background:C.border}}/></div>
-          <div>
-            <textarea value={paste} onChange={e=>{setPaste(e.target.value);setFileErr("");}} placeholder="Paste your full resume text here..." style={{width:"100%",minHeight:140,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,color:C.text,fontSize:12,padding:14,fontFamily:"inherit",resize:"vertical",lineHeight:1.7,boxSizing:"border-box",display:"block",outline:"none"}}/>
-            <Btn onClick={confirmPaste} disabled={paste.trim().length<50} color={C.accent} dark style={{marginTop:10}}>✓ Use This Resume Text</Btn>
+          
+          <div style={{display:"flex", flexDirection:"column", gap:12}}>
+            {history.length > 0 ? (
+              history.map((item, idx) => (
+                <ScanHistoryCard 
+                  key={idx} 
+                  item={item} 
+                  initExpanded={idx === 0 && !scanning}
+                />
+              ))
+            ) : (
+              scanResult && !scanResult.error && (
+                <ScanHistoryCard 
+                  item={{
+                    date: new Date().toISOString(),
+                    fileName: resumeText?.fileName || "Current Scan",
+                    result: scanResult,
+                    score: scanResult.credibilityScore
+                  }} 
+                  initExpanded={true}
+                />
+              )
+            )}
           </div>
-        </>
+        </div>
       )}
-      {scanning&&(
-        <Card>
-          {/* Segmented step indicator */}
+
+      {/* ── Section 2: New Scan Flow ────────────────────────────────────────── */}
+      <div style={{display:"flex",flexDirection:"column",gap:20, marginTop: history.length > 0 ? 12 : 0}}>
+        <div style={{display:"flex", alignItems:"center", gap:12}}>
+          <div style={{color:C.text, fontWeight:800, fontSize:18, letterSpacing:"-0.2px"}}>Deep Scan New Resume</div>
+          <div style={{flex:1, height:1, background:C.border, opacity:0.5}}/>
+        </div>
+
+        <div style={{color:C.muted, fontSize:14, lineHeight:1.6, marginBottom:4}}>
+          Upload a new version or paste text below. Our AI Deep Scan engine will interrogate every bullet point to find hidden gaps and impact metrics.
+        </div>
+
+        <div style={{display:"flex", flexDirection:"column", gap:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <input
+              value={targetRole}
+              onChange={e=>setTargetRole(e.target.value)}
+              placeholder="Target role (optional) — e.g. Senior Product Manager"
+              style={{flex:1,background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 16px",color:C.text,fontSize:14,fontFamily:"inherit",outline:"none", transition:"border-color 0.2s"}}
+            />
+          </div>
+
+          {resumeText && (
+            <Card style={{display:"flex",alignItems:"center",justifyContent:"space-between", border:`1px solid ${C.accent}22`, background:C.accent+"05"}}>
+              <div style={{display:"flex",alignItems:"center",gap:14}}>
+                <div style={{fontSize:32}}>📄</div>
+                <div>
+                  <div style={{color:C.text, fontWeight:700, fontSize:15}}>{resumeText.fileName}</div>
+                  <div style={{color:C.green,fontSize:12,marginTop:2, fontWeight:500}}>✓ Ready for Deep Scan</div>
+                </div>
+              </div>
+              <button 
+                onClick={()=>{setResumeText(null);setScanResult(null);setPaste("");setFileErr("");}} 
+                style={{background:"transparent",border:`1px solid ${C.border}`,color:C.muted,borderRadius:8,padding:"8px 16px",fontSize:13,cursor:"pointer",fontFamily:"inherit", transition:"all 0.2s"}}
+              >
+                Remove
+              </button>
+            </Card>
+          )}
+
+          {!resumeText && (
+            <div style={{display:"flex", flexDirection:"column", gap:16}}>
+              <div onDragOver={e=>{e.preventDefault();setDragOver(true);}} onDragLeave={()=>setDragOver(false)} onDrop={e=>{e.preventDefault();setDragOver(false);if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);}} onClick={()=>fileRef.current.click()} style={{border:`2px dashed ${dragOver?C.accent:C.border}`,borderRadius:14,padding:"40px 32px",textAlign:"center",background:dragOver?C.accentGlow:C.surface,cursor:"pointer",transition:"all 0.2s"}}>
+                <div style={{fontSize:48,marginBottom:12}}>📂</div>
+                <div style={{color:C.text,fontWeight:700,fontSize:16,marginBottom:6}}>Drop resume here or click to browse</div>
+                <div style={{color:C.muted,fontSize:13,marginBottom:20}}>PDF · DOCX · TXT · RTF</div>
+                <div style={{display:"inline-flex", background:C.accent, color:"#000", padding:"10px 24px", borderRadius:20, fontWeight:800, fontSize:13}}>Browse Files</div>
+                <input ref={fileRef} type="file" accept=".pdf,.docx,.doc,.txt,.rtf" onChange={e=>{if(e.target.files[0])handleFile(e.target.files[0]);e.target.value="";}} style={{display:"none"}}/>
+              </div>
+              
+              {fileErr && <div style={{background:C.red+"15",border:`1px solid ${C.red}44`,borderRadius:8,padding:"12px 16px",color:C.red,fontSize:13}}>⚠️ {fileErr}</div>}
+              
+              <div style={{display:"flex",alignItems:"center",gap:12}}>
+                <div style={{flex:1,height:1,background:C.border}}/>
+                <span style={{color:C.muted,fontSize:11,letterSpacing:2,fontWeight:700}}>OR PASTE TEXT</span>
+                <div style={{flex:1,height:1,background:C.border}}/>
+              </div>
+              
+              <div>
+                <textarea 
+                  value={paste} 
+                  onChange={e=>{setPaste(e.target.value);setFileErr("");}} 
+                  placeholder="Paste your full resume text here..." 
+                  style={{width:"100%",minHeight:140,background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,color:C.text,fontSize:13,padding:16,fontFamily:"inherit",resize:"vertical",lineHeight:1.7,boxSizing:"border-box",display:"block",outline:"none", transition:"border-color 0.2s"}}
+                />
+                <Btn onClick={confirmPaste} disabled={paste.trim().length<50} color={C.accent} dark style={{marginTop:12, width:"100%", borderRadius:10}}>✓ Use This Resume Text</Btn>
+              </div>
+            </div>
+          )}
+
+          {resumeText && !scanning && (
+            <div style={{marginTop:8}}>
+              <button 
+                onClick={runScan} 
+                disabled={scanning} 
+                className="btn-deep-scan"
+                style={{
+                  width:"100%", 
+                  background: `linear-gradient(135deg, ${C.accent}, #0096CC)`, 
+                  color: "#000", 
+                  border: "none", 
+                  borderRadius: 12, 
+                  padding: "16px 28px", 
+                  fontWeight: 900, 
+                  fontSize: 16, 
+                  cursor: "pointer", 
+                  fontFamily: "inherit",
+                  boxShadow: `0 8px 25px ${C.accent}44`,
+                  transition: "transform 0.2s, box-shadow 0.2s"
+                }}
+              >
+                🚀 Run Deep Scan
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {scanning && (
+        <Card style={{border:`1px solid ${C.accent}44`, background:C.accent+"05"}}>
           {(()=>{
-            const steps=[
-              {label:"Parsing",threshold:0},
-              {label:"Structure",threshold:25},
-              {label:"Metrics",threshold:45},
-              {label:"Issues",threshold:65},
-              {label:"Questions",threshold:82},
-              {label:"Scoring",threshold:95},
-            ];
-            const currentStep = steps.filter(s=>progress>=s.threshold).length - 1;
+            const steps=[{label:"Parsing",t:0},{label:"Structure",t:25},{label:"Metrics",t:45},{label:"Issues",t:65},{label:"Questions",t:82},{label:"Scoring",t:95}];
+            const currentStep = steps.filter(s=>progress>=s.t).length - 1;
             return(
               <div style={{marginBottom:16}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <div style={{width:7,height:7,borderRadius:"50%",background:C.accent,animation:"pulse 1s ease infinite"}}/>
-                    <span style={{color:C.accent,fontSize:13,fontFamily:"var(--font-mono)"}}>{step}</span>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{width:8,height:8,borderRadius:"50%",background:C.accent,animation:"pulse 1s ease infinite"}}/>
+                    <span style={{color:C.accent,fontSize:14,fontWeight:700,fontFamily:"var(--font-mono)"}}>{step}</span>
                   </div>
-                  <span style={{color:C.muted,fontSize:11,fontFamily:"var(--font-mono)",fontWeight:700}}>{progress}%</span>
+                  <span style={{color:C.muted,fontSize:12,fontFamily:"var(--font-mono)",fontWeight:800}}>{progress}%</span>
                 </div>
-                <div style={{display:"flex",gap:4,marginBottom:12}}>
+                <div style={{display:"flex",gap:6,marginBottom:12}}>
                   {steps.map((s,i)=>(
-                    <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                      <div style={{
-                        height:4, width:"100%", borderRadius:2,
-                        background: i<=currentStep
-                          ? i<currentStep ? C.accent : C.accent+"88"
-                          : C.border,
-                        transition:"background 0.4s ease",
-                        boxShadow: i===currentStep ? `0 0 8px ${C.accent}66` : "none",
-                      }}/>
-                      <span style={{fontSize:9,color:i<=currentStep?C.accent:C.muted,fontFamily:"var(--font-mono)",whiteSpace:"nowrap"}}>{s.label}</span>
+                    <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+                      <div style={{height:5, width:"100%", borderRadius:3, background: i<=currentStep ? (i<currentStep ? C.accent : C.accent+"88") : C.border, transition:"background 0.4s ease"}}/>
+                      <span style={{fontSize:9,color:i<=currentStep?C.accent:C.muted,fontFamily:"var(--font-mono)",fontWeight:700,textTransform:"uppercase"}}>{s.label}</span>
                     </div>
                   ))}
                 </div>
               </div>
             );
           })()}
-          <GlowBar score={progress} color={C.accent} height={6}/>
-          {progress>30&&(
-            <div style={{marginTop:16}}>
-              <div style={{color:C.muted,fontSize:10,marginBottom:10,textTransform:"uppercase",letterSpacing:1,fontFamily:"var(--font-mono)"}}>Detected issues...</div>
-              <SkeletonIssue/><SkeletonIssue/>
-              {progress>60&&<SkeletonIssue/>}
-            </div>
-          )}
+          <GlowBar score={progress} color={C.accent} height={8}/>
         </Card>
       )}
-      {scanResult?.error&&<ErrCard msg={scanResult.msg}/>}
-      {scanResult&&!scanResult.error&&(
-        <>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
-            {[
-              {label:"Credibility Score",color:scanResult.credibilityScore>=70?C.green:scanResult.credibilityScore>=50?C.gold:C.red,
-               content:<AnimatedScore value={scanResult.credibilityScore} color={scanResult.credibilityScore>=70?C.green:scanResult.credibilityScore>=50?C.gold:C.red} size="medium"/>},
-              {label:"Metric Bullets",color:C.accent,
-               content:<AnimatedScore value={scanResult.metricsFound} color={C.accent} size="medium" suffix=" found"/>},
-              {label:"Issues Found",color:C.red,
-               content:<AnimatedScore value={scanResult.issues?.length||0} color={C.red} size="medium" suffix={` issue${(scanResult.issues?.length||0)!==1?"s":""}`}/>}
-            ].map(s=><Card key={s.label} glow={s.color} animate>
-              <div style={{color:C.muted,fontSize:10,textTransform:"uppercase",letterSpacing:1.2,marginBottom:10}}>{s.label}</div>
-              {s.content}
-            </Card>)}
-          </div>
-          {memory?.scanHistory?.length > 0 && (
-            <Card glow={C.gold}>
-              <div style={{color:C.gold,fontWeight:700,fontSize:13,marginBottom:10}}>📈 Your Scan History ({memory.scanHistory.length} scan{memory.scanHistory.length!==1?"s":""})</div>
-              <div style={{display:"flex",gap:6,alignItems:"flex-end",height:48,marginBottom:8}}>
-                {memory.scanHistory.slice(-8).map((s,i)=>{
-                  const h=Math.max(8,Math.round((s.score/100)*48));
-                  const c=s.score>=70?C.green:s.score>=50?C.gold:C.red;
-                  return <div key={i} title={`${s.score}/100 — ${new Date(s.date).toLocaleDateString()}`} style={{flex:1,height:h,background:c,borderRadius:3,transition:"height 0.5s",cursor:"help"}}/>;
-                })}
-              </div>
-              <div style={{display:"flex",justifyContent:"space-between"}}>
-                <div style={{color:C.muted,fontSize:11}}>First: {memory.scanHistory[0].score}/100</div>
-                {memory.scanHistory.length>1&&<div style={{color:memory.scanHistory[memory.scanHistory.length-1].score>memory.scanHistory[0].score?C.green:C.red,fontSize:11,fontWeight:700}}>
-                  {memory.scanHistory[memory.scanHistory.length-1].score>memory.scanHistory[0].score?"📈 Improving":"📉 Needs work"} · {memory.scanHistory[memory.scanHistory.length-1].score-memory.scanHistory[0].score>0?"+":""}{memory.scanHistory[memory.scanHistory.length-1].score-memory.scanHistory[0].score} pts
-                </div>}
-                <div style={{color:C.muted,fontSize:11}}>Latest: {memory.scanHistory[memory.scanHistory.length-1].score}/100</div>
-              </div>
-            </Card>
-          )}
-          {scanResult.summary&&<Card glow={C.purple}><div style={{color:C.purple,fontWeight:700,marginBottom:8,fontSize:12,textTransform:"uppercase",letterSpacing:1}}>🧠 AI Verdict</div><div style={{color:C.text,fontSize:14,lineHeight:1.8}}>{scanResult.summary}</div></Card>}
-          <Card><div style={{color:C.text,fontWeight:700,marginBottom:14,fontSize:14}}>📋 Issue Report</div>{scanResult.issues?.map((issue,i)=><div key={i} style={{background:C.surface,marginBottom:10,border:`1px solid ${issue.severity==="critical"?C.red+"55":issue.severity==="warning"?C.gold+"44":C.green+"44"}`,borderRadius:8,padding:"12px 14px"}}><div style={{display:"flex",gap:8,marginBottom:8}}><Badge label={issue.severity} color={issue.severity==="critical"?C.red:issue.severity==="warning"?C.gold:C.green}/><span style={{color:C.muted,fontSize:11}}>{issue.type}</span></div><div style={{color:C.accent,fontSize:12,fontFamily:"var(--font-mono)",marginBottom:8,background:"#0A1020",padding:"6px 10px",borderRadius:6}}>"{issue.original}"</div><div style={{color:C.gold,fontSize:12}}>💡 {issue.fix}</div></div>)}</Card>
-          {/* Post-scan flow nudge */}
-          <div style={{background:`linear-gradient(135deg,${C.purple}22,${C.accent}11)`,border:`1px solid ${C.accent}33`,borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}>
-            <div>
-              <div style={{color:C.text,fontWeight:800,fontSize:14,marginBottom:4}}>Next step: See your full weakness breakdown</div>
-              <div style={{color:C.muted,fontSize:12}}>Weakness Radar maps exactly which skills are costing you interviews.</div>
-            </div>
-            <button onClick={()=>window._setActiveModule&&window._setActiveModule("radar")} style={{background:`linear-gradient(135deg,${C.accent},#0096CC)`,color:"#000",border:"none",borderRadius:8,padding:"10px 18px",fontWeight:900,fontSize:12,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
-              📡 See Weakness Radar →
-            </button>
-          </div>
 
-          <Card><div style={{color:C.text,fontWeight:700,marginBottom:6,fontSize:14}}>🔥 Personalized Interrogation Questions</div><div style={{color:C.muted,fontSize:12,marginBottom:14}}>Generated from YOUR resume — a real hiring manager will ask exactly these.</div>{scanResult.interrogationQuestions?.map((q,i)=><div key={i} style={{background:C.accentGlow,border:`1px solid ${C.accent}33`,borderRadius:8,padding:"12px 14px",marginBottom:10}}><div style={{color:C.accent,fontSize:10,fontWeight:800,textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>Q{i+1} · {q.source}</div><div style={{color:C.text,fontSize:13,lineHeight:1.7}}>{q.question}</div></div>)}</Card>
-        </>
-      )}
+      {scanResult?.error && <ErrCard msg={scanResult.msg}/>}
     </div>
   );
 }
+
+function ScanHistoryCard({ item, initExpanded }) {
+  const [expanded, setExpanded] = useState(initExpanded);
+  const res = item.result || { credibilityScore: item.score, issues: item.issues || [] };
+  
+  return (
+    <Card glow={expanded ? C.accent : null} style={{padding:0, overflow:"hidden", border: expanded ? `1px solid ${C.accent}44` : `1px solid ${C.border}`}}>
+      <div 
+        onClick={() => setExpanded(!expanded)} 
+        style={{padding:"16px 20px", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"space-between", background: expanded ? C.accent + "08" : "transparent"}}
+      >
+        <div style={{display:"flex", alignItems:"center", gap:14}}>
+          <div style={{fontSize:24}}>📄</div>
+          <div>
+            <div style={{color:C.text, fontWeight:700, fontSize:14}}>{item.fileName}</div>
+            <div style={{color:C.muted, fontSize:11, marginTop:2}}>{new Date(item.date || Date.now()).toLocaleDateString()} at {new Date(item.date || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+          </div>
+        </div>
+        <div style={{display:"flex", alignItems:"center", gap:12}}>
+          <div style={{textAlign:"right"}}>
+            <div style={{color: res.credibilityScore >= 70 ? C.green : res.credibilityScore >= 50 ? C.gold : C.red, fontWeight:800, fontSize:15}}>{res.credibilityScore}%</div>
+            <div style={{color:C.muted, fontSize:9, textTransform:"uppercase", letterSpacing:1}}>Score</div>
+          </div>
+          <div style={{color:C.muted, fontSize:16, transform: expanded ? "rotate(180deg)" : "none", transition:"transform 0.2s"}}>▼</div>
+        </div>
+      </div>
+
+      {expanded && (
+        <div style={{padding:"0 20px 20px", borderTop:`1px solid ${C.border}44`}}>
+          <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginTop:20, marginBottom:20}}>
+            <Card glow={res.credibilityScore>=70?C.green:res.credibilityScore>=50?C.gold:C.red} style={{padding:12}}>
+              <div style={{color:C.muted, fontSize:9, textTransform:"uppercase", letterSpacing:1, marginBottom:8}}>Score</div>
+              <AnimatedScore value={res.credibilityScore} color={res.credibilityScore>=70?C.green:res.credibilityScore>=50?C.gold:C.red} size="small"/>
+            </Card>
+            <Card glow={C.accent} style={{padding:12}}>
+              <div style={{color:C.muted, fontSize:9, textTransform:"uppercase", letterSpacing:1, marginBottom:8}}>Metrics</div>
+              <div style={{color:C.accent, fontSize:18, fontWeight:800}}>{res.metricsFound || 0} <span style={{fontSize:10, fontWeight:400, color:C.muted}}>found</span></div>
+            </Card>
+            <Card glow={C.red} style={{padding:12}}>
+              <div style={{color:C.muted, fontSize:9, textTransform:"uppercase", letterSpacing:1, marginBottom:8}}>Issues</div>
+              <div style={{color:C.red, fontSize:18, fontWeight:800}}>{res.issues?.length || 0} <span style={{fontSize:10, fontWeight:400, color:C.muted}}>flags</span></div>
+            </Card>
+          </div>
+
+          {res.summary && (
+            <div style={{marginBottom:20}}>
+              <div style={{color:C.purple, fontWeight:700, marginBottom:8, fontSize:11, textTransform:"uppercase", letterSpacing:1}}>🧠 AI Verdict</div>
+              <div style={{color:C.text, fontSize:13, lineHeight:1.7, background:C.purple+"08", padding:14, borderRadius:10, border:`1px solid ${C.purple}22`}}>{res.summary}</div>
+            </div>
+          )}
+
+          {res.issues?.length > 0 && (
+            <div style={{marginBottom:20}}>
+              <div style={{color:C.text, fontWeight:700, marginBottom:10, fontSize:13}}>📋 Issue Report</div>
+              <div style={{display:"flex", flexDirection:"column", gap:10}}>
+                {res.issues.map((issue, i) => (
+                  <div key={i} style={{background:C.surface, border:`1px solid ${issue.severity==="critical"?C.red+"55":issue.severity==="warning"?C.gold+"44":C.green+"44"}`, borderRadius:8, padding:"12px 14px"}}>
+                    <div style={{display:"flex", gap:8, marginBottom:8}}>
+                      <Badge label={issue.severity} color={issue.severity==="critical"?C.red:issue.severity==="warning"?C.gold:C.green}/><span style={{color:C.muted, fontSize:11}}>{issue.type}</span>
+                    </div>
+                    <div style={{color:C.accent, fontSize:11, fontFamily:"var(--font-mono)", marginBottom:8, background:"#0A1020", padding:"6px 10px", borderRadius:6}}>"{issue.original}"</div>
+                    <div style={{color:C.gold, fontSize:12}}>💡 {issue.fix}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {res.interrogationQuestions?.length > 0 && (
+            <div>
+              <div style={{color:C.text, fontWeight:700, marginBottom:10, fontSize:13}}>🔥 Personalized Interrogation Questions</div>
+              {res.interrogationQuestions.map((q, i) => (
+                <div key={i} style={{background:C.accentGlow, border:`1px solid ${C.accent}33`, borderRadius:8, padding:"12px 14px", marginBottom:10}}>
+                  <div style={{color:C.accent, fontSize:10, fontWeight:800, textTransform:"uppercase", letterSpacing:1, marginBottom:6}}>Q{i+1} · {q.source}</div>
+                  <div style={{color:C.text, fontSize:12, lineHeight:1.7}}>{q.question}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 
 // ── JD Analyzer ───────────────────────────────────────────────────────────────
 function JDAnalyzer({resumeText,form,memory,updateMemory}){
@@ -2868,7 +2997,7 @@ function AuthGate({ moduleName, moduleIcon, onLogin, onRegister }) {
             {[
               { icon:"🔎", label:"Job Search (all boards)", access:"Always Free", color:C.green },
               { icon:"🌏", label:"Market Intel", access:"Always Free", color:C.green },
-              { icon:"⚡", label:"Resume Scan", access:"1 free usage", color:C.gold },
+              { icon:"⚡", label:"Resume Scan", access:"Login required", color:C.gold },
               { icon:"📡", label:"Weakness Radar", access:"Auth needed", color:C.gold },
               { icon:"🏆", label:"Readiness Score", access:"Auth needed", color:C.gold },
               { icon:"🔍", label:"JD Analyzer", access:"Login required", color:C.red },
@@ -3273,6 +3402,8 @@ function App(){
   const [resumeText,setResumeText]       = useState(null);
   const [scanResult,setScanResult]       = useState(null);
 
+
+
   // ── Auth state ──────────────────────────────────────────────────────────────
   const [user,setUser]                   = useState(()=>getSession());
   const [authModal,setAuthModal]         = useState(null);
@@ -3287,7 +3418,23 @@ function App(){
   });
 
   // ── Memory state ───────────────────────────────────────────────────────────
-  const [memory, setMemory] = useState(() => user ? (loadMemory(user.email) || initMemory()) : null);
+  const [memory, setMemory] = useState(() => {
+    if (!user) return loadMemory() || initMemory();
+    return loadMemory(user.id) || loadMemory(user.email) || initMemory();
+  });
+
+  // Restore most recent scan result from memory on mount/memory update
+  useEffect(() => {
+    if (memory?.scanHistory?.length > 0 && !scanResult) {
+      setScanResult(memory.scanHistory[0].result || {
+        credibilityScore: memory.scanHistory[0].score,
+        issues: memory.scanHistory[0].issues || [],
+        interrogationQuestions: [],
+        metricsFound: 0,
+        summary: "Previous scan restored from history."
+      });
+    }
+  }, [memory, scanResult]);
 
   // ── Restore session from stored token on mount ─────────────────────────────
   useEffect(() => {
@@ -3324,7 +3471,7 @@ function App(){
             setUser(session);
             saveSessionLocal(session);
             const mem = await loadMemoryFromDB(userData.id, token);
-            const finalMem = mem || loadMemory(userData.id) || initMemory();
+            const finalMem = mem || loadMemory(userData.id) || loadMemory(userData.email) || initMemory();
             setMemory(finalMem);
             // Restore resume from localStorage cache or DB fallback
             const cachedResume = loadResume(userData.id);
@@ -3409,6 +3556,8 @@ function App(){
     setMemory(prev => prev ? { ...prev, lastResume: resumeText } : prev);
   }, [resumeText, user?.id]);
 
+
+
   const login = async (session) => {
     setUser(session);
     setAuthModal(null);
@@ -3422,7 +3571,7 @@ function App(){
     }
 
     const guestMem = loadMemory(); // Get what they did as guest
-    let finalMem = dbMem || loadMemory(session.id) || initMemory();
+    let finalMem = dbMem || loadMemory(session.id) || loadMemory(session.email) || initMemory();
 
     if (guestMem) {
       finalMem = mergeMemory(finalMem, guestMem);
@@ -4235,7 +4384,6 @@ class ErrorBoundary extends React.Component {
     );
   }
 }
-
 const AppWithBoundary = () => (
   <ErrorBoundary>
     <App />
