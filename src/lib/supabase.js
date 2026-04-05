@@ -8,23 +8,31 @@ export const sb = {
 
   // ── Auth ───────────────────────────────────────────────────────────────────
   async signUp(email, password, name) {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-      method: "POST", headers: sb._au(),
-      body: JSON.stringify({ email, password, data: { full_name: name } })
-    });
-    const d = await r.json();
-    if (r.status >= 400 || d.error) throw new Error(d.error?.message || d.msg || "Sign up failed");
-    return d;
+    try {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+        method: "POST", headers: sb._au(),
+        body: JSON.stringify({ email, password, data: { full_name: name } })
+      });
+      const d = await r.json();
+      if (r.status >= 400 || d.error) return { data: null, error: d.error || { message: d.msg || "Sign up failed" } };
+      return { data: d, error: null };
+    } catch (e) {
+      return { data: null, error: e };
+    }
   },
 
   async signIn(email, password) {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method: "POST", headers: sb._au(),
-      body: JSON.stringify({ email, password })
-    });
-    const d = await r.json();
-    if (r.status >= 400 || d.error) throw new Error(d.error?.message || "Sign in failed");
-    return d;
+    try {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: "POST", headers: sb._au(),
+        body: JSON.stringify({ email, password })
+      });
+      const d = await r.json();
+      if (r.status >= 400 || d.error) return { data: null, error: d.error || { message: "Sign in failed" } };
+      return { data: d, error: null };
+    } catch (e) {
+      return { data: null, error: e };
+    }
   },
 
   async signOut(token) {

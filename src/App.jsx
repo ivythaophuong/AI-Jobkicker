@@ -1,13 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import mammoth from 'mammoth';
-import * as pdfjs from 'pdfjs-dist';
-
-// ── Shared Libraries & Styles ────────────────────────────────────────────────
 import { sb } from './lib/supabase';
 import { C, MODULES } from './styles/theme';
-import { Card, Badge, Btn, Spinner } from './components/CommonUI';
-
-// ── Custom Hooks ─────────────────────────────────────────────────────────────
+import { Badge, Btn, Card, Spinner } from './components/CommonUI';
 import { useMemory } from './hooks/useMemory';
 
 // ── Feature Modules ──────────────────────────────────────────────────────────
@@ -23,138 +17,320 @@ import MarketIntel from './features/MarketIntel/MarketIntel';
 import JobSearch from './features/JobSearch/JobSearch';
 import MemoryDashboard from './features/MemoryDashboard/MemoryDashboard';
 
-// pdf.js worker setup
-if (typeof window !== 'undefined' && !pdfjs.GlobalWorkerOptions.workerSrc) {
-  pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-}
-
-// ── Helper Utilities ────────────────────────────────────────────────────────
-function getSession() {
-  const raw = localStorage.getItem("supabase.auth.token");
-  if (!raw) return null;
-  try {
-    const data = JSON.parse(raw);
-    const session = data.currentSession;
-    if (!session) return null;
-    return { id: session.user.id, email: session.user.email, name: session.user.user_metadata?.full_name || "User", token: session.access_token, refresh_token: session.refresh_token };
-  } catch { return null; }
-}
-
-function saveSessionLocal(session) {
-  localStorage.setItem("supabase.auth.token", JSON.stringify({ currentSession: { user: { id: session.id, email: session.email, user_metadata: { full_name: session.name } }, access_token: session.token, refresh_token: session.refresh_token } }));
-}
-
-function clearSessionLocal() {
-  localStorage.removeItem("supabase.auth.token");
-}
-
-function showToast(msg, type = "info") {
-  console.log(`[Toast ${type}] ${msg}`);
-  // In production, would use a toast library
-}
+// ── Original Overlay Components ──────────────────────────────────────────────
+import { Ticker, UserMenu, AuthGate } from './components/OriginalUIOverlays';
+import { AuthModal, CommandPalette } from './components/OriginalFeatures';
 
 // ── Main App Shell ───────────────────────────────────────────────────────────
 function App() {
-  // Global Navigation & Logic
   const [setupDone, setSetupDone] = useState(true);
-  const [form, setForm] = useState({ role: "", industry: "", level: "", market: "", urgency: "7 days" });
+  const [form, setForm] = useState({ role: "", industry: "", level: "Senior", market: "Singapore", urgency: "7 days" });
+  const [user, setUser] = useState(null);
+  const [activeModule, setActiveModule] = useState("jobs");
+  
+  const [authModal, setAuthModal] = useState(null);
+  const [proModal, setProModal] = useState(null);
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
+  const [toast, setToast] = useState(null);
+
   const [resumeText, setResumeText] = useState(null);
   const [scanResult, setScanResult] = useState(null);
-  const [activeModule, setActiveModule] = useState("scan");
 
-  // Auth State
-  const [user, setUser] = useState(() => getSession());
-  const [authModal, setAuthModal] = useState(null);
-  const [authLoading, setAuthLoading] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(true);
+  // Restore session
+  useEffect(() => {
+    const raw = localStorage.getItem("supabase.auth.token");
+    if (raw) {
+      try {
+        const data = JSON.parse(raw);
+        const session = data.currentSession;
+        if (session) {
+          const userObj = session.user;
+          const meta = userObj.user_metadata || {};
+          setUser({ 
+            id: userObj.id, 
+            email: userObj.email, 
+            name: meta.full_name || userObj.email?.split("@")[0] || "User",
+            token: session.access_token 
+          });
+          setSetupDone(true);
+        }
+      } catch (e) { console.error("Session restore failed", e); }
+    }
+  }, []);
+
+  // Relational Sync Hook
+  const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
-  const [proModal, setProModal] = useState(null);
-  const [darkMode, setDarkMode] = useState(true);
-
-  // ── REFACTORED MEMORY HOOK ────────────────────────────────────────────────
   const { memory, updateMemory, isSyncing } = useMemory(user, isRestoring, setIsRestoring, setRestoreError);
 
-  // ── Global Handlers ───────────────────────────────────────────────────────
   const login = (session) => {
-    saveSessionLocal(session);
-    setUser(session);
+    const userObj = session.user;
+    const meta = userObj.user_metadata || {};
+    const newUser = { 
+      id: userObj.id, 
+      email: userObj.email, 
+      name: meta.full_name || userObj.email?.split("@")[0] || "User",
+      token: session.access_token 
+    };
+    setUser(newUser);
+    localStorage.setItem("supabase.auth.token", JSON.stringify({ currentSession: session }));
     setIsRestoring(true); // Trigger composite fetch
     setAuthModal(null);
+    setSetupDone(true);
+    showToast("✓ Welcome back!", "success");
   };
 
   const logout = () => {
-    if (user) sb.signOut(user.token);
-    clearSessionLocal();
+    sb.signOut(user?.token);
+    localStorage.removeItem("supabase.auth.token");
     setUser(null);
-    setMemory(null);
+    setSetupDone(false);
     window.location.reload();
   };
 
-  // ── Module Selection Logic ────────────────────────────────────────────────
+  const showToast = (msg, type = "info") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setCmdOpen(o => !o); }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
+
   const renderActiveModule = () => {
+    const props = { 
+      resumeText, setResumeText, scanResult, setScanResult, 
+      form, memory, updateMemory, 
+      onProTrigger: setProModal,
+      user, setAuthModal, showToast, setActiveModule
+    };
+    
     switch (activeModule) {
-      case "scan":     return <ResumeScan resumeText={resumeText} setResumeText={setResumeText} scanResult={scanResult} setScanResult={setScanResult} form={form} memory={memory} updateMemory={updateMemory} />;
-      case "radar":    return <WeaknessRadar scanResult={scanResult} memory={memory} />;
-      case "score":    return <ReadinessScore scanResult={scanResult} memory={memory} />;
-      case "jd":       return <JDAnalyzer resumeText={resumeText} form={form} memory={memory} updateMemory={updateMemory} />;
-      case "star":     return <STARBuilder resumeText={resumeText} form={form} memory={memory} updateMemory={updateMemory} />;
-      case "simulate": return <HiringManagerSim resumeText={resumeText} scanResult={scanResult} form={form} memory={memory} updateMemory={updateMemory} onProTrigger={setProModal} />;
-      case "salary":   return <SalaryCoach resumeText={resumeText} form={form} memory={memory} updateMemory={updateMemory} onProTrigger={setProModal} />;
-      case "cover":    return <CoverLetterGen resumeText={resumeText} form={form} memory={memory} updateMemory={updateMemory} />;
-      case "market":   return <MarketIntel form={form} memory={memory} />;
-      case "jobs":     return <JobSearch resumeText={resumeText} form={form} memory={memory} updateMemory={updateMemory} onProTrigger={setProModal} />;
-      case "memory":   return <MemoryDashboard memory={memory} form={form} updateMemory={updateMemory} />;
-      default:         return <ResumeScan resumeText={resumeText} setResumeText={setResumeText} scanResult={scanResult} setScanResult={setScanResult} form={form} memory={memory} updateMemory={updateMemory} />;
+      case "scan":     return <ResumeScan {...props} />;
+      case "radar":    return <WeaknessRadar {...props} />;
+      case "score":    return <ReadinessScore {...props} />;
+      case "jd":       return <JDAnalyzer {...props} />;
+      case "star":     return <STARBuilder {...props} />;
+      case "simulate": return <HiringManagerSim {...props} />;
+      case "salary":   return <SalaryCoach {...props} />;
+      case "cover":    return <CoverLetterGen {...props} />;
+      case "market":   return <MarketIntel {...props} />;
+      case "jobs":     return <JobSearch {...props} />;
+      case "memory":   return <MemoryDashboard {...props} />;
+      default:         return <ResumeScan {...props} />;
     }
   };
 
-  // ── Final Main Shell Interface ───────────────────────────────────────────
-  return (
-    <div data-theme={darkMode ? "dark" : "light"} style={{ minHeight: "100vh", background: darkMode ? C.bg : "#F8FAFC", color: darkMode ? C.text : "#0F172A", fontFamily: "var(--font-body)" }}>
-      {/* Header */}
-      <header style={{ borderBottom: `1px solid ${C.border}`, background: C.surface, padding: "12px 24px", position: "sticky", top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ fontWeight: 800, fontSize: 18, color: C.text }}>CareerAiHub <span style={{ color: C.accent, fontSize: 10 }}>PRO</span></div>
+  // ── 3. Render Helper ───────────────────────────────────────────────────────
+  const renderMainContent = () => {
+
+    if (!setupDone) {
+      return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px", maxWidth: 600, margin: "0 auto", animation: "fadeIn 0.5s ease" }}>
           
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {isSyncing && <Badge label="Saving..." color={C.accent} />}
-            {user ? (
-               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                 <span style={{ fontSize: 12, color: C.muted }}>{user.name}</span>
-                 <Btn onClick={logout} color={C.border} style={{ padding: "4px 10px", fontSize: 10 }}>Sign Out</Btn>
-               </div>
-            ) : (
-               <Btn onClick={() => setAuthModal("login")} color={C.accent} dark style={{ padding: "6px 14px", fontSize: 11 }}>Sign In</Btn>
-            )}
+          {/* Logo (Onboarding version) */}
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <div style={{ width: 10, height: 10, borderRadius: "50%", background: C.accent, boxShadow: `0 0 15px ${C.accent}`, animation: "pulse 2s ease infinite" }} />
+              <span style={{ 
+                fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 26, letterSpacing: "-1px",
+                background: `linear-gradient(135deg, ${C.accent} 0%, #7B61FF 50%, ${C.pink} 100%)`,
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
+              }}>CareerAiHub</span>
+            </div>
+            <div style={{ color: C.muted, fontSize: 13, letterSpacing: 1, textTransform: "uppercase" }}>The Career Acceleration OS</div>
+          </div>
+
+          {/* Form Card */}
+          <div style={{ width: "100%", background: C.card, border: `1px solid ${C.accent}33`, borderRadius: 16, padding: 32, boxShadow: `0 0 40px ${C.accent}0D` }}>
+            <div style={{ marginBottom: 24 }}>
+               <div style={{ color: C.text, fontWeight: 900, fontSize: 18, marginBottom: 4 }}>Build your personalized system</div>
+               <div style={{ color: C.muted, fontSize: 12 }}>Takes 30 seconds. Powers every AI module.</div>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label className="setup-label">Target Role</label>
+              <input 
+                className="setup-input" 
+                value={form.role} 
+                onChange={e => setForm(p => ({ ...p, role: e.target.value }))} 
+                placeholder="e.g. Senior Software Engineer, Product Lead" 
+              />
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <label className="setup-label" style={{ marginBottom: 0 }}>Resume Content</label>
+                <button 
+                  onClick={() => setResumeText(resumeText === null ? "" : null)}
+                  style={{ background: "transparent", border: "none", color: C.accent, fontSize: 11, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
+                >
+                  {resumeText === null ? "OR PASTE TEXT" : "UPLOAD FILE INSTEAD"}
+                </button>
+              </div>
+              
+              {resumeText === null ? (
+                <div style={{ border: `2px dashed ${C.border}`, borderRadius: 12, padding: 24, textAlign: "center", cursor: "pointer" }} onClick={() => document.getElementById('setup-file').click()}>
+                  <input type="file" id="setup-file" hidden onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setResumeText("Parsing file..."); 
+                      setResumeText(`Content of ${file.name} (simulated)`);
+                    }
+                  }} />
+                  <div style={{ fontSize: 24, marginBottom: 8 }}>📄</div>
+                  <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>Upload your Resume (PDF/DOCX)</div>
+                  <div style={{ color: C.muted, fontSize: 11, marginTop: 4 }}>We extract your full career history automatically</div>
+                </div>
+              ) : (
+                <textarea 
+                  className="setup-input"
+                  style={{ minHeight: 120, resize: "vertical" }}
+                  value={typeof resumeText === 'string' ? resumeText : ""}
+                  onChange={e => setResumeText(e.target.value)}
+                  placeholder="Paste your full resume text here..."
+                />
+              )}
+            </div>
+
+            <Btn onClick={() => setSetupDone(true)} disabled={!form.role.trim() || (resumeText === null ? false : !resumeText?.trim())} color={C.accent} dark style={{ width: "100%", fontSize: 14 }}>⚡ Scan my resume to begin →</Btn>
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 24 }}>
+              {!user ? (
+                 <>
+                   <button onClick={() => setAuthModal("login")} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 13, cursor: "pointer" }}>Sign In</button>
+                   <span style={{ color: C.border }}>|</span>
+                   <button onClick={() => setAuthModal("register")} style={{ background: "transparent", border: "none", color: C.accent, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Create Account</button>
+                 </>
+              ) : (
+                 <div style={{ color: C.green, fontSize: 13, fontWeight: 700 }}>✓ Signed in as {user.name}</div>
+              )}
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginTop: 32, width: "100%" }}>
+            {[
+              { stat: "75%", label: "rejection rate", color: C.red },
+              { stat: "$18K", label: "salary gap", color: C.gold },
+              { stat: "5 mo", label: "avg search", color: C.muted },
+              { stat: "3.2×", label: "offer rate", color: C.green },
+            ].map((p, i) => (
+              <div key={i} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: 12, textAlign: "center" }}>
+                <div style={{ fontWeight: 900, fontSize: 20, color: p.color, marginBottom: 4 }}>{p.stat}</div>
+                <div style={{ fontSize: 9, color: C.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>{p.label}</div>
+              </div>
+            ))}
           </div>
         </div>
-      </header>
+      );
+    }
 
-      {/* Main Content */}
-      <main style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px" }}>
-        {/* Navigation Tabs */}
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 16, marginBottom: 24 }}>
-          {MODULES.map(m => (
-             <button 
-               key={m.id} 
-               onClick={() => setActiveModule(m.id)}
-               style={{ 
-                 background: activeModule === m.id ? `${m.color}22` : "transparent",
-                 border: `1px solid ${activeModule === m.id ? m.color : C.border}`,
-                 color: activeModule === m.id ? m.color : C.muted,
-                 borderRadius: 8, padding: "8px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap"
-               }}
-             >
-               {m.icon} {m.label}
-             </button>
-          ))}
+    return (
+      <>
+        {/* Ticker */}
+        <div style={{ background: C.accent + "11", borderBottom: `1px solid ${C.accent}22`, padding: "6px 0" }}>
+          <Ticker text={user ? `SIGNED IN AS ${user.name?.toUpperCase()} · FULL ACCESS · 11 MODULES ACTIVE` : `JOB SEARCH & MARKET INTEL FREE · SIGN UP TO UNLOCK AI FEATURES · 10 MODULES ACTIVE`} />
         </div>
 
-        {/* Feature Component */}
-        <div style={{ animation: "fadeIn 0.3s ease" }}>
-          {renderActiveModule()}
+        {/* Content Wrapper */}
+        <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px", animation: "fadeIn 0.4s ease" }}>
+          <div key={activeModule}>
+            {renderActiveModule()}
+          </div>
         </div>
-      </main>
+      </>
+    );
+  };
+
+  return (
+    <div data-theme={darkMode ? "dark" : "light"} style={{ minHeight: "100vh", background: darkMode ? C.bg : "#F8FAFC", fontFamily: "var(--font-body)", color: darkMode ? C.text : "#0F172A" }}>
+      
+      {/* Modals */}
+      {authModal && <AuthModal initialMode={authModal} onSuccess={login} onClose={() => setAuthModal(null)} />}
+      {cmdOpen && <CommandPalette modules={MODULES} setActiveModule={setActiveModule} setAuthModal={setAuthModal} user={user} onClose={() => setCmdOpen(false)} />}
+      
+      {/* Header */}
+      <div style={{ borderBottom: `1px solid ${C.border}`, background: C.surface, padding: "0 24px", position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(12px)" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60 }}>
+            
+            {/* Branding */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setSetupDone(false)}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.accent, boxShadow: `0 0 10px ${C.accent}`, animation: "pulse 2s ease infinite" }} />
+              <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: C.text }}>CareerAiHub</span>
+            </div>
+
+            {/* Profile/Auth */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }} className="hide-mobile">
+                <div style={{ width: 12, height: 2, background: C.accent, borderRadius: 2, opacity: 0.8 }} title={form.role || "Target Role"} />
+                <div style={{ width: 12, height: 2, background: C.gold, borderRadius: 2, opacity: 0.8 }} title={form.market || "Market"} />
+              </div>
+              <button onClick={() => setSetupDone(false)} style={{ background: "transparent", border: `1px solid ${C.border}`, color: C.muted, borderRadius: 6, padding: "4px 10px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Edit</button>
+              
+              {/* Theme toggle */}
+              <button onClick={() => setDarkMode(d => !d)} title="Toggle light/dark mode" style={{ background: "transparent", border: `1px solid ${C.border}`, color: C.muted, borderRadius: 6, padding: "4px 8px", fontSize: 13, cursor: "pointer", fontFamily: "inherit", lineHeight: 1 }}>
+                {darkMode ? "☀️" : "🌙"}
+              </button>
+              
+              {/* Command palette trigger */}
+              <button onClick={() => setCmdOpen(true)} title="Command palette (⌘K)" style={{ background: "transparent", border: `1px solid ${C.border}`, color: C.muted, borderRadius: 6, padding: "4px 10px", fontSize: 11, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ fontSize: 10, fontWeight: 700 }}>⌘K</span>
+              </button>
+
+              {user ? (
+                <UserMenu user={user} onLogout={logout} />
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button onClick={() => setAuthModal("login")} style={{ background: "transparent", border: `1px solid ${C.border}`, color: C.text, borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                    Sign In
+                  </button>
+                  <button onClick={() => setAuthModal("register")} style={{ background: `linear-gradient(135deg,${C.accent},#0096CC)`, color: "#000", border: "none", borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>
+                    ✨ Join Free
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Module Nav Tabs */}
+          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 10, scrollbarWidth: "none" }}>
+            {MODULES.map(m => (
+              <button
+                key={m.id}
+                onClick={() => setActiveModule(m.id)}
+                className={`mod-tab ${activeModule === m.id ? "active" : ""}`}
+                style={{
+                  background: activeModule === m.id ? m.color + "1A" : "transparent",
+                  borderColor: activeModule === m.id ? m.color : C.border,
+                  color: activeModule === m.id ? m.color : C.muted,
+                }}
+              >
+                {activeModule === m.id && <span style={{ position: "absolute", bottom: -3, left: 6, right: 6, height: 2, background: m.color, borderRadius: 2 }} />}
+                <span style={{ fontSize: 14 }}>{m.icon}</span>
+                <span>{m.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      {renderMainContent()}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", background: toast.type === "error" ? C.red : toast.type === "success" ? C.green : C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: "12px 24px", color: (toast.type === "error" || toast.type === "success") ? "#000" : C.text, fontWeight: 800, fontSize: 13, zIndex: 1000, boxShadow: "0 10px 30px rgba(0,0,0,0.4)", animation: "slideUp 0.3s ease", display: "flex", alignItems: "center", gap: 10 }}>
+          <span>{toast.type === "error" ? "⚠️" : toast.type === "success" ? "✓" : "ℹ️"}</span>
+          {toast.msg}
+        </div>
+      )}
     </div>
   );
 }
