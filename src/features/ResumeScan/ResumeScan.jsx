@@ -144,14 +144,14 @@ export default function ResumeScan({ resumeText, setResumeText, scanResult, setS
             { source: "AWS expert", question: "How exactly was the horizontal auto-scaling configured to handle the 10x traffic spike?" }
           ]
         };
-        setScanResult(result);
-        setProgress(100);
         setScanning(false);
         
-        // RELATIONAL SYNC (Priority)
+        // ATOMIC RELATIONAL SYNC
         if (updateMemory) {
           updateMemory(
             m => ({
+              ...m,
+              scanResult: result,
               scanHistory: [{ date: new Date().toISOString(), score: result.credibilityScore, fileName: resumeText.fileName, result }, ...(m.scanHistory || [])].slice(-10)
             }),
             {
@@ -160,7 +160,9 @@ export default function ResumeScan({ resumeText, setResumeText, scanResult, setS
                 credibility_score: result.credibilityScore,
                 file_name: resumeText.fileName,
                 metrics_found: result.metricsFound,
-                result: result,
+                summary: result.summary || "Scan completed.",
+                issues: result.majorIssues || [],
+                questions: result.interrogationQuestions || [],
                 created_at: new Date().toISOString()
               }
             }
@@ -294,6 +296,7 @@ export default function ResumeScan({ resumeText, setResumeText, scanResult, setS
             <GlowBar score={progress} color={C.accent} />
           </Card>
         )}
+
       </div>
     </div>
   );

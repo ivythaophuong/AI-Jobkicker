@@ -7,38 +7,42 @@ export function useMemory(user, isRestoring, setIsRestoring, setRestoreError) {
   const syncLockedRef = useRef(true); // Atomic lock to prevent race conditions during initial load
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // 1. COMPOSITE FETCH: Load from all relational tables in parallel
+  // 1. COMPOSITE FETCH: Load from all relational tables with isolation
   useEffect(() => {
     async function loadAll() {
       if (!user || !isRestoring) return;
+      console.log("[useMemory] Refactor Boot Initializing:", { email: user.email, id: user.id });
       
       try {
+        const fetch = async (table, query = {}) => {
+           try {
+             const res = await sb.select(table, { user_id: `eq.${user.id}`, ...query }, user.token);
+             return res || [];
+           } catch (e) {
+             console.warn(`[useMemory] Partial Fetch Error for ${table}:`, e.message);
+             return [];
+           }
+        };
+
+        // Isolated, fault-tolerant parallel fetches
         const [
-          dbMem, 
-          scans, 
-          apps, 
-          stars, 
-          covers, 
-          jds, 
-          sessions, 
-          practice, 
-          insights
+          dbMem, scans, apps, stars, covers, jds, sessions, practice, insights
         ] = await Promise.all([
-          sb.select("user_memory", { user_id: `eq.${user.id}` }, user.token),
-          sb.select("resume_scans", { user_id: `eq.${user.id}`, order: "created_at.desc", limit: 20 }, user.token),
-          sb.select("applications", { user_id: `eq.${user.id}`, order: "created_at.desc", limit: 50 }, user.token),
-          sb.select("star_stories", { user_id: `eq.${user.id}`, order: "created_at.desc", limit: 30 }, user.token),
-          sb.select("cover_letters", { user_id: `eq.${user.id}`, order: "created_at.desc", limit: 20 }, user.token),
-          sb.select("jd_analyses", { user_id: `eq.${user.id}`, order: "created_at.desc", limit: 20 }, user.token),
-          sb.select("mock_sessions", { user_id: `eq.${user.id}`, order: "created_at.desc", limit: 20 }, user.token),
-          sb.select("negotiation_practice", { user_id: `eq.${user.id}`, order: "created_at.desc", limit: 20 }, user.token),
-          sb.select("insights", { user_id: `eq.${user.id}`, order: "created_at.desc", limit: 10 }, user.token)
+          fetch("user_memory"),
+          fetch("resume_scans", { order: "created_at.desc", limit: 20 }),
+          fetch("applications", { order: "created_at.desc", limit: 50 }),
+          fetch("star_stories", { order: "created_at.desc", limit: 30 }),
+          fetch("cover_letters", { order: "created_at.desc", limit: 20 }),
+          fetch("jd_analyses", { order: "created_at.desc", limit: 20 }),
+          fetch("mock_sessions", { order: "created_at.desc", limit: 20 }),
+          fetch("negotiation_practice", { order: "created_at.desc", limit: 20 }),
+          fetch("insights", { order: "created_at.desc", limit: 10 })
         ]);
+
+        console.log(`[useMemory] Data Arrival: Scans(${scans.length}), Apps(${apps.length}), Stars(${stars.length})`);
 
         // 2. CONSTRUCT COMPOSITE STATE (Backward Compatible & Normalized)
         const base = dbMem?.[0]?.data || {}; 
-
-        // Senior Normalization Layer: Map snake_case (DB) to camelCase (Frontend)
         const normalize = (rows, mapper) => (rows || []).map(r => {
           const obj = { ...r, date: r.created_at };
           Object.keys(mapper).forEach(key => {
@@ -50,38 +54,32 @@ export function useMemory(user, isRestoring, setIsRestoring, setRestoreError) {
         const compositeMap = {
           ...base,
           scanHistory: (scans && scans.length > 0) 
-            ? normalize(scans, { credibility_score: 'credibilityScore', file_name: 'fileName', metrics_found: 'metricsFound' }) 
+            ? normalize(scans, { credibility_score: 'score', file_name: 'fileName', metrics_found: 'metricsFound' }).map(s => ({
+                ...s,
+                // RE-ASSEMBLE: Stitch relational columns back into a unified result object for UI compatibility
+                result: s.result || {
+                  credibilityScore: s.score,
+                  metricsFound: s.metricsFound,
+                  summary: s.summary,
+                  issues: s.issues || [],
+                  interrogationQuestions: s.questions || []
+                }
+              }))
             : (base.scanHistory || []),
-          
-          applications: (apps && apps.length > 0) 
-            ? normalize(apps, { updated_at: 'updatedAt' }) 
-            : (base.applications || []),
-          
-          starBank: (stars && stars.length > 0) 
-            ? normalize(stars, { one_liner: 'oneLiner' }) 
-            : (base.starBank || []),
-          
-          coverLetters: (covers && covers.length > 0) 
-            ? normalize(covers, { follow_up: 'followUpEmail' }) 
-            : (base.coverLetters || []),
-          
-          jdAnalyses: (jds && jds.length > 0) 
-            ? normalize(jds, { role_title: 'roleTitle', match_score: 'matchScore' }) 
-            : (base.jdAnalyses || []),
-          
-          mockSessions: (sessions && sessions.length > 0) 
-            ? normalize(sessions, { questions_count: 'questionsCount', avg_score: 'avgScore' }) 
-            : (base.mockSessions || []),
-            
+          applications: (apps && apps.length > 0) ? normalize(apps, { updated_at: 'updatedAt' }) : (base.applications || []),
+          starBank: (stars && stars.length > 0) ? normalize(stars, { one_liner: 'oneLiner' }) : (base.starBank || []),
+          coverLetters: (covers && covers.length > 0) ? normalize(covers, { follow_up: 'followUpEmail', role_title: 'roleTitle' }) : (base.coverLetters || []),
+          jdAnalyses: (jds && jds.length > 0) ? normalize(jds, { role_title: 'roleTitle', match_score: 'matchScore' }) : (base.jdAnalyses || []),
+          mockSessions: (sessions && sessions.length > 0) ? normalize(sessions, { questions_count: 'questionsCount', avg_score: 'avgScore' }) : (base.mockSessions || []),
           negotiationPractice: practice?.length ? practice.length : (base.negotiationPractice || 0),
           insights: insights?.length ? insights : (base.insights || []),
         };
-
         setMemory(compositeMap);
         syncLockedRef.current = false; // Release lock for UI edits
         setIsRestoring(false);
+        console.log("[useMemory] Refactor Boot Complete. Memory state live.");
       } catch (e) {
-        console.error("[useMemory] Refactor Boot Failed:", e.message);
+        console.error("[useMemory] Refactor Global Error:", e.message);
         setRestoreError(true);
       }
     }
@@ -90,32 +88,40 @@ export function useMemory(user, isRestoring, setIsRestoring, setRestoreError) {
 
   // 3. TARGETED UPDATE: Specific persistence logic
   const updateMemory = async (updater, relational = null) => {
+    let nextState;
     setMemory(prev => {
-      const next = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
-      
-      // Perform sync outside of the state calculation and lock check
-      if (user && !syncLockedRef.current) {
-        setIsSyncing(true);
-        
-        // Use a self-invoking async function to run sync in background without blocking state updater
-        (async () => {
-          try {
-            // RELATIONAL SYNC (Priority for scalability)
-            if (relational && relational.table && relational.data) {
-               await sb.insert(relational.table, { ...relational.data, user_id: user.id }, user.token);
-            }
-            
-            // GLOBAL SYNC (Backup/Settings)
-            await sb.upsert("user_memory", { user_id: user.id, data: next, updated_at: new Date().toISOString() }, user.token);
-          } catch (e) {
-            console.error("[Sync] Persistence Error:", e.message);
-          } finally {
-            setIsSyncing(false);
-          }
-        })();
-      }
-      return next;
+      nextState = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
+      return nextState;
     });
+
+    if (user && !syncLockedRef.current) {
+      setIsSyncing(true);
+      try {
+        if (relational && relational.table && relational.data) {
+          console.log(`[Sync] Relational Push: ${relational.table}`);
+          await sb.insert(relational.table, { ...relational.data, user_id: user.id }, user.token);
+        }
+        
+        const syncPayload = { 
+          user_id: user.id, 
+          data: nextState, 
+          updated_at: new Date().toISOString() 
+        };
+        
+        await sb.upsert("user_memory", syncPayload, user.token);
+        console.log("[Sync] Memory Object Updated Successfully");
+      } catch (e) {
+        console.error("[Sync] CRITICAL PERSISTENCE ERROR:", e.message);
+        // Fallback: If relational failed, ensure it's at least in the JSON blob next time
+        try {
+           await sb.upsert("user_memory", { user_id: user.id, data: nextState }, user.token);
+        } catch (inner) { console.error("[Sync] Total Persistence Blackout:", inner.message); }
+      } finally {
+        setIsSyncing(false);
+      }
+    } else if (syncLockedRef.current) {
+      console.warn("[Sync] Persistence Blocked: Boot in progress.");
+    }
   };
 
   return { memory, updateMemory, isSyncing };

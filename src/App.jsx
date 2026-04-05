@@ -27,15 +27,22 @@ function App() {
   const [form, setForm] = useState({ role: "", industry: "", level: "Senior", market: "Singapore", urgency: "7 days" });
   const [user, setUser] = useState(null);
   const [activeModule, setActiveModule] = useState("jobs");
-  
   const [authModal, setAuthModal] = useState(null);
   const [proModal, setProModal] = useState(null);
   const [cmdOpen, setCmdOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [toast, setToast] = useState(null);
 
-  const [resumeText, setResumeText] = useState(null);
-  const [scanResult, setScanResult] = useState(null);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreError, setRestoreError] = useState(false);
+  const { memory, updateMemory, isSyncing } = useMemory(user, isRestoring, setIsRestoring, setRestoreError);
+  
+  // State is now fully managed by useMemory relational sync
+  const resumeText = memory.resumeText || null;
+  const scanResult = memory.scanResult || null;
+
+  const setResumeText = (val) => updateMemory(m => ({ ...m, resumeText: val }));
+  const setScanResult = (val) => updateMemory(m => ({ ...m, scanResult: val }));
 
   // Restore session
   useEffect(() => {
@@ -53,16 +60,15 @@ function App() {
             name: meta.full_name || userObj.email?.split("@")[0] || "User",
             token: session.access_token 
           });
+          setIsRestoring(true); // Trigger composite fetch on session restore
           setSetupDone(true);
         }
-      } catch (e) { console.error("Session restore failed", e); }
+      } catch (e) {
+        console.error("Session restore failed", e);
+        setIsRestoring(false);
+      }
     }
   }, []);
-
-  // Relational Sync Hook
-  const [isRestoring, setIsRestoring] = useState(false);
-  const [restoreError, setRestoreError] = useState(false);
-  const { memory, updateMemory, isSyncing } = useMemory(user, isRestoring, setIsRestoring, setRestoreError);
 
   const login = (session) => {
     const userObj = session.user;
