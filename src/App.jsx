@@ -90,12 +90,15 @@ const sb = {
       headers: { ...sb._h(), "Authorization": `Bearer ${token}`, "Prefer": "resolution=merge-duplicates,return=representation" },
       body: JSON.stringify(data)
     });
+    
+    if (r.status >= 400) {
+      const d = await r.json();
+      throw new Error(d.message || `DB Upsert failed: ${r.status}`);
+    }
+
     const resText = await r.text();
     if (r.status === 204 || !resText) return null;
-    let d;
-    try { d = JSON.parse(resText); } catch { d = resText; }
-    if (Array.isArray(d) ? false : d?.code) throw new Error(d.message || "DB write failed");
-    return d;
+    try { return JSON.parse(resText); } catch { return resText; }
   },
 
   async select(table, filters, token) {
@@ -103,7 +106,12 @@ const sb = {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {
       headers: { ...sb._h(), "Authorization": `Bearer ${token}` }
     });
-    return r.json();
+    const d = await r.json();
+    
+    if (r.status >= 400) {
+      throw new Error(d.message || d.error_description || `Database error ${r.status}`);
+    }
+    return d;
   },
 
   async insert(table, data, token) {
@@ -112,8 +120,13 @@ const sb = {
       headers: { ...sb._h(), "Authorization": `Bearer ${token}`, "Prefer": "return=representation" },
       body: JSON.stringify(data)
     });
+    
+    if (r.status >= 400) {
+      const d = await r.json();
+      throw new Error(d.message || `DB Insert failed: ${r.status}`);
+    }
+
     const d = await r.json();
-    if (Array.isArray(d) ? false : d?.code) throw new Error(d.message || "Insert failed");
     return d;
   },
 
@@ -124,15 +137,26 @@ const sb = {
       headers: { ...sb._h(), "Authorization": `Bearer ${token}`, "Prefer": "return=representation" },
       body: JSON.stringify(data)
     });
+
+    if (r.status >= 400) {
+      const d = await r.json();
+      throw new Error(d.message || `DB Update failed: ${r.status}`);
+    }
+
     return r.json();
   },
 
   async delete(table, filters, token) {
     const params = new URLSearchParams(filters || {});
-    await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {
       method: "DELETE",
       headers: { ...sb._h(), "Authorization": `Bearer ${token}` }
     });
+
+    if (r.status >= 400) {
+      const d = await r.json();
+      throw new Error(d.message || `DB Delete failed: ${r.status}`);
+    }
   },
 };
 
@@ -501,13 +525,12 @@ function extractJSON(raw) {
 
 async function loadMemoryFromDB(userId, token) {
   try {
-    // Specifically order by updated_at desc to handle cases where upsert might have created multiple rows
     const rows = await sb.select("user_memory", { user_id: `eq.${userId}`, order: "updated_at.desc", limit: 1 }, token);
     if (Array.isArray(rows) && rows.length > 0) return rows[0].data || null;
-    return null;
+    return null; // Truly no data
   } catch(e) { 
     console.error("[DB] loadMemory failed:", e.message);
-    return null; 
+    return "__FETCH_ERROR__"; // Special signal to prevent overwrite
   }
 }
 
@@ -712,7 +735,7 @@ async function readResumeFile(file) {
       r.onload=async e=>{
         try {
           const lib = window.pdfjsLib || pdfjs;
-          if (!lib || !lib.getDocument) throw new Error("PDF parser (pdf.js) not ready. Please try again in 5 seconds.");
+          if (!lib || !lib.getDocument) throw new Error("PDF engine not initialized. Please paste your resume text manually below for an immediate scan.");
           const loadingTask = lib.getDocument({data:e.target.result});
           const pdf = await loadingTask.promise;
           let txt="";
@@ -721,7 +744,7 @@ async function readResumeFile(file) {
             const ct=await pg.getTextContent();
             txt+=ct.items.map(x=>x.str).join(" ")+"\n";
           }
-          if (!txt.trim()) throw new Error("PDF parsing returned no text. The file might be scanned or empty.");
+          if (!txt.trim()) throw new Error("This PDF appears to be a scanned image or empty. Please paste the text manually below.");
           resolve({type:"text",content:txt.trim(),fileName:file.name});
         } catch (err) { 
           console.error("PDF parse error:", err);
@@ -1419,6 +1442,8 @@ function ScanHistoryCard({ item, initExpanded }) {
 
 // ── JD Analyzer ───────────────────────────────────────────────────────────────
 function JDAnalyzer({resumeText,form,memory,updateMemory}){
+  if (!memory) return <div style={{textAlign:"center",padding:40}}><Spinner label="Initializing analyser..."/></div>;
+
   const [jd,setJd]=useState(""); const [result,setResult]=useState(null); const [loading,setLoading]=useState(false); const [err,setErr]=useState("");
   const analyze=async()=>{
     if(jd.trim().length<50){setErr("Paste a full job description first.");return;}
@@ -1476,6 +1501,8 @@ function JDAnalyzer({resumeText,form,memory,updateMemory}){
 
 // ── STAR Builder ──────────────────────────────────────────────────────────────
 function STARBuilder({resumeText,form,memory,updateMemory}){
+  if (!memory) return <div style={{textAlign:"center",padding:40}}><Spinner label="Accessing STAR bank..."/></div>;
+
   const [S,setS]=useState(""); const [T,setT]=useState(""); const [A,setA]=useState(""); const [R,setR]=useState("");
   const [refined,setRefined]=useState(null); const [loading,setLoading]=useState(false); const [bank,setBank]=useState([]);
   const refine=async()=>{
@@ -1529,6 +1556,8 @@ function STARBuilder({resumeText,form,memory,updateMemory}){
 
 // ── HM Simulator ──────────────────────────────────────────────────────────────
 function HiringManagerSim({resumeText,scanResult,form,memory,updateMemory,onProTrigger}){
+  if (!memory) return <div style={{textAlign:"center",padding:40}}><Spinner label="Preparing interview personas..."/></div>;
+
   const [mode,setMode]=useState(null); const [qType,setQType]=useState("behavioral");
   const [questions,setQuestions]=useState([]); const [qi,setQi]=useState(0);
   const [answer,setAnswer]=useState(""); const [feedback,setFeedback]=useState(null);
@@ -1585,6 +1614,8 @@ function HiringManagerSim({resumeText,scanResult,form,memory,updateMemory,onProT
 
 // ── Salary Coach ──────────────────────────────────────────────────────────────
 function SalaryCoach({resumeText,form,memory,updateMemory,onProTrigger}){
+  if (!memory) return <div style={{textAlign:"center",padding:40}}><Spinner label="Retrieving market data..."/></div>;
+
   const [offer,setOffer]=useState(""); const [target,setTarget]=useState(""); const [stage,setStage]=useState("received_offer");
   const [result,setResult]=useState(null); const [loading,setLoading]=useState(false);
   const [roleplay,setRoleplay]=useState(false); const [chat,setChat]=useState([]); const [msg,setMsg]=useState(""); const [chatLoad,setChatLoad]=useState(false);
@@ -1658,6 +1689,8 @@ function SalaryCoach({resumeText,form,memory,updateMemory,onProTrigger}){
 
 // ── Cover Letter ──────────────────────────────────────────────────────────────
 function CoverLetterGen({resumeText,form,memory,updateMemory}){
+  if (!memory) return <div style={{textAlign:"center",padding:40}}><Spinner label="Preparing cover letter engine..."/></div>;
+
   const [jd,setJd]=useState(""); const [tone,setTone]=useState("professional");
   const [result,setResult]=useState(null); const [loading,setLoading]=useState(false); const [copied,setCopied]=useState(false);
   const tones=[{id:"professional",label:"Professional",icon:"👔"},{id:"confident",label:"Confident",icon:"🔥"},{id:"storytelling",label:"Storytelling",icon:"📖"},{id:"concise",label:"Ultra-Concise",icon:"⚡"}];
@@ -1700,13 +1733,21 @@ function CoverLetterGen({resumeText,form,memory,updateMemory}){
   );
 }
 
-// ── Weakness Radar ────────────────────────────────────────────────────────────
 function WeaknessRadar({scanResult,memory,onFirstUse}){
+  if (!memory) return <div style={{textAlign:"center",padding:40}}><Spinner label="Syncing radar data..."/></div>;
+
   const clamp=v=>Math.max(10,Math.min(99,Math.round(v)));
-  const base=scanResult?.credibilityScore||50;
-  const cr=(scanResult?.issues||[]).filter(i=>i.severity==="critical").length;
-  const wr=(scanResult?.issues||[]).filter(i=>i.severity==="warning").length;
-  const wk=scanResult?[{l:"Metric Depth",s:clamp(base-cr*12)},{l:"Ownership Clarity",s:clamp(base-wr*6+5)},{l:"Failure Stories",s:clamp(base*0.5)},{l:"Leadership Signal",s:clamp(base*0.78)},{l:"Technical Breadth",s:clamp(base+12)},{l:"Communication",s:clamp(base*0.82)},{l:"Industry Knowledge",s:clamp(base+18)}]:[{l:"Metric Depth",s:38},{l:"Ownership Clarity",s:62},{l:"Failure Stories",s:25},{l:"Leadership Signal",s:71},{l:"Technical Breadth",s:84},{l:"Communication",s:55},{l:"Industry Knowledge",s:90}];
+  const latestHistory = memory?.scanHistory?.[memory.scanHistory.length - 1];
+  const effectiveResult = scanResult || latestHistory?.result || (latestHistory ? { credibilityScore: latestHistory.score, issues: latestHistory.issues || [] } : null);
+  
+  if (!effectiveResult) {
+    return <EmptyState icon="📡" title="Radar is offline" desc="Scan your resume first to map your skills and detect weaknesses." cta="Run Deep Scan" onCta={() => window._setActiveModule?.("scan")} ctaColor={C.red}/>;
+  }
+
+  const base=effectiveResult.credibilityScore||50;
+  const cr=(effectiveResult.issues||[]).filter(i=>i.severity==="critical").length;
+  const wr=(effectiveResult.issues||[]).filter(i=>i.severity==="warning").length;
+  const wk=[{l:"Metric Depth",s:clamp(base-cr*12)},{l:"Ownership Clarity",s:clamp(base-wr*6+5)},{l:"Failure Stories",s:clamp(base*0.5)},{l:"Leadership Signal",s:clamp(base*0.78)},{l:"Technical Breadth",s:clamp(base+12)},{l:"Communication",s:clamp(base*0.82)},{l:"Industry Knowledge",s:clamp(base+18)}];
   const colored=wk.map(w=>({...w,color:w.s<40?C.red:w.s<70?C.gold:C.green}));
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
@@ -1754,8 +1795,17 @@ function WeaknessRadar({scanResult,memory,onFirstUse}){
 }
 
 // ── Readiness Score ───────────────────────────────────────────────────────────
-function ReadinessScore({scanResult}){
-  const base=scanResult?.credibilityScore||65;
+function ReadinessScore({scanResult, memory}){
+  if (!memory) return <div style={{textAlign:"center",padding:40}}><Spinner label="Calculating readiness..."/></div>;
+
+  const latestHistory = memory?.scanHistory?.[memory.scanHistory.length - 1];
+  const effectiveResult = scanResult || latestHistory?.result || (latestHistory ? { credibilityScore: latestHistory.score } : null);
+
+  if (!effectiveResult) {
+    return <EmptyState icon="🏆" title="No score calculated" desc="Your readiness score is derived from your resume scans and mock session history." cta="Start First Scan" onCta={() => window._setActiveModule?.("scan")} ctaColor={C.accent}/>;
+  }
+
+  const base=effectiveResult.credibilityScore||65;
   const overall=Math.min(99,Math.round(base*0.7+22));
   const scores=[{label:"Resume Defense",score:Math.round(base*0.8),prev:42},{label:"Skill Mastery",score:Math.min(95,Math.round(base*0.9)),prev:60},{label:"Industry Knowledge",score:Math.min(97,base+15),prev:70},{label:"Communication",score:Math.round(base*0.75),prev:55},{label:"Interview Performance",score:Math.round(base*0.65),prev:38}];
   return(
@@ -2491,17 +2541,11 @@ Generate comprehensive job search intelligence. Return ONLY raw JSON:
 
 // ── Memory Dashboard ──────────────────────────────────────────────────────────
 function MemoryDashboard({ memory, form, updateMemory }) {
+  if (!memory) return <div style={{textAlign:"center",padding:40}}><Spinner label="Assembling AI memory bank..."/></div>;
+
   const [aiSummary, setAiSummary]   = useState(null);
   const [loadingSummary, setLoading] = useState(false);
   const [cleared, setCleared]        = useState(false);
-
-  if (!memory) return (
-    <Card style={{textAlign:"center",padding:40}}>
-      <div style={{fontSize:36,marginBottom:12}}>🧬</div>
-      <div style={{color:C.text,fontWeight:700,fontSize:16,marginBottom:8}}>AI Memory Dashboard</div>
-      <div style={{color:C.muted,fontSize:13}}>Sign in to unlock personalized AI memory across all sessions.</div>
-    </Card>
-  );
 
   const totalActivity = (memory.scanHistory?.length||0)+(memory.starBank?.length||0)+(memory.mockSessions?.length||0)+(memory.applications?.length||0);
 
@@ -3416,9 +3460,20 @@ function App(){
   const [showPricing,setShowPricing]     = useState(false); // full pricing modal
   const [cmdOpen,setCmdOpen]             = useState(false); // command palette
   const [darkMode,setDarkMode]           = useState(true);  // theme toggle
+  const [isRestoring, setIsRestoring]     = useState(true);  // React state lock
+  const syncLockedRef                    = useRef(true);    // Synchronous atomic lock (Expert hardening)
+  const [isOfflineMode, setIsOfflineMode] = useState(false); // Safe Mode if connection fails
+  const [restoreError, setRestoreError]   = useState(false); // Track if boot fetch failed
   const resumeRestoredRef                = useRef(false);   // guard: don't overwrite cache before restore runs
   const [previewUsed,setPreviewUsed]     = useState(()=>{
-    try { return JSON.parse(localStorage.getItem("djai_preview")||"{}"); } catch { return {}; }
+    try { 
+      const raw = localStorage.getItem("djai_preview");
+      if (!raw) return {};
+      return JSON.parse(raw); 
+    } catch (e) {
+      console.warn("[Local] Failed to parse djai_preview cache:", e.message);
+      return {}; 
+    }
   });
 
   // ── Memory state ───────────────────────────────────────────────────────────
@@ -3440,8 +3495,13 @@ function App(){
     }
   }, [memory, scanResult]);
 
-  // ── Restore session from stored token on mount ─────────────────────────────
-  useEffect(() => {
+  // ── Session Restoration (Atomic) ──────────────────────────────────────────
+  const tryRestore = useCallback(async () => {
+    setIsRestoring(true);
+    syncLockedRef.current = true;
+    setRestoreError(false);
+    setAuthLoading(true);
+
     const restore = async () => {
       // Parse hash for password recovery
       if (window.location.hash.includes("access_token=")) {
@@ -3452,9 +3512,7 @@ function App(){
         if (access) {
            saveTokens(access, refresh);
            window.location.hash = "";
-           if (type === "recovery") {
-              setAuthModal("update_password");
-           }
+           if (type === "recovery") setAuthModal("update_password");
         }
       }
 
@@ -3465,72 +3523,72 @@ function App(){
           const userData = await sb.getUser(token);
           if (userData?.id) {
             const session = { ...cached, id: userData.id, token };
-            // Sync real Pro status from DB
             try {
               const profiles = await sb.select("profiles", { id: `eq.${userData.id}` }, token);
-              if (profiles && profiles[0]) {
-                session.isPro = !!profiles[0].is_pro;
-              }
+              if (profiles && profiles[0]) session.isPro = !!profiles[0].is_pro;
             } catch (e) { console.warn("Restore profile sync failed:", e.message); }
+            
             setUser(session);
             saveSessionLocal(session);
             const mem = await loadMemoryFromDB(userData.id, token);
+            
+            if (mem === "__FETCH_ERROR__") {
+              console.warn(`[Auth] Cloud fetch failed. Syncing is LOCKED.`);
+              setRestoreError(true);
+              return; // EXIT and keep syncLockedRef = true
+            }
+
             const finalMem = mem || loadMemory(userData.id) || loadMemory(userData.email) || initMemory();
             setMemory(finalMem);
-            // Restore resume from localStorage cache or DB fallback
             const cachedResume = loadResume(userData.id);
             resumeRestoredRef.current = true;
             setResumeText(cachedResume || finalMem.lastResume || null);
           } else {
-            // No user ID in response, treat as invalid
             throw new Error("Invalid session");
           }
         } catch (err) {
-          // Attempt refresh if we have a refresh token
+          console.error("[Auth] Restore failed:", err.message);
           const refresh = getRefreshToken() || cached.refresh_token;
           if (refresh) {
             try {
               const data = await sb.refreshToken(refresh);
               if (data?.access_token) {
                 saveTokens(data.access_token, data.refresh_token);
-                const session = {
-                  ...cached,
-                  id: data.user?.id || cached.id,
-                  token: data.access_token,
-                  refresh_token: data.refresh_token || refresh,
-                };
+                const session = { ...cached, id: data.user?.id || cached.id, token: data.access_token, refresh_token: data.refresh_token || refresh };
                 saveSessionLocal(session);
                 setUser(session);
                 const mem = await loadMemoryFromDB(session.id, session.token);
+                if (mem === "__FETCH_ERROR__") { setRestoreError(true); return; }
                 const finalMem = mem || loadMemory(session.id) || initMemory();
                 setMemory(finalMem);
-                // Restore resume after token refresh
                 const cachedResume = loadResume(session.id);
                 resumeRestoredRef.current = true;
                 setResumeText(cachedResume || finalMem.lastResume || null);
-              } else {
-                throw new Error("Refresh failed");
-              }
+              } else { throw new Error("Refresh failed"); }
             } catch (re) {
-              console.error("[Auth] Session expired and refresh failed:", re.message);
-              clearTokens();
-              setUser(null);
-              setMemory(loadMemory());
+              clearTokens(); setUser(null); setMemory(loadMemory());
             }
           } else {
-            console.warn("[Auth] Session invalid and no refresh token available");
-            clearTokens();
-            setUser(null);
-            setMemory(loadMemory());
+            clearTokens(); setUser(null); setMemory(loadMemory());
           }
         }
       } else {
-        setMemory(loadMemory()); // No session, load guest memory
+        setMemory(loadMemory()); // Guest mode
       }
+      
+      // If we reach here, we either succeeded or fallback to guest is complete.
+      // Clear the lock.
+      syncLockedRef.current = false;
+      setIsRestoring(false);
       setAuthLoading(false);
     };
-    restore();
+
+    await restore();
   }, []);
+
+  useEffect(() => {
+    tryRestore();
+  }, [tryRestore]);
 
   const updateMemory = (updater) => {
     setMemory(prev => {
@@ -3542,7 +3600,10 @@ function App(){
 
   // ── Sync memory to storage on change ───────────────────────────────────────
   useEffect(() => {
-    if (!memory) return;
+    const isLocked = isRestoring || syncLockedRef.current || isOfflineMode;
+    
+    if (!memory || isLocked) return; // Wait for atomic lock to clear
+    
     if (user?.id && user?.token) {
       // Direct sync to DB and localStorage
       saveMemoryToDB(user.id, user.token, memory);
@@ -3553,11 +3614,10 @@ function App(){
     }
   }, [memory, user?.id, user?.token]);
 
-  // ── Persist resume text per user (localStorage cache + DB via memory) ───────
-  // Guard with resumeRestoredRef so the effect doesn't fire (and overwrite with null)
-  // before the auto-login restore has had a chance to load the saved resume.
+  // Guards with resumeRestoredRef and isRestoring so the effect doesn't fire
+  // before the auto-login restore has had a chance to load the saved data.
   useEffect(() => {
-    if (!user?.id || !resumeRestoredRef.current) return;
+    if (!user?.id || !resumeRestoredRef.current || isRestoring) return;
     saveResume(user.id, resumeText);
     setMemory(prev => prev ? { ...prev, lastResume: resumeText } : prev);
   }, [resumeText, user?.id]);
@@ -3565,6 +3625,9 @@ function App(){
 
 
   const login = async (session) => {
+    syncLockedRef.current = true; // IMMEDIATE ATOMIC LOCK
+    setIsRestoring(true);
+    
     setUser(session);
     setAuthModal(null);
     setSetupDone(true);
@@ -3572,9 +3635,11 @@ function App(){
 
     // 1. Load cloud memory
     let dbMem = null;
-    if (session.id && session.token) {
-      dbMem = await loadMemoryFromDB(session.id, session.token);
-    }
+    try {
+      if (session.id && session.token) {
+        dbMem = await loadMemoryFromDB(session.id, session.token);
+      }
+    } catch(e) { console.error("[Login] DB Fetch failed:", e.message); }
 
     // 2. Resolve local cache + merge guest progress
     const guestMem = loadMemory(); 
@@ -3585,10 +3650,9 @@ function App(){
       localStorage.removeItem("djai_mem_guest"); 
     }
 
-    // 3. Update state + trigger IMMEDIATE sync to ensure it sticks
+    // 3. Update state
     setMemory(finalMem);
     if (session.id && session.token) {
-      saveMemoryToDB(session.id, session.token, finalMem);
       saveMemory(session.id, finalMem);
     }
 
@@ -3597,6 +3661,10 @@ function App(){
     const dbResume = finalMem.lastResume || null;
     resumeRestoredRef.current = true;
     setResumeText(cachedResume || dbResume);
+
+    // 5. FINALIZE - Release lock
+    syncLockedRef.current = false;
+    setIsRestoring(false);
   };
 
   const logout = async () => {
@@ -3606,6 +3674,7 @@ function App(){
     setMemory(initMemory()); // Fresh start for guest
     setResumeText(null);     // Clear uploaded resume so it doesn't leak to next account
     setScanResult(null);     // Clear scan results for the same reason
+    setIsRestoring(false);   // Reset lock on logout
   };
   const markPreview = (moduleId) => {
     const next = { ...previewUsed, [moduleId]: (previewUsed[moduleId]||0) + 1 };
@@ -4289,11 +4358,43 @@ function App(){
       {authModal && <AuthModal initialMode={authModal} onSuccess={login} onClose={()=>setAuthModal(null)}/>}
       {proModal && <ProUpgradeModal user={user} reason={proModal} onClose={()=>setProModal(null)} onSignup={()=>{setProModal(null);setAuthModal("register");}}/>}
 
-      {/* Persistence Loading Screen */}
-      {authLoading && (
-        <div style={{position:"fixed",inset:0,background:C.bg,zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:20}}>
-          <div style={{width:40,height:40,border:`3px solid ${C.border}`,borderTopColor:C.accent,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
-          <div style={{color:C.muted,fontSize:13,letterSpacing:2,fontFamily:"var(--font-mono)"}}>INITIALIZING CAREER OS...</div>
+      {/* Persistence Loading Screen / Connection Error */}
+      {(authLoading || isRestoring) && (
+        <div style={{position:"fixed",inset:0,background:C.bg,zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:20,padding:20,textAlign:"center"}}>
+          {restoreError ? (
+            <div style={{maxWidth:400,animation:"fadeIn 0.3s ease"}}>
+              <div style={{fontSize:40,marginBottom:16}}>📡</div>
+              <div style={{color:C.text,fontWeight:800,fontSize:18,marginBottom:8}}>Connection Issue</div>
+              <div style={{color:C.muted,fontSize:13,lineHeight:1.6,marginBottom:24,fontFamily:"var(--font-body)"}}>
+                Could not connect to the cloud database. Your free-tier project might be **paused** or **waking up**. 
+                <br/><br/>
+                Wait 30 seconds and try again, or continue in Safe Mode to browse locally.
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                <button onClick={tryRestore} style={{background:C.accent,color:"#000",border:"none",borderRadius:8,padding:"12px 24px",fontWeight:900,fontSize:14,cursor:"pointer",width:"100%",fontFamily:"inherit"}}>
+                  🔄 Retry Connection
+                </button>
+                <button 
+                  onClick={()=>{
+                    setIsOfflineMode(true);
+                    syncLockedRef.current = false;
+                    setIsRestoring(false);
+                    setAuthLoading(false);
+                  }} 
+                  style={{background:"transparent",border:`1px solid ${C.border}`,color:C.muted,borderRadius:8,padding:"10px 24px",fontSize:13,fontWeight:700,cursor:"pointer",width:"100%",fontFamily:"inherit"}}
+                >
+                  🛡️ Continue in Safe Mode (No Sync)
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div style={{width:40,height:40,border:`3px solid ${C.border}`,borderTopColor:C.accent,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+              <div style={{color:C.muted,fontSize:13,letterSpacing:2,fontFamily:"var(--font-mono)"}}>
+                {user ? "RESTORING CLOUD MEMORY..." : "INITIALIZING CAREER OS..."}
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -4313,6 +4414,7 @@ function App(){
                 <Badge label={form.role} color={C.accent}/>
                 <Badge label={form.market} color={C.gold}/>
               </div>
+              {isOfflineMode && <Badge label="Offline Mode (Safe)" color={C.red}/>}
               {resumeText&&<Badge label="Resume ✓" color={C.green}/>}
               {scanResult&&!scanResult.error&&<Badge label={`Score: ${scanResult.credibilityScore}`} color={C.purple}/>}
               <button onClick={()=>setSetupDone(false)} style={{background:"transparent",border:`1px solid ${C.border}`,color:C.muted,borderRadius:6,padding:"4px 10px",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>Edit</button>
