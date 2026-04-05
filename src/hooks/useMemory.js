@@ -35,17 +35,44 @@ export function useMemory(user, isRestoring, setIsRestoring, setRestoreError) {
           sb.select("insights", { user_id: `eq.${user.id}`, order: "created_at.desc", limit: 10 }, user.token)
         ]);
 
-        // 2. CONSTRUCT COMPOSITE STATE (Backward Compatible)
+        // 2. CONSTRUCT COMPOSITE STATE (Backward Compatible & Normalized)
         const base = dbMem?.[0]?.data || {}; 
-        
+
+        // Senior Normalization Layer: Map snake_case (DB) to camelCase (Frontend)
+        const normalize = (rows, mapper) => (rows || []).map(r => {
+          const obj = { ...r, date: r.created_at };
+          Object.keys(mapper).forEach(key => {
+            if (r[key] !== undefined) obj[mapper[key]] = r[key];
+          });
+          return obj;
+        });
+
         const compositeMap = {
           ...base,
-          scanHistory: scans?.length ? scans : (base.scanHistory || []),
-          applications: apps?.length ? apps : (base.applications || []),
-          starBank: stars?.length ? stars : (base.starBank || []),
-          coverLetters: covers?.length ? covers : (base.coverLetters || []),
-          jdAnalyses: jds?.length ? jds : (base.jdAnalyses || []),
-          mockSessions: sessions?.length ? sessions : (base.mockSessions || []),
+          scanHistory: scans?.length 
+            ? normalize(scans, { credibility_score: 'credibilityScore', file_name: 'fileName', metrics_found: 'metricsFound' }) 
+            : (base.scanHistory || []),
+          
+          applications: apps?.length 
+            ? normalize(apps, { updated_at: 'updatedAt' }) 
+            : (base.applications || []),
+          
+          starBank: stars?.length 
+            ? normalize(stars, { one_liner: 'oneLiner' }) 
+            : (base.starBank || []),
+          
+          coverLetters: covers?.length 
+            ? normalize(covers, { follow_up: 'followUpEmail' }) 
+            : (base.coverLetters || []),
+          
+          jdAnalyses: jds?.length 
+            ? normalize(jds, { role_title: 'roleTitle', match_score: 'matchScore' }) 
+            : (base.jdAnalyses || []),
+          
+          mockSessions: sessions?.length 
+            ? normalize(sessions, { questions_count: 'questionsCount', avg_score: 'avgScore' }) 
+            : (base.mockSessions || []),
+            
           negotiationPractice: practice?.length ? practice.length : (base.negotiationPractice || 0),
           insights: insights?.length ? insights : (base.insights || []),
         };
