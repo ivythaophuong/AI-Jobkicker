@@ -20,6 +20,7 @@ import HiringManagerSim from './features/HiringManagerSim/HiringManagerSim';
 import SalaryCoach from './features/SalaryCoach/SalaryCoach';
 import CoverLetterGen from './features/CoverLetterGen/CoverLetterGen';
 import MarketIntel from './features/MarketIntel/MarketIntel';
+import JobSearch from './features/JobSearch/JobSearch';
 import MemoryDashboard from './features/MemoryDashboard/MemoryDashboard';
 
 // pdf.js worker setup
@@ -101,6 +102,7 @@ function App() {
       case "salary":   return <SalaryCoach resumeText={resumeText} form={form} memory={memory} updateMemory={updateMemory} onProTrigger={setProModal} />;
       case "cover":    return <CoverLetterGen resumeText={resumeText} form={form} memory={memory} updateMemory={updateMemory} />;
       case "market":   return <MarketIntel form={form} memory={memory} />;
+      case "jobs":     return <JobSearch resumeText={resumeText} form={form} memory={memory} updateMemory={updateMemory} onProTrigger={setProModal} />;
       case "memory":   return <MemoryDashboard memory={memory} form={form} updateMemory={updateMemory} />;
       default:         return <ResumeScan resumeText={resumeText} setResumeText={setResumeText} scanResult={scanResult} setScanResult={setScanResult} form={form} memory={memory} updateMemory={updateMemory} />;
     }
