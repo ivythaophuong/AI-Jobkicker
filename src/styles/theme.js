@@ -18,6 +18,7 @@ export const C = {
 export const MODULES = [
   { id: "jobs",     icon: "🔎", label: "Job Search",      color: C.green    },
   { id: "scan",     icon: "⚡", label: "Resume Scan",     color: C.accent   },
+  { id: "ats",      icon: "✨", label: "ATS Builder",     color: C.purple   },
   { id: "jd",       icon: "🔍", label: "JD Analyzer",     color: C.pink     },
   { id: "star",     icon: "⭐", label: "STAR Builder",     color: C.gold     },
   { id: "simulate", icon: "🧠", label: "HM Simulator",    color: C.purple   },

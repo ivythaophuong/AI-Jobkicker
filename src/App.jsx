@@ -16,6 +16,7 @@ import CoverLetterGen from './features/CoverLetterGen/CoverLetterGen';
 import MarketIntel from './features/MarketIntel/MarketIntel';
 import JobSearch from './features/JobSearch/JobSearch';
 import MemoryDashboard from './features/MemoryDashboard/MemoryDashboard';
+import ATSBuilder from './features/ATSBuilder/ATSBuilder';
 
 // ── Original Overlay Components ──────────────────────────────────────────────
 import { Ticker, UserMenu, AuthGate } from './components/OriginalUIOverlays';
@@ -129,6 +130,7 @@ function App() {
       case "market":   return <MarketIntel {...props} />;
       case "jobs":     return <JobSearch {...props} />;
       case "memory":   return <MemoryDashboard {...props} />;
+      case "ats":      return <ATSBuilder {...props} />;
       default:         return <ResumeScan {...props} />;
     }
   };
@@ -329,6 +331,18 @@ function App() {
 
       {/* Main Content Area */}
       {renderMainContent()}
+
+      {/* Trust Footer */}
+      <footer style={{ marginTop: "auto", borderTop: `1px solid ${C.border}`, padding: "20px 24px", background: C.surface }}>
+        <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
+          <div style={{ color: C.muted, fontSize: 11 }}>© 2026 CareerAiHub. All rights reserved.</div>
+          <div style={{ display: "flex", gap: 20 }}>
+            <a href="#" style={{ color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Privacy Policy</a>
+            <a href="#" style={{ color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Terms of Service</a>
+            <a href="#" style={{ color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Trust Center</a>
+          </div>
+        </div>
+      </footer>
 
       {/* Toast Notification */}
       {toast && (
