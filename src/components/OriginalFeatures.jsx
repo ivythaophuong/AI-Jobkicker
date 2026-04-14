@@ -96,7 +96,7 @@ export function CommandPalette({ modules, setActiveModule, setAuthModal, user, o
 }
 
 // ── Auth Modal (Standardized Original UI) ────────────────────────────────────
-export function AuthModal({ initialMode, onSuccess, onClose }) {
+export function AuthModal({ initialMode, onSuccess, onClose, onViewLegal }) {
   const [mode, setMode] = useState(initialMode || "login");
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
@@ -199,6 +199,13 @@ export function AuthModal({ initialMode, onSuccess, onClose }) {
           <button type="submit" disabled={loading} style={{ width: "100%", background: loading ? C.border : `linear-gradient(135deg,${C.accent},#0096CC)`, color: "#000", border: "none", borderRadius: 10, padding: "14px", fontWeight: 900, fontSize: 14, cursor: loading ? "not-allowed" : "pointer", marginTop: 8, transition: "all 0.2s" }}>
             {loading ? "Connecting..." : config.btn + " →"}
           </button>
+
+          {mode === "register" && (
+            <div style={{ fontSize: 11, color: C.muted, textAlign: "center", marginTop: 12, lineHeight: 1.5 }}>
+              By creating an account, you agree to our <br/>
+              <span onClick={() => onViewLegal("terms")} style={{ color: C.accent, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}>Terms of Service</span> and <span onClick={() => onViewLegal("privacy")} style={{ color: C.accent, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}>Privacy Policy</span>.
+            </div>
+          )}
         </form>
 
         <div style={{ textAlign: "center", marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>

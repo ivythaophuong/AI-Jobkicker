@@ -17,6 +17,8 @@ import MarketIntel from './features/MarketIntel/MarketIntel';
 import JobSearch from './features/JobSearch/JobSearch';
 import MemoryDashboard from './features/MemoryDashboard/MemoryDashboard';
 import ATSBuilder from './features/ATSBuilder/ATSBuilder';
+import PrivacyPolicy from './features/Legal/PrivacyPolicy';
+import TermsOfService from './features/Legal/TermsOfService';
 
 // ── Original Overlay Components ──────────────────────────────────────────────
 import { Ticker, UserMenu, AuthGate } from './components/OriginalUIOverlays';
@@ -131,6 +133,8 @@ function App() {
       case "jobs":     return <JobSearch {...props} />;
       case "memory":   return <MemoryDashboard {...props} />;
       case "ats":      return <ATSBuilder {...props} />;
+      case "privacy":  return <PrivacyPolicy onBack={() => setActiveModule("jobs")} />;
+      case "terms":    return <TermsOfService onBack={() => setActiveModule("jobs")} />;
       default:         return <ResumeScan {...props} />;
     }
   };
@@ -260,7 +264,12 @@ function App() {
     <div data-theme={darkMode ? "dark" : "light"} style={{ minHeight: "100vh", background: darkMode ? C.bg : "#F8FAFC", fontFamily: "var(--font-body)", color: darkMode ? C.text : "#0F172A" }}>
       
       {/* Modals */}
-      {authModal && <AuthModal initialMode={authModal} onSuccess={login} onClose={() => setAuthModal(null)} />}
+      {authModal && <AuthModal 
+        initialMode={authModal} 
+        onSuccess={login} 
+        onClose={() => setAuthModal(null)} 
+        onViewLegal={(m) => { setActiveModule(m); setAuthModal(null); }}
+      />}
       {cmdOpen && <CommandPalette modules={MODULES} setActiveModule={setActiveModule} setAuthModal={setAuthModal} user={user} onClose={() => setCmdOpen(false)} />}
       
       {/* Header */}
@@ -337,9 +346,9 @@ function App() {
         <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
           <div style={{ color: C.muted, fontSize: 11 }}>© 2026 CareerAiHub. All rights reserved.</div>
           <div style={{ display: "flex", gap: 20 }}>
-            <a href="#" style={{ color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Privacy Policy</a>
-            <a href="#" style={{ color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Terms of Service</a>
-            <a href="#" style={{ color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Trust Center</a>
+            <button onClick={() => setActiveModule("privacy")} style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Privacy Policy</button>
+            <button onClick={() => setActiveModule("terms")} style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Terms of Service</button>
+            <a href="mailto:hello@careeraihub.com" style={{ color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Support & Trust</a>
           </div>
         </div>
       </footer>
