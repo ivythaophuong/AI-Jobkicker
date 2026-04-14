@@ -278,7 +278,7 @@ function App() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60 }}>
             
             {/* Branding */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setSetupDone(false)}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setActiveModule("jobs")}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.accent, boxShadow: `0 0 10px ${C.accent}`, animation: "pulse 2s ease infinite" }} />
               <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: C.text }}>CareerAiHub</span>
             </div>
