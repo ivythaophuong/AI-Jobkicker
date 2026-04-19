@@ -6,7 +6,7 @@ import MinimalistTemplate from '../templates/MinimalistTemplate';
 import ModernTemplate from '../templates/ModernTemplate';
 import HarshibarTemplate from '../templates/HarshibarTemplate';
 
-const RightPanePreview = ({ data, templateId = 'standard', originalFileUrl }) => {
+const RightPanePreview = ({ data, templateId = 'standard', originalFileUrl, visibleSections }) => {
   const [viewMode, setViewMode] = useState('preview'); // 'preview' or 'original'
 
   if (!data) return (
@@ -16,12 +16,13 @@ const RightPanePreview = ({ data, templateId = 'standard', originalFileUrl }) =>
   );
 
   const renderTemplate = () => {
+    const props = { data, visibleSections };
     switch (templateId) {
-      case 'harshibar': return <HarshibarTemplate data={data} />;
-      case 'minimalist': return <MinimalistTemplate data={data} />;
-      case 'modern': return <ModernTemplate data={data} />;
+      case 'harshibar': return <HarshibarTemplate {...props} />;
+      case 'minimalist': return <MinimalistTemplate {...props} />;
+      case 'modern': return <ModernTemplate {...props} />;
       case 'standard':
-      default: return <StandardTemplate data={data} />;
+      default: return <StandardTemplate {...props} />;
     }
   };
 

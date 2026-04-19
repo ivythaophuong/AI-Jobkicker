@@ -1,108 +1,70 @@
 import mammoth from 'mammoth';
-import * as pdfjsLib from 'pdfjs-dist';
+import { callLLM, extractJSON } from './ai.jsx';
 
-// Configure PDF.js worker
-if (typeof window !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+const EXTRACT_PROMPT = `Extract the resume data from the provided document and return ONLY raw JSON (no markdown, no explanation, start with {):
+{
+  "personalInfo": { "fullName": "", "email": "", "phone": "", "location": "", "linkedin": "", "website": "" },
+  "summary": "",
+  "experience": [{ "company": "", "position": "", "startDate": "", "endDate": "", "description": [] }],
+  "education": [{ "school": "", "degree": "", "year": "", "gpa": "" }],
+  "skills": [{ "category": "Languages", "items": [] }],
+  "projects": [{ "name": "", "techStack": [], "description": [], "link": "" }],
+  "certifications": [{ "name": "", "issuer": "", "date": "" }]
+}
+Rules:
+- skills must be grouped by category (e.g. Languages, Frameworks, Tools, Platforms). If categories are unclear, use a single category "Skills".
+- description fields must be arrays of bullet point strings.
+- If a field has no data, use empty string or empty array.
+- Do not invent data. Only extract what is present.`;
+
+// ── PDF: send directly to LLM as base64 (Gemini reads layout natively) ───────
+export const extractResumeFromPdf = async (file) => {
+  const arrayBuffer = await file.arrayBuffer();
+  const base64 = _arrayBufferToBase64(arrayBuffer);
+  const raw = await callLLM(
+    [{ role: 'user', content: EXTRACT_PROMPT }],
+    8192,
+    base64
+  );
+  const parsed = extractJSON(raw);
+  if (parsed.error) throw new Error('Failed to parse resume structure from PDF');
+  return parsed;
+};
+
+// ── DOCX: extract text with mammoth, then send text to LLM ──────────────────
+export const extractResumeFromDocx = async (file) => {
+  const arrayBuffer = await file.arrayBuffer();
+  const { value: rawText } = await mammoth.extractRawText({ arrayBuffer });
+  const raw = await callLLM([{
+    role: 'user',
+    content: `${EXTRACT_PROMPT}\n\nResume Text:\n${rawText}`
+  }], 3000);
+  const parsed = extractJSON(raw);
+  if (parsed.error) throw new Error('Failed to parse resume structure from DOCX');
+  return parsed;
+};
+
+// ── Router: pick the right extractor based on file type ─────────────────────
+export const extractResume = async (file) => {
+  if (file.name.endsWith('.pdf')) return extractResumeFromPdf(file);
+  if (file.name.endsWith('.docx')) return extractResumeFromDocx(file);
+  throw new Error('Please upload a .pdf or .docx file');
+};
+
+function _arrayBufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
 }
 
-/**
- * Extracts raw text from a DOCX file buffer.
- */
-export const extractTextFromDocx = async (arrayBuffer) => {
-  try {
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    return result.value;
-  } catch (error) {
-    console.error('Error parsing DOCX:', error);
-    throw new Error('Failed to extract text from DOCX');
-  }
-};
-
-/**
- * Extracts raw text from a PDF file buffer.
- */
+// Keep old exports as aliases so nothing else breaks
 export const extractTextFromPdf = async (arrayBuffer) => {
-  try {
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-    const pdf = await loadingTask.promise;
-    let fullText = '';
-    
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map(item => item.str).join(' ');
-      fullText += pageText + '\n';
-    }
-    
-    return fullText;
-  } catch (error) {
-    console.error('Error parsing PDF:', error);
-    throw new Error('Failed to extract text from PDF');
-  }
+  throw new Error('Use extractResume(file) instead');
 };
-
-/**
- * Uses the LLM to map raw text to our structured Resume JSON schema.
- * Note: This facilitates the "Overleaf Model" by turning messy text into structured blocks.
- */
-export const mapTextToResumeSchema = async (rawText, llmKey) => {
-  // In a real implementation, this would call your Anthropic/OpenAI API
-  // For now, we'll simulate the logic structure
-  const prompt = `
-    Extract the following information from this resume text and return it as a JSON object:
-    - personalInfo (fullName, email, phone, location, linkedin, website)
-    - summary
-    - experience (company, position, startDate, endDate, description [array of bullets])
-    - education (school, degree, year)
-    - skills (array of strings)
-
-    Resume Text:
-    ${rawText}
-  `;
-
-  // This would be your API call logic...
-  // For the sake of the demo, I'll return a structured template
-  console.log('LLM Mapping triggered with text length:', rawText.length);
-  
-  // Return a rich sample that shows off the templates
-  return {
-    personalInfo: { 
-      fullName: "Alex Sterling", 
-      email: "alex.sterling@example.com", 
-      phone: "+1 (555) 000-1234", 
-      location: "San Francisco, CA", 
-      linkedin: "linkedin.com/in/alexsterling", 
-      website: "alexsterling.dev" 
-    },
-    summary: "Senior Software Engineer with 8+ years of experience in distributed systems and cloud architecture. Proven track record of scaling high-traffic applications and leading cross-functional teams to deliver mission-critical features.",
-    experience: [
-      {
-        company: "TechFlow Systems",
-        position: "Lead Backend Engineer",
-        startDate: "Jan 2021",
-        endDate: "Present",
-        description: [
-          "Architected a real-time data streaming pipeline using Kafka, reducing latency by 45% for 1M+ daily users.",
-          "Led a team of 6 engineers to migrate legacy monolith to a microservices architecture on AWS.",
-          "Optimized SQL query performance across shared databases, resulting in a 30% reduction in server costs."
-        ]
-      },
-      {
-        company: "Innovate AI",
-        position: "Software Engineer",
-        startDate: "Jun 2018",
-        endDate: "Dec 2020",
-        description: [
-          "Developed and deployed 15+ RESTful APIs using Node.js and TypeScript for a core AI product.",
-          "Collaborated with UX designers to implement responsive, accessible front-end components."
-        ]
-      }
-    ],
-    education: [
-      { school: "Stanford University", degree: "M.S. in Computer Science", year: "2018" },
-      { school: "UC Berkeley", degree: "B.S. in Software Engineering", year: "2016" }
-    ],
-    skills: ["React", "Node.js", "Python", "AWS", "Kubernetes", "PostgreSQL", "System Design", "Agile"]
-  };
+export const extractTextFromDocx = async (arrayBuffer) => {
+  throw new Error('Use extractResume(file) instead');
+};
+export const mapTextToResumeSchema = async () => {
+  throw new Error('Use extractResume(file) instead');
 };
