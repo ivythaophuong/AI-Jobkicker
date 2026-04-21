@@ -19,6 +19,7 @@ import MemoryDashboard from './features/MemoryDashboard/MemoryDashboard';
 import ATSBuilder from './features/ATSBuilder/ATSBuilder';
 import PrivacyPolicy from './features/Legal/PrivacyPolicy';
 import TermsOfService from './features/Legal/TermsOfService';
+import LandingPage, { GuestNav, ModulePills, PILLS, LogoMark, TickerBar } from './features/Landing/LandingPage';
 
 // ── Original Overlay Components ──────────────────────────────────────────────
 import { Ticker, UserMenu, AuthGate } from './components/OriginalUIOverlays';
@@ -36,6 +37,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [toast, setToast] = useState(null);
 
+  const [showLanding, setShowLanding] = useState(true);
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
   const { memory, updateMemory, isSyncing } = useMemory(user, isRestoring, setIsRestoring, setRestoreError);
@@ -140,7 +142,14 @@ function App() {
   };
 
   // ── 3. Render Helper ───────────────────────────────────────────────────────
+  const goToModule = (moduleId) => {
+    setActiveModule(moduleId);
+    setShowLanding(false);
+  };
+
   const renderMainContent = () => {
+
+    if (!user && showLanding) return <LandingPage setAuthModal={setAuthModal} onModuleSelect={goToModule} />;
 
     if (!setupDone) {
       return (
@@ -246,9 +255,7 @@ function App() {
     return (
       <>
         {/* Ticker */}
-        <div style={{ background: C.accent + "11", borderBottom: `1px solid ${C.accent}22`, padding: "6px 0" }}>
-          <Ticker text={user ? `SIGNED IN AS ${user.name?.toUpperCase()} · FULL ACCESS · 11 MODULES ACTIVE` : `JOB SEARCH & MARKET INTEL FREE · SIGN UP TO UNLOCK AI FEATURES · 10 MODULES ACTIVE`} />
-        </div>
+        <TickerBar />
 
         {/* Content Wrapper */}
         <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px", animation: "fadeIn 0.4s ease" }}>
@@ -272,77 +279,53 @@ function App() {
       />}
       {cmdOpen && <CommandPalette modules={MODULES} setActiveModule={setActiveModule} setAuthModal={setAuthModal} user={user} onClose={() => setCmdOpen(false)} />}
       
-      {/* Header */}
-      <div style={{ borderBottom: `1px solid ${C.border}`, background: C.surface, padding: "0 24px", position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(12px)" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", minHeight: 60 }}>
-            
-            {/* Branding */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={() => setActiveModule("jobs")}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.accent, boxShadow: `0 0 10px ${C.accent}`, animation: "pulse 2s ease infinite" }} />
-              <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: C.text }}>CareerAiHub</span>
-            </div>
+      {/* Guest nav — landing page style, shown when browsing modules without an account */}
+      {!user && !showLanding && (
+        <>
+          <GuestNav
+            onSignIn={() => setAuthModal('login')}
+            onJoin={() => setAuthModal('register')}
+            onHome={() => setShowLanding(true)}
+          />
+          <ModulePills
+            active={PILLS.findIndex(p => p.moduleId === activeModule)}
+            setActive={(i) => { setActiveModule(PILLS[i].moduleId); }}
+          />
+        </>
+      )}
 
-            {/* Profile/Auth */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ display: "flex", gap: 6, alignItems: "center" }} className="hide-mobile">
-                <div style={{ width: 12, height: 2, background: C.accent, borderRadius: 2, opacity: 0.8 }} title={form.role || "Target Role"} />
-                <div style={{ width: 12, height: 2, background: C.gold, borderRadius: 2, opacity: 0.8 }} title={form.market || "Market"} />
-              </div>
-              <button onClick={() => setSetupDone(false)} style={{ background: "transparent", border: `1px solid ${C.border}`, color: C.muted, borderRadius: 6, padding: "4px 10px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>Edit</button>
-              
-              {/* Theme toggle */}
-              <button onClick={() => setDarkMode(d => !d)} title="Toggle light/dark mode" style={{ background: "transparent", border: `1px solid ${C.border}`, color: C.muted, borderRadius: 6, padding: "4px 8px", fontSize: 13, cursor: "pointer", fontFamily: "inherit", lineHeight: 1 }}>
-                {darkMode ? "☀️" : "🌙"}
-              </button>
-              
-              {/* Command palette trigger */}
-              <button onClick={() => setCmdOpen(true)} title="Command palette (⌘K)" style={{ background: "transparent", border: `1px solid ${C.border}`, color: C.muted, borderRadius: 6, padding: "4px 10px", fontSize: 11, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4 }}>
-                <span style={{ fontSize: 10, fontWeight: 700 }}>⌘K</span>
-              </button>
-
-              {user ? (
-                <UserMenu user={user} onLogout={logout} />
-              ) : (
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <button onClick={() => setAuthModal("login")} style={{ background: "transparent", border: `1px solid ${C.border}`, color: C.text, borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                    Sign In
-                  </button>
-                  <button onClick={() => setAuthModal("register")} style={{ background: `linear-gradient(135deg,${C.accent},#0096CC)`, color: "#000", border: "none", borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 900, cursor: "pointer", fontFamily: "inherit" }}>
-                    ✨ Join Free
-                  </button>
-                </div>
-              )}
-            </div>
+      {/* App header — only shown when logged in */}
+      {user && <>
+        <nav className="lp-nav scrolled">
+          <button className="lp-nav-logo" onClick={() => setActiveModule("jobs")}>
+            <LogoMark size={26} radius={7} />
+            CareerAiHub
+          </button>
+          <div className="lp-nav-r">
+            <button onClick={() => setDarkMode(d => !d)} title="Toggle light/dark mode" style={{ background: "transparent", border: `1px solid var(--lp-bdr2)`, color: "var(--lp-text2)", borderRadius: 6, padding: "4px 8px", fontSize: 13, cursor: "pointer", fontFamily: "inherit", lineHeight: 1 }}>
+              {darkMode ? "☀️" : "🌙"}
+            </button>
+            <button onClick={() => setCmdOpen(true)} title="Command palette (⌘K)" style={{ background: "transparent", border: `1px solid var(--lp-bdr2)`, color: "var(--lp-text2)", borderRadius: 6, padding: "4px 10px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>
+              ⌘K
+            </button>
+            <UserMenu user={user} onLogout={logout} />
           </div>
-
-          {/* Module Nav Tabs */}
-          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 10, scrollbarWidth: "none" }}>
-            {MODULES.map(m => (
-              <button
-                key={m.id}
-                onClick={() => setActiveModule(m.id)}
-                className={`mod-tab ${activeModule === m.id ? "active" : ""}`}
-                style={{
-                  background: activeModule === m.id ? m.color + "1A" : "transparent",
-                  borderColor: activeModule === m.id ? m.color : C.border,
-                  color: activeModule === m.id ? m.color : C.muted,
-                }}
-              >
-                {activeModule === m.id && <span style={{ position: "absolute", bottom: -3, left: 6, right: 6, height: 2, background: m.color, borderRadius: 2 }} />}
-                <span style={{ fontSize: 14 }}>{m.icon}</span>
-                <span>{m.label}</span>
-              </button>
-            ))}
-          </div>
+        </nav>
+        <div className="lp-mod-nav">
+          {MODULES.map(m => (
+            <button key={m.id} onClick={() => setActiveModule(m.id)} className={`lp-mpill${activeModule === m.id ? " on" : ""}`}>
+              <span>{m.icon}</span>
+              <span>{m.label}</span>
+            </button>
+          ))}
         </div>
-      </div>
+      </>}
 
       {/* Main Content Area */}
       {renderMainContent()}
 
-      {/* Trust Footer */}
-      <footer style={{ marginTop: "auto", borderTop: `1px solid ${C.border}`, padding: "20px 24px", background: C.surface }}>
+      {/* Trust Footer — only shown when logged in */}
+      {user && <footer style={{ marginTop: "auto", borderTop: `1px solid ${C.border}`, padding: "20px 24px", background: C.surface }}>
         <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
           <div style={{ color: C.muted, fontSize: 11 }}>© 2026 CareerAiHub. All rights reserved.</div>
           <div style={{ display: "flex", gap: 20 }}>
@@ -351,7 +334,7 @@ function App() {
             <a href="mailto:hello@careeraihub.com" style={{ color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Support & Trust</a>
           </div>
         </div>
-      </footer>
+      </footer>}
 
       {/* Toast Notification */}
       {toast && (
