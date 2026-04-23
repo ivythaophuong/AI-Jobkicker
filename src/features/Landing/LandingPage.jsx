@@ -437,7 +437,7 @@ function NavBar({ onSignIn, onJoin, scrolled }) {
   const ss = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   return (
     <nav className={`lp-nav${scrolled ? ' scrolled' : ''}`}>
-      <button className="lp-nav-logo"><LogoMark />CareerAiHub</button>
+      <button className="lp-nav-logo"><LogoMark /><span className="lp-wordmark">CareerAiHub</span></button>
       <div className="lp-nav-center">
         <button className="lp-nl" onClick={() => ss('feat-sec')}>Features</button>
         <button className="lp-nl" onClick={() => ss('price-sec')}>Pricing</button>
@@ -455,7 +455,7 @@ function NavBar({ onSignIn, onJoin, scrolled }) {
 export function GuestNav({ onSignIn, onJoin, onHome }) {
   return (
     <nav className="lp-nav">
-      <button className="lp-nav-logo" onClick={onHome}><LogoMark />CareerAiHub</button>
+      <button className="lp-nav-logo" onClick={onHome}><LogoMark /><span className="lp-wordmark">CareerAiHub</span></button>
       <div className="lp-nav-center">
         <button className="lp-nl" onClick={onHome}>Features</button>
         <button className="lp-nl" onClick={onHome}>Pricing</button>
@@ -495,6 +495,144 @@ export function ModulePills({ active, setActive }) {
           <span className="lp-mi">{p.icon}</span>{p.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+// ── HUB NAV ───────────────────────────────────────────────────────────────────
+
+const HUB_GROUPS = [
+  { icon: '🎯', label: 'Get Seen', sub: 'Application layer', tools: [
+    { icon: '⚡', label: 'Resume Scan', moduleId: 'scan' },
+    { icon: '✦', label: 'ATS Builder', moduleId: 'ats' },
+    { icon: '🔎', label: 'JD Analyzer', moduleId: 'jd' },
+    { icon: '📄', label: 'Cover Letter', moduleId: 'cover' },
+  ]},
+  { icon: '🏆', label: 'Get the Offer', sub: 'Interview & prep', tools: [
+    { icon: '⭐', label: 'STAR Builder', moduleId: 'star' },
+    { icon: '🧠', label: 'HM Simulator', moduleId: 'simulate' },
+  ]},
+  { icon: '💰', label: 'Get Paid', sub: 'Negotiate & track', tools: [
+    { icon: '💰', label: 'Salary Coach', moduleId: 'salary' },
+    { icon: '📋', label: 'App Tracker', moduleId: '__tracker__' },
+  ]},
+];
+
+const ALL_TOOLS_LIST = [
+  { icon: '⚡', label: 'Resume Scan', moduleId: 'scan' },
+  { icon: '✦', label: 'ATS Builder', moduleId: 'ats' },
+  { icon: '🔎', label: 'JD Analyzer', moduleId: 'jd' },
+  { icon: '⭐', label: 'STAR Builder', moduleId: 'star' },
+  { icon: '🧠', label: 'HM Simulator', moduleId: 'simulate' },
+  { icon: '💰', label: 'Salary Coach', moduleId: 'salary' },
+  { icon: '📄', label: 'Cover Letter', moduleId: 'cover' },
+  { icon: '📋', label: 'App Tracker', moduleId: '__tracker__' },
+  { icon: '📡', label: 'Weakness Radar', moduleId: 'radar' },
+  { icon: '🏆', label: 'Readiness Score', moduleId: 'score' },
+  { icon: '🌏', label: 'Market Intel', moduleId: 'market' },
+  { icon: '🧬', label: 'AI Memory', moduleId: 'memory' },
+];
+
+export function HubNav({ onModuleSelect, onTrackerOpen }) {
+  const [openHub, setOpenHub] = useState(null);
+  const [allToolsOpen, setAllToolsOpen] = useState(false);
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) {
+        setOpenHub(null);
+        setAllToolsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleTool = (moduleId) => {
+    if (moduleId === '__tracker__') onTrackerOpen?.();
+    else onModuleSelect?.(moduleId);
+    setOpenHub(null);
+    setAllToolsOpen(false);
+  };
+
+  return (
+    <div className="lp-hub-nav" ref={navRef}>
+      <div className="lp-hub-center">
+        <button className="lp-hub-search" onClick={() => handleTool('jobs')}>
+          <span className="lp-hub-icon">🔍</span>
+          <div className="lp-hub-search-text">
+            <span className="lp-hub-label">Job Search</span>
+            <span className="lp-hub-sub">Always free</span>
+          </div>
+        </button>
+
+        {HUB_GROUPS.map((hub, i) => (
+          <div key={i} className="lp-hub-group">
+            <button
+              className={`lp-hub-btn hub-cta${openHub === i ? ' open' : ''}`}
+              onClick={() => setOpenHub(openHub === i ? null : i)}
+            >
+              <span className="lp-hub-icon">{hub.icon}</span>
+              <div className="lp-hub-btn-text">
+                <span className="lp-hub-label">{hub.label}</span>
+                <span className="lp-hub-sub">{hub.sub}</span>
+              </div>
+              <span className={`lp-hub-chevron${openHub === i ? ' open' : ''}`}>▾</span>
+            </button>
+            {openHub === i && (
+              <div className="lp-hub-dropdown">
+                {hub.tools.map((tool, j) => (
+                  <button key={j} className="lp-hub-tool" onClick={() => handleTool(tool.moduleId)}>
+                    <span className="lp-hub-tool-icon">{tool.icon}</span>
+                    {tool.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="lp-hub-end">
+        <div className="lp-hub-group">
+          <button
+            className={`lp-hub-btn${allToolsOpen ? ' open' : ''}`}
+            onClick={() => setAllToolsOpen(!allToolsOpen)}
+          >
+            <span className="lp-hub-icon">⚙</span>
+            <span className="lp-hub-label">All Tools</span>
+            <span className={`lp-hub-chevron${allToolsOpen ? ' open' : ''}`}>▾</span>
+          </button>
+          {allToolsOpen && (
+            <div className="lp-hub-dropdown lp-hub-dropdown-right">
+              {ALL_TOOLS_LIST.map((tool, i) => (
+                <button key={i} className="lp-hub-tool" onClick={() => handleTool(tool.moduleId)}>
+                  <span className="lp-hub-tool-icon">{tool.icon}</span>
+                  {tool.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── TRANSIT BANNER ───────────────────────────────────────────────────────────
+
+function TransitBanner() {
+  return (
+    <div className="lp-transit">
+      <span className="lp-transit-pulse" />
+      <span className="lp-transit-label">Career Market Signal</span>
+      <span className="lp-transit-sep">·</span>
+      <span className="lp-transit-phase">Current Phase: Expansion</span>
+      <span className="lp-transit-sep">·</span>
+      <span className="lp-transit-desc">Hiring Velocity High — Singapore tech roles up 18% YoY</span>
+      <span className="lp-transit-sep">·</span>
+      <span className="lp-transit-cta">Opportunity window: Apply now, market favours candidates</span>
     </div>
   );
 }
@@ -621,7 +759,7 @@ function AtsIntercept({ jobId, role, company, link, state, onApply, onClose, onO
 
 // ── SEARCH CARD ───────────────────────────────────────────────────────────────
 
-function SearchCard({ onJoin, onModuleSelect, onTrackerOpen, onSnack }) {
+function SearchCard({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgenticCta }) {
   const [jobQ, setJobQ] = useState('');
   const [locQ, setLocQ] = useState('Singapore');
   const [exp, setExp] = useState('Any level');
@@ -888,6 +1026,24 @@ function SearchCard({ onJoin, onModuleSelect, onTrackerOpen, onSnack }) {
           </div>
         </div>
       </div>
+      <div className="agentic-card" style={{ marginTop: 12 }}>
+        <div className="agentic-hd">
+          <div className="agentic-title"><span>⬡</span> Agentic Job Search</div>
+          <div className="agentic-status-badge"><span className="agentic-status-dot" />Active</div>
+        </div>
+        <div className="agentic-node">
+          <em>Logic Node</em> — Status: <strong>Scanning Singapore Market…</strong><br />
+          Last run: 06:14 SGT · <em>12 new matches found while you slept</em><br />
+          Roles matched: Senior PM @ Fintech · Data Lead @ Series B · PM @ Platform Co.
+        </div>
+        <div className="agentic-bottom">
+          <div className="agentic-match-badge">
+            <div className="agentic-match-count">12</div>
+            <div className="agentic-match-lbl">matches found<br />while you slept</div>
+          </div>
+          <button className="agentic-cta" onClick={onAgenticCta}>📄 Review Drafted Cover Letters</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -948,6 +1104,7 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
             <button className="btn-p" onClick={onJoin}>✦ Start free — no card needed</button>
             <button className="btn-o" onClick={() => document.getElementById('feat-sec')?.scrollIntoView({ behavior: 'smooth' })}>See all 10 tools ↓</button>
           </div>
+          <div className="cta-microcopy">Free to start · No credit card required · ATS results in 20 seconds</div>
           <div className="hero-fill">
             <div className="hf-stats">
               <div className="hf-stat">
@@ -973,22 +1130,14 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
             </div>
             <div className="hf-live">
               <span className="hf-live-dot" />
-              <span className="hf-live-text"><strong>{liveCount.toLocaleString()}</strong> job seekers using CareerAiHub right now in Singapore</span>
+              <span className="hf-live-text"><strong>{liveCount.toLocaleString()}</strong> job seekers active · <strong>2,400+</strong> resumes analyzed</span>
               <span className="hf-live-badge">Live</span>
-            </div>
-            <div className="agentic-card is-processing">
-              <span className="agentic-dot" />
-              <div className="agentic-body">
-                <div className="agentic-label">Agentic Job Search</div>
-                <div className="agentic-status">Status: <strong>Scanning Singapore market…</strong> 3 matches found while you slept.</div>
-              </div>
-              <button className="agentic-cta" onClick={onAgenticCta}>Review Cover Letters →</button>
             </div>
           </div>
         </div>
 
-        {/* RIGHT — Search Card */}
-        <SearchCard onJoin={onJoin} onModuleSelect={onModuleSelect} onTrackerOpen={onTrackerOpen} onSnack={onSnack} />
+        {/* RIGHT — Search Card + Agentic Card */}
+        <SearchCard onJoin={onJoin} onModuleSelect={onModuleSelect} onTrackerOpen={onTrackerOpen} onSnack={onSnack} onAgenticCta={onAgenticCta} />
       </div>
 
       {/* BOTTOM — ATS scanner + stats */}
@@ -1197,6 +1346,214 @@ function FeatureSection({ onJoin, activePill, onModuleSelect }) {
   );
 }
 
+// ── TESTIMONIALS ──────────────────────────────────────────────────────────────
+
+const TESTIMONIALS = [
+  {
+    quote: "I uploaded my resume and within 20 seconds could see exactly why I wasn't getting callbacks. The ATS score went from 41% to 88% after following the suggestions. Got a phone screen the following week.",
+    name: 'James L.',
+    role: 'Software Engineer · Singapore',
+    initials: 'JL',
+  },
+  {
+    quote: "The salary coach showed me I was asking for 18% below market rate. I practiced the negotiation roleplay three times before my offer call. Ended up with SGD 1,200 more per month than the initial offer.",
+    name: 'Priya W.',
+    role: 'Product Manager · Singapore',
+    initials: 'PW',
+  },
+  {
+    quote: "The HM Simulator is unlike anything I've used. It actually pushed back on my vague answers and made me quantify everything. My interview confidence went from 5/10 to 9/10 after four sessions.",
+    name: 'Marcus T.',
+    role: 'Marketing Manager · Singapore',
+    initials: 'MT',
+  },
+];
+
+function TestimonialsSection() {
+  return (
+    <section className="section lp-testi-section" id="testimonials">
+      <div className="reveal">
+        <div className="ey">Early users</div>
+        <h2 className="sh">What beta users say.</h2>
+        <p className="ss" style={{ marginBottom: 32 }}>Real feedback from our early beta group. We're collecting more every week.</p>
+      </div>
+      <div className="lp-testi-grid reveal d1">
+        {TESTIMONIALS.map((t, i) => (
+          <div key={i} className="lp-testi-card">
+            <div className="lp-testi-stars">★★★★★</div>
+            <p className="lp-testi-quote">{t.quote}</p>
+            <div className="lp-testi-author">
+              <div className="lp-testi-avatar">{t.initials}</div>
+              <div>
+                <div className="lp-testi-name">{t.name}</div>
+                <div className="lp-testi-role">{t.role}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="lp-testi-proof reveal d2">
+        <div className="lp-tsp-item"><span className="lp-tsp-n">500+</span><span className="lp-tsp-l">beta users analyzed</span></div>
+        <div className="lp-tsp-div" />
+        <div className="lp-tsp-item"><span className="lp-tsp-n">89%</span><span className="lp-tsp-l">saw ATS score improvement</span></div>
+        <div className="lp-tsp-div" />
+        <div className="lp-tsp-item"><span className="lp-tsp-n">4.8★</span><span className="lp-tsp-l">average rating</span></div>
+        <div className="lp-tsp-div" />
+        <div className="lp-tsp-item"><span className="lp-tsp-n">SGD 1,200</span><span className="lp-tsp-l">avg salary gain reported</span></div>
+      </div>
+    </section>
+  );
+}
+
+// ── TRUST SECTION ─────────────────────────────────────────────────────────────
+
+function TrustSection() {
+  return (
+    <section className="section lp-trust-section" id="trust">
+      <div className="reveal">
+        <div className="ey">Your data, protected</div>
+        <h2 className="sh">Your resume is yours. Always.</h2>
+        <p className="ss" style={{ marginBottom: 32 }}>We know you're uploading something personal. Here's exactly how we handle it.</p>
+      </div>
+      <div className="lp-trust-grid reveal d1">
+        <div className="lp-trust-item">
+          <div className="lp-trust-icon">🔒</div>
+          <h3 className="lp-trust-title">Encrypted in transit and at rest</h3>
+          <p className="lp-trust-desc">Your resume is encrypted with AES-256 the moment it's uploaded. It travels over TLS 1.3 and is stored in encrypted form. Only you can access it.</p>
+        </div>
+        <div className="lp-trust-item">
+          <div className="lp-trust-icon">🚫</div>
+          <h3 className="lp-trust-title">Never sold. Never shared.</h3>
+          <p className="lp-trust-desc">We do not sell your data to recruiters, job boards, or third parties. Ever. Your resume is used only to power your own CareerAiHub modules — nothing else.</p>
+        </div>
+        <div className="lp-trust-item">
+          <div className="lp-trust-icon">🗑️</div>
+          <h3 className="lp-trust-title">Delete anytime</h3>
+          <p className="lp-trust-desc">You can delete your resume, your profile, and all associated data from your account settings at any time. We process deletion within 24 hours.</p>
+        </div>
+        <div className="lp-trust-item">
+          <div className="lp-trust-icon">🇸🇬</div>
+          <h3 className="lp-trust-title">PDPA compliant · Singapore</h3>
+          <p className="lp-trust-desc">CareerAiHub is built to comply with Singapore's Personal Data Protection Act (PDPA). We are working toward GDPR compliance for our planned expansion into Europe.</p>
+        </div>
+      </div>
+      <div className="lp-trust-links reveal d2">
+        <span className="lp-trust-link">Privacy Policy ↗</span>
+        <span className="lp-trust-link">Terms of Service ↗</span>
+        <span className="lp-trust-link">Security Statement ↗</span>
+        <span className="lp-trust-link">Data Deletion Request ↗</span>
+      </div>
+    </section>
+  );
+}
+
+// ── GROWTH SECTION ────────────────────────────────────────────────────────────
+
+function GrowthSection({ onJoin }) {
+  const [copied, setCopied] = useState(false);
+  const [email, setEmail] = useState('');
+  const [sent, setSent] = useState(false);
+
+  const copyRef = () => {
+    navigator.clipboard?.writeText('careeraihub.com/ref/your-code').catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const sendGuide = () => {
+    if (!email) return;
+    setSent(true);
+  };
+
+  return (
+    <section className="section lp-growth-section" id="growth">
+      <div className="lp-growth-inner">
+        <div className="reveal">
+          <div className="ey">Refer a friend</div>
+          <h2 className="sh" style={{ maxWidth: 380 }}>Give a friend a free ATS scan. Get one extra scan yourself.</h2>
+          <p className="ss" style={{ marginBottom: 24 }}>Know someone in a job search? Share your referral link. When they complete their first scan, you both get a bonus free session.</p>
+          <div className="lp-referral-box">
+            <div className="lp-referral-link">careeraihub.com/ref/your-code</div>
+            <button className="lp-referral-copy" onClick={copyRef}>{copied ? 'Copied!' : 'Copy link'}</button>
+          </div>
+          <div className="lp-referral-share">
+            <button className="lp-ref-share-btn">Share on LinkedIn</button>
+            <button className="lp-ref-share-btn">Share on Telegram</button>
+          </div>
+        </div>
+        <div className="reveal d1">
+          <div className="ey">Free resource</div>
+          <h2 className="sh" style={{ maxWidth: 380 }}>Get the free guide: 7 resume mistakes that cost you interviews.</h2>
+          <p className="ss" style={{ marginBottom: 20 }}>Downloaded by 500+ job seekers. Covers the ATS filters most candidates never know about.</p>
+          {!sent ? (
+            <>
+              <div className="lp-lead-form">
+                <input
+                  className="lp-lead-input"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && sendGuide()}
+                />
+                <button className="lp-lead-btn" onClick={sendGuide}>Send me the guide →</button>
+              </div>
+              <div className="lp-lead-note">No spam. Unsubscribe anytime. PDPA compliant.</div>
+            </>
+          ) : (
+            <div style={{ padding: '14px 18px', background: 'var(--lp-teal-dim)', border: '1px solid var(--lp-teal-b)', borderRadius: 'var(--lp-r)', fontSize: 13, color: 'var(--lp-teal)' }}>
+              ✓ Guide sent! Check your inbox.
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── HOW IT WORKS ─────────────────────────────────────────────────────────────
+
+function HowItWorksSection({ onJoin }) {
+  return (
+    <section className="section lp-hiw-section" id="how-it-works">
+      <div className="reveal">
+        <div className="ey">How it works</div>
+        <h2 className="sh">From first visit to job offer — in three steps.</h2>
+        <p className="ss" style={{ marginBottom: 36 }}>No learning curve. No setup. Start with the free job search and ATS scan — the platform builds your profile from there.</p>
+      </div>
+      <div className="lp-hiw-steps reveal d1">
+        <div className="lp-hiw-step">
+          <div className="lp-hiw-num">01</div>
+          <div className="lp-hiw-icon">📄</div>
+          <h3 className="lp-hiw-title">Upload your resume once</h3>
+          <p className="lp-hiw-desc">CareerAiHub reads your resume in 20 seconds and seeds your AI memory. Every module — interviews, salary, cover letters — instantly knows your background. No re-entering your experience, ever.</p>
+          <div className="lp-hiw-badge">Free · No account needed</div>
+        </div>
+        <div className="lp-hiw-connector"><div className="lp-hiw-line" /><div className="lp-hiw-arrow">→</div></div>
+        <div className="lp-hiw-step">
+          <div className="lp-hiw-num">02</div>
+          <div className="lp-hiw-icon">⚡</div>
+          <h3 className="lp-hiw-title">Get your AI-powered score</h3>
+          <p className="lp-hiw-desc">See your ATS match score against any job description. Find out exactly which keywords you're missing, which sections need work, and what to fix before you apply. Most users improve 20+ points in one session.</p>
+          <div className="lp-hiw-badge">1 free scan included</div>
+        </div>
+        <div className="lp-hiw-connector"><div className="lp-hiw-line" /><div className="lp-hiw-arrow">→</div></div>
+        <div className="lp-hiw-step">
+          <div className="lp-hiw-num">03</div>
+          <div className="lp-hiw-icon">🎯</div>
+          <h3 className="lp-hiw-title">Apply with confidence</h3>
+          <p className="lp-hiw-desc">Fix your resume, practice your interview answers, know your market salary — then apply. Your application tracker logs every role automatically. The AI memory improves with every session.</p>
+          <div className="lp-hiw-badge">Upgrade for unlimited access</div>
+        </div>
+      </div>
+      <div className="lp-hiw-sample reveal d2">
+        <button className="lp-hiw-sample-btn" onClick={onJoin}>See a sample ATS report →</button>
+        <span className="lp-hiw-sample-note">No signup · Opens in 2 seconds</span>
+      </div>
+    </section>
+  );
+}
+
 // ── PRICING ───────────────────────────────────────────────────────────────────
 
 function PricingSection({ onJoin }) {
@@ -1334,7 +1691,7 @@ function FooterSection({ onJoin }) {
     <footer className="footer">
       <div className="footer-grid">
         <div>
-          <div className="fb"><LogoMark size={20} radius={6} />CareerAiHub</div>
+          <div className="fb"><LogoMark size={22} radius={6} /><span className="lp-wordmark">CareerAiHub</span></div>
           <p className="fbsub">The AI career operating system for every professional — from first job to executive role. Singapore · 2026 · careeraihub.com</p>
         </div>
         <nav className="fcol">
@@ -1401,8 +1758,7 @@ function TrackerOverlay({ onClose, onSnack }) {
       <div className="lp-tv-nav">
         <div className="lp-tv-nav-inner">
           <div className="lp-tv-logo">
-            <LogoMark size={20} radius={5} />
-            CareerAiHub
+            <LogoMark size={20} radius={5} /><span className="lp-wordmark">CareerAiHub</span>
           </div>
           <span className="lp-tv-title">Application Tracker</span>
           <button className="lp-tv-close" onClick={onClose}>✕ Close</button>
@@ -1638,7 +1994,8 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
       </div>
 
       <NavBar onSignIn={onSignIn} onJoin={onJoin} scrolled={navScrolled} />
-      <ModulePills active={activePill} setActive={handlePill} />
+      <TransitBanner />
+      <HubNav onModuleSelect={onModuleSelect} onTrackerOpen={() => setTrackerOpen(true)} />
       <TickerBar />
 
       <HeroSection onJoin={onJoin} onModuleSelect={onModuleSelect} onTrackerOpen={() => setTrackerOpen(true)} onSnack={showSnack} onAgenticCta={() => setCoverLetterOpen(true)} />
@@ -1649,7 +2006,15 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
 
       <div className="sec-divider" />
 
+      <HowItWorksSection onJoin={onJoin} />
+
+      <div className="sec-divider" />
+
       <FeatureSection onJoin={onJoin} activePill={activePill} onModuleSelect={onModuleSelect} />
+
+      <div className="sec-divider" />
+
+      <TestimonialsSection />
 
       <div className="sec-divider" />
 
@@ -1662,6 +2027,14 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
       <div className="sec-divider" />
 
       <FAQSection />
+
+      <div className="sec-divider" />
+
+      <TrustSection />
+
+      <div className="sec-divider" />
+
+      <GrowthSection onJoin={onJoin} />
 
       <FooterSection onJoin={onJoin} />
 
