@@ -192,7 +192,8 @@ const FEAT_DATA = [
     desc: "Upload your resume and a job description. Real-time ATS match score, keyword gap analysis, and specific improvement suggestions — all informed by your AI memory.",
     bullets: ["Real-time ATS score vs the exact job description you're applying to", "Keyword gap analysis — see exactly what's missing before you submit", 'AI memory means it already knows your work history from onboarding', 'Version control tracks every resume iteration and its ATS score over time'],
     previewHd: 'Resume Scan + ATS · live scoring',
-    preview: `<div class="mk-lbl">ATS score vs Senior PM · Job description</div>
+    preview: `<div class="roast-toggle"><button class="roast-opt on">Professional</button><button class="roast-opt snarky">Snarky Roast</button></div>
+      <div class="mk-lbl">ATS score vs Senior PM · Job description</div>
       <div class="mk-score" style="margin-bottom:12px"><div class="mk-track"><div class="mk-bar" style="width:91%"></div></div><span class="mk-pct">91%</span></div>
       <div class="mk-lbl">Keywords matched</div>
       <div style="margin-bottom:9px"><span class="mk-tag m">product strategy</span><span class="mk-tag m">roadmap</span><span class="mk-tag m">agile</span><span class="mk-tag m">data-driven</span></div>
@@ -245,14 +246,13 @@ const FEAT_DATA = [
     ey: 'Module 6 — Premium', title: 'Hiring Manager Simulator',
     desc: "Practice against an AI that behaves like a real hiring manager — asking follow-ups, probing weak answers, and challenging vague claims. It knows your resume and target role, so every question is contextually relevant.",
     bullets: ['Simulates a real hiring manager — not a generic question bot', 'Probes weak answers: "Can you quantify that?" "What was the hardest part?"', 'Knows your resume from memory — asks about your actual experience', 'Scores each answer and gives immediate, specific feedback on what to sharpen'],
-    previewHd: 'HM Simulator · live session',
-    preview: `<div class="mk-chat ai"><strong style="color:var(--teal)">HM:</strong> You mentioned the checkout redesign. What was the single hardest stakeholder disagreement and how did you resolve it?</div>
-      <div class="mk-chat you"><strong style="color:var(--text)">You:</strong> The payments team wanted to delay 3 weeks. I pulled in the CTO for a risk/reward conversation and we agreed to ship with a 10% traffic rollout.</div>
-      <div class="mk-chat ai"><strong style="color:var(--teal)">Feedback:</strong> Good structure — but quantify the risk you accepted. What was your rollback threshold? Own the decision with data, not just process description.</div>
-      <div class="mk-stat-row" style="margin-top:10px">
-        <div class="mk-stat"><div class="mk-stat-n">74%</div><div class="mk-stat-l">Answer score</div></div>
-        <div class="mk-stat"><div class="mk-stat-n">+12%</div><div class="mk-stat-l">vs last session</div></div>
-      </div>`,
+    previewHd: 'HM Simulator · choose your interviewer',
+    preview: `<div class="archetype-row">
+      <div class="archetype-chip active"><span class="archetype-chip-icon">📊</span><div><div class="archetype-chip-name">Metrics-Obsessed Head of Growth</div><div class="archetype-chip-focus">Focus: Hard numbers · SQL · conversion funnels</div></div></div>
+      <div class="archetype-chip"><span class="archetype-chip-icon">🚀</span><div><div class="archetype-chip-name">Visionary Founder</div><div class="archetype-chip-focus">Focus: Culture fit · big picture · first principles</div></div></div>
+      <div class="archetype-chip"><span class="archetype-chip-icon">🔥</span><div><div class="archetype-chip-name">Stress-Tester</div><div class="archetype-chip-focus">Focus: High-pressure · edge cases · failure modes</div></div></div>
+    </div>
+    <div class="mk-chat ai" style="margin-top:4px"><strong style="color:var(--teal)">HM:</strong> Walk me through the SQL query you used to identify the drop-off. What was your p-value?</div>`,
     pw: { h: "You've used your 1 free mock interview session.", s: 'Unlock unlimited sessions to practice until every answer is sharp — before the real interview.', cta: 'Unlock unlimited sessions →' },
   },
   {
@@ -501,7 +501,7 @@ export function ModulePills({ active, setActive }) {
 
 // ── TICKER ────────────────────────────────────────────────────────────────────
 
-const TICKER_ITEMS = ['✦ 10 AI modules active', 'Job search & market intel — always free', 'Premium — $19/month · save $156/mo vs separate tools', 'ATS resume scanner Singapore', 'AI mock interview coach'];
+const TICKER_ITEMS = ['✦ 10 AI modules active', 'Market Signal: Expansion Phase — Hiring velocity high in Tech & Fintech SG', 'Job search & market intel — always free', 'Premium — $19/month · save $156/mo vs separate tools', 'ATS resume scanner Singapore', 'AI mock interview coach'];
 
 export function TickerBar() {
   const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
@@ -894,7 +894,7 @@ function SearchCard({ onJoin, onModuleSelect, onTrackerOpen, onSnack }) {
 
 // ── HERO ──────────────────────────────────────────────────────────────────────
 
-function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack }) {
+function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgenticCta }) {
   const text = useTypewriter(TYPEWRITER_PHRASES);
   const [liveCount, setLiveCount] = useState(512);
   const [statsStarted, setStatsStarted] = useState(false);
@@ -975,6 +975,14 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack }) {
               <span className="hf-live-dot" />
               <span className="hf-live-text"><strong>{liveCount.toLocaleString()}</strong> job seekers using CareerAiHub right now in Singapore</span>
               <span className="hf-live-badge">Live</span>
+            </div>
+            <div className="agentic-card is-processing">
+              <span className="agentic-dot" />
+              <div className="agentic-body">
+                <div className="agentic-label">Agentic Job Search</div>
+                <div className="agentic-status">Status: <strong>Scanning Singapore market…</strong> 3 matches found while you slept.</div>
+              </div>
+              <button className="agentic-cta" onClick={onAgenticCta}>Review Cover Letters →</button>
             </div>
           </div>
         </div>
@@ -1454,6 +1462,100 @@ function TrackerOverlay({ onClose, onSnack }) {
   );
 }
 
+// ── COVER LETTERS MODAL ───────────────────────────────────────────────────────
+
+const SAMPLE_LETTERS = [
+  {
+    role: 'Senior Product Manager',
+    company: 'Grab',
+    preview: `Dear Hiring Team,\n\nI'm applying for the Senior PM role at Grab. In my previous role at Shopee, I led the checkout redesign that reduced abandonment by 34% and recovered SGD 2.1M in GMV within one quarter — directly aligned with Grab's focus on conversion and retention.\n\nI'd welcome the opportunity to bring that same rigour to Grab's payments and super-app experience.\n\nBest,\nAman Ashwin`,
+    score: 91,
+    status: 'Ready to send',
+    statusColor: '#10B981',
+  },
+  {
+    role: 'Head of Product',
+    company: 'Carousell',
+    preview: `Dear Hiring Team,\n\nYour recent expansion into financial services caught my attention — it maps closely to work I led at Shopee scaling cross-border payments across SEA. I drove a 3x increase in payment method coverage while reducing failed transaction rates by 18%.\n\nCarousell's trajectory from marketplace to fintech is exactly the kind of 0→1 challenge I thrive in.\n\nBest,\nAman Ashwin`,
+    score: 87,
+    status: 'Needs tailoring',
+    statusColor: '#F59E0B',
+  },
+  {
+    role: 'Product Lead, Growth',
+    company: 'Stripe',
+    preview: `Dear Hiring Team,\n\nStripe's developer-first philosophy resonates deeply — I've spent the past 4 years building products that make complex financial infrastructure invisible to end users. My work at Shopee reduced integration time for new payment partners from 6 weeks to 8 days through a self-serve API layer.\n\nI'd love to bring that mindset to Stripe's expansion in Southeast Asia.\n\nBest,\nAman Ashwin`,
+    score: 83,
+    status: 'Needs tailoring',
+    statusColor: '#F59E0B',
+  },
+];
+
+function CoverLetterModal({ onClose }) {
+  const [active, setActive] = useState(0);
+  const letter = SAMPLE_LETTERS[active];
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.72)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', backdropFilter: 'blur(8px)' }} onClick={onClose}>
+      <div style={{ background: '#0F1219', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 16, width: '100%', maxWidth: 720, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }} onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+          <div>
+            <div style={{ color: '#6366F1', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>Agentic Job Search</div>
+            <div style={{ color: '#EDF1F8', fontWeight: 800, fontSize: 16 }}>Drafted Cover Letters · 3 matches found</div>
+          </div>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#8896AD', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 16 }}>✕</button>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+          {SAMPLE_LETTERS.map((l, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              style={{
+                flex: 1, padding: '12px 8px', border: 'none', cursor: 'pointer', background: active === i ? 'rgba(99,102,241,0.09)' : 'transparent',
+                borderBottom: active === i ? '2px solid #6366F1' : '2px solid transparent',
+                color: active === i ? '#EDF1F8' : '#8896AD', fontSize: 12, fontWeight: active === i ? 700 : 500,
+                transition: 'all 0.18s', fontFamily: 'inherit', textAlign: 'center', lineHeight: 1.4
+              }}
+            >
+              <div>{l.company}</div>
+              <div style={{ fontSize: 10, marginTop: 2, color: active === i ? '#8896AD' : '#4F5C6E' }}>{l.role}</div>
+            </button>
+          ))}
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '20px 24px', overflowY: 'auto', flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#EDF1F8' }}>{letter.role} · {letter.company}</div>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: letter.statusColor + '18', color: letter.statusColor, border: `1px solid ${letter.statusColor}33` }}>{letter.status}</div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: '#6366F1', fontFamily: 'monospace' }}>ATS {letter.score}%</div>
+            </div>
+          </div>
+
+          <div style={{ background: '#141A24', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '20px 22px', fontSize: 13, color: '#8896AD', lineHeight: 1.85, whiteSpace: 'pre-line', fontFamily: 'inherit' }}>
+            {letter.preview}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '14px 24px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 10, flexShrink: 0 }}>
+          <button style={{ flex: 1, padding: '11px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: 9, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+            Use This Letter →
+          </button>
+          <button onClick={onClose} style={{ padding: '11px 18px', background: 'transparent', color: '#8896AD', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 9, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── SNACK ─────────────────────────────────────────────────────────────────────
 
 function SuccessSnack({ msg, visible }) {
@@ -1470,6 +1572,7 @@ function SuccessSnack({ msg, visible }) {
 export default function LandingPage({ setAuthModal, onModuleSelect }) {
   const [activePill, setActivePill] = useState(0);
   const [trackerOpen, setTrackerOpen] = useState(false);
+  const [coverLetterOpen, setCoverLetterOpen] = useState(false);
   const [snack, setSnack] = useState({ msg: '', visible: false });
   const [navScrolled, setNavScrolled] = useState(false);
   const [scrollPct, setScrollPct] = useState(0);
@@ -1484,6 +1587,33 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const SECTIONS = [
+      { id: 'feat-sec', cls: null },
+    ];
+    const featEl = document.getElementById('feat-sec');
+    if (!featEl) return;
+    const ftabs = featEl.querySelectorAll('.ftab');
+    const scanIndex = 1;
+    const simulateIndex = 5;
+    const themeMap = { [scanIndex]: 'theme-cyan', [simulateIndex]: 'theme-purple' };
+    const applyTheme = (cls) => {
+      document.documentElement.classList.remove('theme-cyan', 'theme-purple');
+      if (cls) document.documentElement.classList.add(cls);
+    };
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) { applyTheme(null); }
+    }, { threshold: 0.05 });
+    if (featEl) io.observe(featEl);
+    const handleFtabClick = (i) => applyTheme(themeMap[i] || null);
+    ftabs.forEach((btn, i) => btn.addEventListener('click', () => handleFtabClick(i)));
+    return () => {
+      io.disconnect();
+      ftabs.forEach((btn, i) => btn.removeEventListener('click', () => handleFtabClick(i)));
+      applyTheme(null);
+    };
   }, []);
 
   const showSnack = (msg) => {
@@ -1511,7 +1641,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
       <ModulePills active={activePill} setActive={handlePill} />
       <TickerBar />
 
-      <HeroSection onJoin={onJoin} onModuleSelect={onModuleSelect} onTrackerOpen={() => setTrackerOpen(true)} onSnack={showSnack} />
+      <HeroSection onJoin={onJoin} onModuleSelect={onModuleSelect} onTrackerOpen={() => setTrackerOpen(true)} onSnack={showSnack} onAgenticCta={() => setCoverLetterOpen(true)} />
 
       <div className="sec-divider" />
 
@@ -1536,6 +1666,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
       <FooterSection onJoin={onJoin} />
 
       {trackerOpen && <TrackerOverlay onClose={() => setTrackerOpen(false)} onSnack={showSnack} />}
+      {coverLetterOpen && <CoverLetterModal onClose={() => setCoverLetterOpen(false)} />}
       <SuccessSnack msg={snack.msg} visible={snack.visible} />
     </div>
   );

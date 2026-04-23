@@ -7,8 +7,16 @@ import { callLLM, extractJSON } from '../../lib/ai.jsx';
 function buildScanPrompt(targetRole) {
   return `You are a ruthless hiring expert. Analyze this resume${targetRole ? ` for the role: ${targetRole}` : ''}.
 Return ONLY raw JSON (no markdown, start with {):
-{"credibilityScore":0-100,"metricsFound":0,"summary":"2-3 sentence verdict","issues":[{"severity":"critical|warning|ok","type":"Vague Bullet|Missing Metric|Weak Ownership|Strong Claim","original":"short quote max 8 words","fix":"specific fix"}],"interrogationQuestions":[{"source":"which claim","question":"tough specific question"}]}
+{"credibilityScore":0-100,"metricsFound":0,"summary":"2-3 sentence verdict","issues":[{"severity":"critical|warning|ok","type":"Vague Bullet|Missing Metric|Weak Ownership|Strong Claim","original":"short quote max 8 words","fix":"specific XYZ-format fix: Achieved X, measured by Y, by doing Z"}],"interrogationQuestions":[{"source":"which claim","question":"tough specific question"}]}
 Generate 4-6 issues and 5-7 questions hyper-specific to this resume's actual companies, roles, and claims.`;
+}
+
+function buildSnarkyPrompt(targetRole) {
+  return `You are a brutally honest, entertainingly savage hiring expert who has seen 10,000 bad resumes and has zero patience for corporate fluff. Analyze this resume${targetRole ? ` for the role: ${targetRole}` : ''}.
+Roast each issue with sharp wit — then immediately follow it with a specific XYZ-format fix (Achieved X, measured by Y, by doing Z) so the candidate knows exactly how to fix it.
+Return ONLY raw JSON (no markdown, start with {):
+{"credibilityScore":0-100,"metricsFound":0,"summary":"2-3 sentence brutally honest roast of this resume — be specific to the actual content, not generic","issues":[{"severity":"critical|warning|ok","type":"Vague Bullet|Missing Metric|Weak Ownership|Strong Claim","original":"short quote max 8 words","roast":"1 snarky sentence calling this out specifically","fix":"XYZ-format fix: Achieved X, measured by Y, by doing Z"}],"interrogationQuestions":[{"source":"which claim","question":"the most uncomfortable question a skeptical hiring manager would ask about this exact claim"}]}
+Generate 4-6 issues. Be specific to this resume's actual content, companies, and claims.`;
 }
 
 function arrayBufferToBase64(buffer) {
@@ -80,7 +88,10 @@ function ScanHistoryCard({ item, initExpanded }) {
                       <span style={{ color: C.muted, fontSize: 11 }}>{issue.type}</span>
                     </div>
                     <div style={{ color: C.accent, fontSize: 11, fontFamily: 'var(--font-mono)', marginBottom: 8, background: '#0A1020', padding: '6px 10px', borderRadius: 6 }}>"{issue.original}"</div>
-                    <div style={{ color: C.gold, fontSize: 12 }}>💡 {issue.fix}</div>
+                    {issue.roast && (
+                      <div style={{ color: C.gold, fontSize: 12, fontStyle: 'italic', marginBottom: 6 }}>🔥 {issue.roast}</div>
+                    )}
+                    <div style={{ color: C.green, fontSize: 12 }}>💡 XYZ Fix: {issue.fix}</div>
                   </div>
                 ))}
               </div>
@@ -118,7 +129,8 @@ export default function ResumeScan({ resumeText, setResumeText, scanResult, setS
   const fileRef = useRef(null);
 
   const [rawFile, setRawFile] = useState(null);
-  const [localFile, setLocalFile] = useState(null); // immediate local state for UI
+  const [localFile, setLocalFile] = useState(null);
+  const [feedbackMode, setFeedbackMode] = useState('professional');
 
   const handleFile = async (file) => {
     if (!file) return;
@@ -151,7 +163,7 @@ export default function ResumeScan({ resumeText, setResumeText, scanResult, setS
     }, 1200);
 
     try {
-      const prompt = buildScanPrompt(targetRole);
+      const prompt = feedbackMode === 'snarky' ? buildSnarkyPrompt(targetRole) : buildScanPrompt(targetRole);
       let raw;
       let base64 = null;
 
@@ -251,7 +263,36 @@ export default function ResumeScan({ resumeText, setResumeText, scanResult, setS
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ color: C.text, fontWeight: 800, fontSize: 18 }}>Deep Scan New Resume</div>
           <div style={{ flex: 1, height: 1, background: C.border, opacity: 0.5 }} />
+          {/* Roast toggle */}
+          <div style={{ display: 'flex', border: `1px solid ${C.border}`, borderRadius: 20, overflow: 'hidden', flexShrink: 0 }}>
+            {[
+              { id: 'professional', label: '✦ Professional' },
+              { id: 'snarky', label: '🔥 Snarky Roast' }
+            ].map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setFeedbackMode(opt.id)}
+                style={{
+                  padding: '6px 16px', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700,
+                  background: feedbackMode === opt.id
+                    ? (opt.id === 'snarky' ? C.gold + '22' : C.accent + '1A')
+                    : 'transparent',
+                  color: feedbackMode === opt.id
+                    ? (opt.id === 'snarky' ? C.gold : C.accent)
+                    : C.muted,
+                  transition: 'all 0.18s', fontFamily: 'inherit'
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
+        {feedbackMode === 'snarky' && (
+          <div style={{ background: C.gold + '0D', border: `1px solid ${C.gold}33`, borderRadius: 10, padding: '10px 14px', fontSize: 12, color: C.gold, display: 'flex', alignItems: 'center', gap: 8 }}>
+            🔥 <strong>Snarky Roast mode:</strong>&nbsp;AI will brutally call out every weak bullet — then give you the XYZ-format fix.
+          </div>
+        )}
 
         {fileErr && (
           <div style={{ background: `${C.red}15`, border: `1px solid ${C.red}44`, borderRadius: 10, padding: '12px 16px', color: C.red, fontSize: 13, fontWeight: 600 }}>
