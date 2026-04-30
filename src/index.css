@@ -38,6 +38,9 @@ body {
 .section-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6B7E9F;margin-bottom:16px;text-align:center}
 .step-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
 
+@keyframes orbit-spin-cw{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes orbit-spin-ccw{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+
 .mod-tab{
   border:1px solid #1E2D45;background:transparent;color:#6B7E9F;
   border-radius:var(--radius-md);padding:8px 14px;font-size:11px;font-weight:700;

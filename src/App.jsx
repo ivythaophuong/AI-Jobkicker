@@ -19,7 +19,8 @@ import MemoryDashboard from './features/MemoryDashboard/MemoryDashboard';
 import ATSBuilder from './features/ATSBuilder/ATSBuilder';
 import PrivacyPolicy from './features/Legal/PrivacyPolicy';
 import TermsOfService from './features/Legal/TermsOfService';
-import LandingPage, { GuestNav, ModulePills, PILLS, LogoMark, TickerBar } from './features/Landing/LandingPage';
+import LandingPage, { GuestNav, ModulePills, PILLS, LogoMark } from './features/Landing/LandingPage';
+import { AppLoader, OrbitSpinner } from './components/OrbitMark';
 
 // ── Original Overlay Components ──────────────────────────────────────────────
 import { Ticker, UserMenu, AuthGate } from './components/OriginalUIOverlays';
@@ -252,11 +253,10 @@ function App() {
       );
     }
 
+    if (isRestoring) return <AppLoader label="Restoring your session…" />;
+
     return (
       <>
-        {/* Ticker */}
-        <TickerBar />
-
         {/* Content Wrapper */}
         <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px", animation: "fadeIn 0.4s ease" }}>
           <div key={activeModule}>

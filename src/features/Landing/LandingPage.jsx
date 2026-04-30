@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './landing.css';
+import { OrbitMark } from '../../components/OrbitMark';
 
 // ── DATA ─────────────────────────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ const LAYER_DATA = [
     label: 'l1', n: 'Layer 01', title: 'Resume creation', sub: 'ATS · editor · cover letter',
     status: 'live', ey: 'Layer 01 — Live now', panelTitle: 'Intelligent resume creation',
     desc: 'Choose from professional templates · Write in our In-App Editor with live ATS scoring as you type · XYZ bullet guidance structures every achievement to international standards · Version control saves every draft · One-click PDF & DOCX export · Cover Letter auto-generated from your profile and target role.',
-    cta: 'Try it free →', ctaCls: 'cta-t',
+    cta: 'See How It Works →', ctaCls: 'cta-t',
     bg: 'var(--lp-teal-dim)', eyC: 'var(--lp-teal)', borderC: 'var(--lp-teal-b2)',
     mods: [
       { n: 'Resume Scan + ATS', d: 'Instant ATS match score against any job description. See missing keywords and exactly which changes move the needle.' },
@@ -119,7 +120,7 @@ const LAYER_DATA = [
     label: 'l2', n: 'Layer 02', title: 'Interview + salary prep', sub: 'Mock interviews · HM sim · salary',
     status: 'live', ey: 'Layer 02 — Live now', panelTitle: 'Interview + salary preparation',
     desc: "AI coaches that know your resume, your target role, and every past session. The mock interview knows which role you're targeting. HM Simulator pressure-tests your answers. Salary coach knows your market level.",
-    cta: 'Try it free →', ctaCls: 'cta-t',
+    cta: 'See How It Works →', ctaCls: 'cta-t',
     bg: 'var(--lp-teal-dim)', eyC: 'var(--lp-teal)', borderC: 'var(--lp-teal-b2)',
     mods: [
       { n: 'Mock interviews', d: 'Role-specific question sets. AI scoring and feedback. Tracks improvement across sessions.' },
@@ -136,7 +137,7 @@ const LAYER_DATA = [
     label: 'l3', n: 'Layer 03', title: 'Verified credentials', sub: 'Blockchain · school partners',
     status: 'building', ey: 'Layer 03 — Building next', panelTitle: 'Verified identity + credentials',
     desc: "Blockchain-backed institutional verification. School partnerships issue credentials directly onto your profile with a green verified badge — making your profile trustworthy to recruiters from day one.",
-    cta: 'Join waitlist →', ctaCls: 'cta-a',
+    cta: 'See Demo →', ctaCls: 'cta-a',
     bg: 'var(--lp-amber-dim)', eyC: 'var(--lp-amber)', borderC: 'var(--lp-amber-b)',
     mods: [
       { n: 'School partnerships', d: "Institutional onboarding via Dr. Lilian Koh's network. Free student access via MOU." },
@@ -153,7 +154,7 @@ const LAYER_DATA = [
     label: 'l4', n: 'Layer 04', title: 'AI marketplace', sub: 'Match engine · TrustChat',
     status: 'planned', ey: 'Layer 04 — Planned', panelTitle: 'AI-powered HR marketplace',
     desc: "Two-sided AI matching on verified data + TrustChat — verified in-platform messaging with credential sidebar. Recruiters access pre-verified, AI-matched candidates. No cold contact.",
-    cta: 'Notify me →', ctaCls: 'cta-p',
+    cta: 'See Demo →', ctaCls: 'cta-p',
     bg: 'var(--lp-purple-dim)', eyC: 'var(--lp-purple)', borderC: 'var(--lp-purple-b)',
     mods: [
       { n: 'AI match engine', d: 'Scores verified profiles against recruiter requirements. Auto-shortlist. Both sides notified on match.' },
@@ -423,21 +424,20 @@ function StatBox({ stat, started }) {
   );
 }
 
-export const LogoMark = ({ size = 26, radius = 7 }) => (
-  <div className="lp-lmark" style={{ width: size, height: size, borderRadius: radius }}>
-    <svg viewBox="0 0 14 14" style={{ width: size * 0.54, height: size * 0.54, fill: 'none', stroke: '#0B0F14', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }}>
-      <polyline points="2,12 7,2 12,12" /><line x1="4" y1="8.5" x2="10" y2="8.5" />
-    </svg>
-  </div>
+export const LogoMark = ({ size = 28 }) => (
+  <OrbitMark size={size} animated duration={18} />
 );
 
 // ── NAV ───────────────────────────────────────────────────────────────────────
 
-function NavBar({ onSignIn, onJoin, scrolled }) {
+function NavBar({ onSignIn, onJoin, scrolled, lightMode, onToggleLightMode }) {
   const ss = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   return (
     <nav className={`lp-nav${scrolled ? ' scrolled' : ''}`}>
-      <button className="lp-nav-logo"><LogoMark /><span className="lp-wordmark">CareerAiHub</span></button>
+      <button className="lp-nav-logo">
+        <LogoMark />
+        <span className="lp-wordmark">career<span className="lp-wordmark-ai">ai</span>hub</span>
+      </button>
       <div className="lp-nav-center">
         <button className="lp-nl" onClick={() => ss('feat-sec')}>Features</button>
         <button className="lp-nl" onClick={() => ss('price-sec')}>Pricing</button>
@@ -445,6 +445,7 @@ function NavBar({ onSignIn, onJoin, scrolled }) {
         <button className="lp-nl" onClick={() => ss('faq-sec')}>FAQ</button>
       </div>
       <div className="lp-nav-r">
+        <button className="lp-btn-lmode" onClick={onToggleLightMode} title={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}>{lightMode ? '🌙' : '☀️'}</button>
         <button className="lp-btn-si" onClick={onSignIn}>Sign In</button>
         <button className="lp-btn-join" onClick={onJoin}>✦ Join Free</button>
       </div>
@@ -455,7 +456,7 @@ function NavBar({ onSignIn, onJoin, scrolled }) {
 export function GuestNav({ onSignIn, onJoin, onHome }) {
   return (
     <nav className="lp-nav">
-      <button className="lp-nav-logo" onClick={onHome}><LogoMark /><span className="lp-wordmark">CareerAiHub</span></button>
+      <button className="lp-nav-logo" onClick={onHome}><LogoMark /><span className="lp-wordmark">career<span className="lp-wordmark-ai">ai</span>hub</span></button>
       <div className="lp-nav-center">
         <button className="lp-nl" onClick={onHome}>Features</button>
         <button className="lp-nl" onClick={onHome}>Pricing</button>
@@ -533,89 +534,39 @@ const ALL_TOOLS_LIST = [
   { icon: '🧬', label: 'AI Memory', moduleId: 'memory' },
 ];
 
-export function HubNav({ onModuleSelect, onTrackerOpen }) {
-  const [openHub, setOpenHub] = useState(null);
-  const [allToolsOpen, setAllToolsOpen] = useState(false);
-  const navRef = useRef(null);
+export function HubNav({ onModuleSelect, onTrackerOpen, onGetReady, onFeatModal }) {
+  const [active, setActive] = useState(0);
+  const ss = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  useEffect(() => {
-    const handler = (e) => {
-      if (navRef.current && !navRef.current.contains(e.target)) {
-        setOpenHub(null);
-        setAllToolsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  const handleTool = (moduleId) => {
-    if (moduleId === '__tracker__') onTrackerOpen?.();
-    else onModuleSelect?.(moduleId);
-    setOpenHub(null);
-    setAllToolsOpen(false);
-  };
+  const pills = [
+    { icon: '🔍', label: 'Job Search', sub: 'Always free', badge: null, pulse: false, ready: false,
+      onClick: () => { setActive(0); onModuleSelect?.('jobs'); } },
+    { icon: '🎯', label: 'Get Seen', sub: null, badge: null, pulse: true, ready: false,
+      onClick: () => { setActive(1); onFeatModal?.(1); } },
+    { icon: '✅', label: 'Get Ready', sub: null, badge: 'Pro', pulse: false, ready: true,
+      onClick: () => { setActive(2); onGetReady?.(); } },
+    { icon: '🏆', label: 'Get the Offer', sub: null, badge: null, pulse: true, ready: false,
+      onClick: () => { setActive(3); onFeatModal?.(5); } },
+    { icon: '💰', label: 'Get Paid', sub: null, badge: null, pulse: true, ready: false,
+      onClick: () => { setActive(4); onFeatModal?.(6); } },
+  ];
 
   return (
-    <div className="lp-hub-nav" ref={navRef}>
-      <div className="lp-hub-center">
-        <button className="lp-hub-search" onClick={() => handleTool('jobs')}>
-          <span className="lp-hub-icon">🔍</span>
-          <div className="lp-hub-search-text">
-            <span className="lp-hub-label">Job Search</span>
-            <span className="lp-hub-sub">Always free</span>
-          </div>
+    <div className="lp-hub-nav">
+      {pills.map((p, i) => (
+        <button
+          key={i}
+          className={`lp-hub-pill${active === i ? ' on' : ''}${p.ready ? ' ready' : ''}`}
+          onClick={p.onClick}
+          style={{ position: 'relative' }}
+        >
+          <span style={{ fontSize: 15 }}>{p.icon}</span>
+          <span className="lp-hub-pill-label">{p.label}</span>
+          {p.sub && <span className="lp-hub-pill-sub">{p.sub}</span>}
+          {p.badge && <span className="lp-hub-pill-badge">{p.badge}</span>}
+          {p.pulse && <span className="lp-hub-pulse-dot" />}
         </button>
-
-        {HUB_GROUPS.map((hub, i) => (
-          <div key={i} className="lp-hub-group">
-            <button
-              className={`lp-hub-btn hub-cta${openHub === i ? ' open' : ''}`}
-              onClick={() => setOpenHub(openHub === i ? null : i)}
-            >
-              <span className="lp-hub-icon">{hub.icon}</span>
-              <div className="lp-hub-btn-text">
-                <span className="lp-hub-label">{hub.label}</span>
-                <span className="lp-hub-sub">{hub.sub}</span>
-              </div>
-              <span className={`lp-hub-chevron${openHub === i ? ' open' : ''}`}>▾</span>
-            </button>
-            {openHub === i && (
-              <div className="lp-hub-dropdown">
-                {hub.tools.map((tool, j) => (
-                  <button key={j} className="lp-hub-tool" onClick={() => handleTool(tool.moduleId)}>
-                    <span className="lp-hub-tool-icon">{tool.icon}</span>
-                    {tool.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div className="lp-hub-end">
-        <div className="lp-hub-group">
-          <button
-            className={`lp-hub-btn${allToolsOpen ? ' open' : ''}`}
-            onClick={() => setAllToolsOpen(!allToolsOpen)}
-          >
-            <span className="lp-hub-icon">⚙</span>
-            <span className="lp-hub-label">All Tools</span>
-            <span className={`lp-hub-chevron${allToolsOpen ? ' open' : ''}`}>▾</span>
-          </button>
-          {allToolsOpen && (
-            <div className="lp-hub-dropdown lp-hub-dropdown-right">
-              {ALL_TOOLS_LIST.map((tool, i) => (
-                <button key={i} className="lp-hub-tool" onClick={() => handleTool(tool.moduleId)}>
-                  <span className="lp-hub-tool-icon">{tool.icon}</span>
-                  {tool.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      ))}
     </div>
   );
 }
@@ -1026,22 +977,297 @@ function SearchCard({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgenticC
           </div>
         </div>
       </div>
-      <div className="agentic-card" style={{ marginTop: 12 }}>
-        <div className="agentic-hd">
-          <div className="agentic-title"><span>⬡</span> Agentic Job Search</div>
-          <div className="agentic-status-badge"><span className="agentic-status-dot" />Active</div>
-        </div>
-        <div className="agentic-node">
-          <em>Logic Node</em> — Status: <strong>Scanning Singapore Market…</strong><br />
-          Last run: 06:14 SGT · <em>12 new matches found while you slept</em><br />
-          Roles matched: Senior PM @ Fintech · Data Lead @ Series B · PM @ Platform Co.
-        </div>
-        <div className="agentic-bottom">
-          <div className="agentic-match-badge">
-            <div className="agentic-match-count">12</div>
-            <div className="agentic-match-lbl">matches found<br />while you slept</div>
+    </div>
+  );
+}
+
+// ── ATS ANIMATED DEMO ────────────────────────────────────────────────────────
+
+const ATS_ENGINES = [
+  { label:'Keyword match',    before:'12% — missing OKR, SQL',   after:'89% match',             pts:22, dims:{ d0:'91%', b0:91 }, insight:'ATS systems tokenise your resume against the JD word-for-word. "Responsible for team tasks" scores 0 for a JD listing "OKR-driven roadmap". We injected 6 exact-match keywords.' },
+  { label:'Bullet impact',    before:'No numbers anywhere',        after:'3 bullets quantified',  pts:15, dims:{ d2:'85%', b2:85 }, insight:'Bullets without numbers are skipped in 7-second recruiter scans. "Led OKR roadmap → +28% retention" triggers both ATS keyword match AND the recruiter eye-scan.' },
+  { label:'Section headers',  before:'Non-standard labels',        after:'ATS-readable headers',  pts:8,  dims:{ d1:'88%', b1:88 }, insight:"Many parsers look for exact strings: \"Experience\", \"Skills\", \"Education\". A header like \"What I've done\" causes the parser to skip the section — your best content disappears." },
+  { label:'Action verbs',     before:'Helped, worked, assisted',   after:'Led, Built, Drove',     pts:7,  dims:{},                  insight:'Weak openers signal a supporting role to ATS seniority models. Strong verbs also match JD language — "led" matches "leadership experience required".' },
+  { label:'Role seniority',   before:'Junior-level framing',       after:'Senior PM aligned',     pts:5,  dims:{ d3:'94%', b3:94 }, insight:'ATS cross-checks your years, seniority language, and impact scope against the role level. We align your framing without inventing anything.' },
+  { label:'File & format',    before:'Tables + parse errors',      after:'Clean single-column',   pts:4,  dims:{},                  insight:'PDF tables and multi-column layouts scramble text order in ATS parsers. Single-column plain text is the safest format across all systems.' },
+];
+
+function AtsDemoSection({ onJoin }) {
+  const [phase, setPhase] = useState('pre');
+  const [scanPct, setScanPct] = useState(0);
+  const [stepsLit, setStepsLit] = useState([false,false,false,false,false]);
+  const [lineStates, setLineStates] = useState([0,0,0,0,0]);
+  const [scanScore, setScanScore] = useState(0);
+  const [afterVisible, setAfterVisible] = useState(false);
+  const [cardTitle, setCardTitle] = useState('AI Scanning…');
+  const [badgeColor, setBadgeColor] = useState('#00D4FF');
+  const [fixStep, setFixStep] = useState(0);
+  const [fixApplied, setFixApplied] = useState(new Array(6).fill(false));
+  const [afterScore, setAfterScore] = useState(38);
+  const [dimVals, setDimVals] = useState({ d0:'—', d1:'—', d2:'—', d3:'—' });
+  const [dimBars, setDimBars] = useState({ b0:0, b1:0, b2:0, b3:0 });
+  const [afterTitle, setAfterTitle] = useState('Waiting for scan…');
+  const [afterSub, setAfterSub] = useState('Results will appear here');
+  const [showDelta, setShowDelta] = useState(false);
+  const [showKw, setShowKw] = useState(false);
+  const [showNote, setShowNote] = useState(false);
+  const [finalBanner, setFinalBanner] = useState(false);
+  const [insight, setInsight] = useState('');
+  const timers = useRef([]);
+  const ivRef = useRef(null);
+
+  const clearAll = () => {
+    timers.current.forEach(clearTimeout); timers.current = [];
+    if (ivRef.current) { clearInterval(ivRef.current); ivRef.current = null; }
+  };
+  const addT = (fn, d) => { timers.current.push(setTimeout(fn, d)); };
+
+  const completeScan = useCallback(() => {
+    setAfterVisible(true);
+    setAfterTitle('Scan complete — apply fixes');
+    setAfterSub('Press "Apply next fix" to see AI improve each issue');
+    addT(() => {
+      setPhase('fixmode');
+      setCardTitle('ATS engine — 6 checks');
+      setBadgeColor('#B026FF');
+    }, 600);
+  }, []);
+
+  const startScan = useCallback(() => {
+    setPhase('scanning');
+    const order = [0,2,4,1,3];
+    order.forEach((li,i) => {
+      addT(() => setLineStates(s => { const n=[...s]; n[li]=1; return n; }), i*80);
+      addT(() => setLineStates(s => { const n=[...s]; n[li]=2; return n; }), i*80+480);
+    });
+    [20,42,65,82,100].forEach((p,i) => addT(() => setScanPct(p), i*340));
+    [0,350,700,1050,1400].forEach((d,i) => addT(() => setStepsLit(s => { const n=[...s]; n[i]=true; return n; }), d));
+    addT(() => {
+      let cur = 0;
+      ivRef.current = setInterval(() => {
+        cur = Math.min(cur+3, 38);
+        setScanScore(cur);
+        if (cur >= 38) { clearInterval(ivRef.current); ivRef.current=null; completeScan(); }
+      }, 28);
+    }, 500);
+  }, [completeScan]);
+
+  const replay = useCallback(() => {
+    clearAll();
+    setPhase('pre'); setScanPct(0); setStepsLit([false,false,false,false,false]);
+    setLineStates([0,0,0,0,0]); setScanScore(0); setAfterVisible(false);
+    setCardTitle('AI Scanning…'); setBadgeColor('#00D4FF');
+    setFixStep(0); setFixApplied(new Array(6).fill(false)); setAfterScore(38);
+    setDimVals({ d0:'—', d1:'—', d2:'—', d3:'—' }); setDimBars({ b0:0, b1:0, b2:0, b3:0 });
+    setAfterTitle('Waiting for scan…'); setAfterSub('Results will appear here');
+    setShowDelta(false); setShowKw(false); setShowNote(false); setFinalBanner(false); setInsight('');
+    addT(startScan, 600);
+  }, [startScan]);
+
+  useEffect(() => { addT(startScan, 1200); return clearAll; }, [startScan]);
+
+  const applyFix = () => {
+    if (fixStep >= ATS_ENGINES.length) return;
+    const e = ATS_ENGINES[fixStep];
+    setFixApplied(s => { const n=[...s]; n[fixStep]=true; return n; });
+    const ns = afterScore + e.pts;
+    setAfterScore(ns); setInsight(e.insight);
+    if ('d0' in e.dims) setDimVals(s => ({ ...s, d0:e.dims.d0 }));
+    if ('d1' in e.dims) setDimVals(s => ({ ...s, d1:e.dims.d1 }));
+    if ('d2' in e.dims) setDimVals(s => ({ ...s, d2:e.dims.d2 }));
+    if ('d3' in e.dims) setDimVals(s => ({ ...s, d3:e.dims.d3 }));
+    if ('b0' in e.dims) setDimBars(s => ({ ...s, b0:e.dims.b0 }));
+    if ('b1' in e.dims) setDimBars(s => ({ ...s, b1:e.dims.b1 }));
+    if ('b2' in e.dims) setDimBars(s => ({ ...s, b2:e.dims.b2 }));
+    if ('b3' in e.dims) setDimBars(s => ({ ...s, b3:e.dims.b3 }));
+    if (ns >= 80) { setAfterTitle('Strong ATS match ✓'); setAfterSub('Passes filter for Senior PM roles in Singapore.'); setShowDelta(true); }
+    else { setAfterTitle('Improving… keep going'); setAfterSub(`${ns}% — ${91-ns} pts left to reach 91%`); }
+    if (ns >= 60) setShowKw(true);
+    if (ns >= 85) setShowNote(true);
+    const nxt = fixStep + 1;
+    setFixStep(nxt);
+    if (nxt >= ATS_ENGINES.length) { setPhase('done'); setFinalBanner(true); setAfterScore(91); }
+  };
+
+  const lw = [false,true,false,true,false];
+  const lineColor = i => lineStates[i]===1 ? 'rgba(0,212,255,.15)' : lineStates[i]===2 ? (lw[i] ? 'rgba(255,210,51,.1)' : 'rgba(0,229,160,.14)') : 'rgba(255,255,255,.07)';
+  const lineBdr = i => lineStates[i]===1 ? '2px solid #00D4FF' : lineStates[i]===2 ? (lw[i] ? '2px solid rgba(255,210,51,.5)' : '2px solid #00E5A0') : '';
+  const stepLabels = ['Reading structure','Extracting keywords','Matching PM roles','Scoring 5 dimensions','Generating fix recommendations'];
+  const dimColors = ['#00D4FF','#00E5A0','#B026FF','#FFD233'];
+  const dimKeys = ['d0','d1','d2','d3'];
+  const barKeys = ['b0','b1','b2','b3'];
+  const dimLabels = ['Keywords','Formatting','Impact','Role fit'];
+
+  const C = { glass:'rgba(13,20,40,.9)', bdr:'rgba(255,255,255,.06)', bdr2:'rgba(255,255,255,.12)', text2:'var(--lp-text2)', text3:'var(--lp-text3)' };
+
+  return (
+    <div id="ats-demo" className="hero-bottom reveal" style={{ gridTemplateColumns:'1fr', paddingBottom:56 }}>
+      <div>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12, flexWrap:'wrap', gap:8 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--lp-teal)', animation:'lp-pulse 2s infinite', display:'inline-block', flexShrink:0 }} />
+            <span style={{ fontSize:11, fontWeight:700, color:'var(--lp-teal)', textTransform:'uppercase', letterSpacing:'.08em' }}>ATS Scanner — from invisible to interview-ready</span>
           </div>
-          <button className="agentic-cta" onClick={onAgenticCta}>📄 Review Drafted Cover Letters</button>
+          <button onClick={replay} style={{ padding:'4px 10px', borderRadius:6, background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,255,255,.1)', color:'var(--lp-text2)', fontSize:11, cursor:'pointer', fontFamily:'var(--lp-ff)' }}>↺ Replay</button>
+        </div>
+
+        <div style={{ background:'rgba(13,20,40,.7)', border:'1px solid rgba(0,212,255,.2)', borderRadius:16, overflow:'hidden', padding:24, backdropFilter:'blur(20px)', boxShadow:'0 0 60px rgba(0,212,255,.08),0 24px 64px rgba(0,0,0,.5)' }}>
+          <div style={{ textAlign:'center', marginBottom:20 }}>
+            <div style={{ fontSize:18, fontWeight:800, color:'var(--lp-text)', letterSpacing:'-.3px', marginBottom:6 }}>Watch the ATS system scan your resume and how AI completes it</div>
+            <div style={{ fontSize:12, color:'var(--lp-text3)' }}>Before → Scanning → After · auto-plays on load</div>
+          </div>
+
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1.15fr 1fr', gap:14, alignItems:'start', marginBottom:20 }}>
+
+            {/* Card 1: Before */}
+            <div style={{ background:C.glass, border:'1px solid rgba(255,77,106,.22)', borderRadius:12, overflow:'hidden' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 14px', background:'rgba(255,77,106,.05)', borderBottom:`1px solid ${C.bdr}` }}>
+                <span style={{ width:8, height:8, borderRadius:'50%', background:'#FF4D6A', boxShadow:'0 0 8px rgba(255,77,106,.8)', flexShrink:0 }} />
+                <span style={{ fontSize:11, fontWeight:700, color:C.text2, flex:1 }}>Original Resume</span>
+                <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:5, background:'rgba(255,77,106,.1)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.2)' }}>Before</span>
+              </div>
+              <div style={{ padding:14 }}>
+                <div style={{ fontSize:11, fontWeight:800, color:'var(--lp-text)', marginBottom:2 }}>Minh Tran</div>
+                <div style={{ fontSize:9, color:C.text3, marginBottom:8 }}>minh@email.com · Singapore · +65 9123 4567</div>
+                <div style={{ fontSize:8, fontWeight:700, color:'#4A5A7A', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:4 }}>Experience</div>
+                <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,.08)', marginBottom:4 }} />
+                <div style={{ height:6, borderRadius:3, background:'rgba(255,77,106,.22)', borderLeft:'2px solid #FF4D6A', marginBottom:4, width:'90%' }} />
+                <div style={{ fontSize:9, color:'#FF4D6A', fontStyle:'italic', padding:'4px 6px', background:'rgba(255,77,106,.06)', borderRadius:4, marginBottom:4, lineHeight:1.4 }}>"Helped drive product roadmap, worked with teams on deliverables…"</div>
+                <div style={{ height:6, borderRadius:3, background:'rgba(255,77,106,.18)', borderLeft:'2px solid #FF4D6A', marginBottom:4, width:'85%' }} />
+                <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,.08)', marginBottom:4, width:'70%' }} />
+                <div style={{ fontSize:8, fontWeight:700, color:'#4A5A7A', textTransform:'uppercase', letterSpacing:'.08em', marginTop:6, marginBottom:4 }}>Skills</div>
+                <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,.08)', marginBottom:4 }} />
+                <div style={{ height:6, borderRadius:3, background:'rgba(255,210,51,.12)', borderLeft:'2px solid rgba(255,210,51,.5)', marginBottom:4, width:'80%' }} />
+                <div style={{ marginTop:10, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                  <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'5px 10px', borderRadius:20, background:'rgba(255,77,106,.1)', border:'1px solid rgba(255,77,106,.25)' }}>
+                    <span style={{ fontSize:18, fontWeight:800, color:'#FF4D6A', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>38</span>
+                    <span style={{ fontSize:9, color:'#FF4D6A', fontWeight:600 }}>ATS score</span>
+                  </div>
+                  <div style={{ fontSize:9, color:'#FF4D6A', textAlign:'right', lineHeight:1.5 }}>Filtered before<br />recruiter sees it</div>
+                </div>
+                <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginTop:8 }}>
+                  {['Missing: OKR','Missing: SQL','Vague bullets','No metrics'].map(t => (
+                    <span key={t} style={{ fontSize:8, fontWeight:600, padding:'2px 6px', borderRadius:4, background:'rgba(255,77,106,.08)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.18)' }}>{t}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Scanning / ATS Engine */}
+            <div style={{ background:C.glass, border:`1.5px solid ${phase==='scanning'?'rgba(0,212,255,.35)':badgeColor==='#B026FF'?'rgba(176,38,255,.35)':'rgba(0,229,160,.35)'}`, borderRadius:12, overflow:'hidden', boxShadow:`0 0 40px ${phase==='scanning'?'rgba(0,212,255,.12)':'rgba(176,38,255,.08)'}` }}>
+              <div style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 14px', background:'rgba(0,212,255,.06)', borderBottom:`1px solid rgba(0,212,255,.1)` }}>
+                <span style={{ width:8, height:8, borderRadius:'50%', background:phase==='done'?'#00E5A0':badgeColor, flexShrink:0, boxShadow:`0 0 8px ${badgeColor}80`, animation:phase==='scanning'?'lp-pulse 2s infinite':'' }} />
+                <span style={{ fontSize:11, fontWeight:700, color:C.text2, flex:1 }}>{cardTitle}</span>
+                <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:5, background:`${badgeColor}18`, color:badgeColor, border:`1px solid ${badgeColor}40` }}>
+                  {phase==='pre'||phase==='scanning'?'Running':phase==='fixmode'?'Fix mode':'Done'}
+                </span>
+              </div>
+              <div style={{ padding:14 }}>
+                {phase === 'scanning' || phase === 'pre' ? (
+                  <div>
+                    {[0,1,2,3,4].map(i => (
+                      <div key={i} style={{ height:6, borderRadius:3, background:lineColor(i), borderLeft:lineBdr(i), marginBottom:4, width:i===1?'88%':i===2?'95%':i===3?'80%':i===4?'92%':'100%', overflow:'hidden', position:'relative' }}>
+                        {lineStates[i]===1 && <div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg,transparent,rgba(0,212,255,.5),transparent)', animation:'lp-sweepLine 1s ease-in-out infinite' }} />}
+                      </div>
+                    ))}
+                    <div style={{ height:4, borderRadius:2, background:'rgba(255,255,255,.06)', overflow:'hidden', marginBottom:4 }}>
+                      <div style={{ height:4, borderRadius:2, background:'linear-gradient(90deg,#00D4FF,#B026FF)', width:`${scanPct}%`, transition:'width .35s ease' }} />
+                    </div>
+                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:9, color:'#4A5A7A', marginBottom:10 }}>
+                      <span>Scanning progress</span><span style={{ color:'#00D4FF', fontWeight:700, fontFamily:'monospace' }}>{scanPct}%</span>
+                    </div>
+                    <div style={{ textAlign:'center', padding:10, background:'rgba(0,212,255,.05)', borderRadius:8, border:'1px solid rgba(0,212,255,.12)' }}>
+                      <div style={{ fontSize:32, fontWeight:800, color:'#00D4FF', fontFamily:'var(--lp-ffm)', letterSpacing:'-1.5px', lineHeight:1 }}>{scanPct>0?scanScore+'%':'—'}</div>
+                      <div style={{ fontSize:9, color:C.text3, marginTop:3 }}>ATS score building…</div>
+                    </div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:5, marginTop:10 }}>
+                      {stepLabels.map((lbl,i) => (
+                        <div key={i} style={{ display:'flex', alignItems:'center', gap:6, fontSize:10, color:stepsLit[i]?'#00E5A0':C.text3, transition:'color .3s' }}>
+                          <span style={{ width:14, height:14, borderRadius:'50%', border:`1.5px solid currentColor`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:7, flexShrink:0, fontFamily:'monospace' }}>{i+1}</span>
+                          {lbl}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize:9, fontWeight:700, color:C.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:8 }}>ATS engine — 6 checks</div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+                      {ATS_ENGINES.map((e,i) => (
+                        <div key={i} style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 8px', borderRadius:7, border:`1px solid ${fixApplied[i]?'rgba(0,229,160,.28)':C.bdr}`, background:fixApplied[i]?'rgba(0,229,160,.07)':'rgba(255,255,255,.02)', transition:'all .4s' }}>
+                          <span style={{ width:12, height:12, borderRadius:'50%', border:`1.5px solid ${fixApplied[i]?'#00E5A0':'rgba(255,255,255,.2)'}`, flexShrink:0, display:'inline-block', background:fixApplied[i]?'#00E5A0':'transparent', transition:'all .3s' }} />
+                          <span style={{ flex:1, fontSize:11, color:C.text2 }}>{e.label}</span>
+                          <span style={{ fontSize:10, color:fixApplied[i]?'#00E5A0':'#FF4D6A', whiteSpace:'nowrap' }}>{fixApplied[i]?`${e.after} +${e.pts}pts`:e.before}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ display:'flex', gap:6, marginTop:10 }}>
+                      <button onClick={applyFix} disabled={phase==='done'} style={{ flex:1, padding:'7px 10px', borderRadius:8, background:'linear-gradient(135deg,#00D4FF,#B026FF)', color:'#fff', fontSize:11, fontWeight:700, border:'none', cursor:phase==='done'?'default':'pointer', fontFamily:'var(--lp-ff)', opacity:phase==='done'?.4:1, transition:'opacity .2s' }}>
+                        {phase==='done'?'All fixes applied ✓':`⚡ Apply fix ${fixStep+1} of ${ATS_ENGINES.length} →`}
+                      </button>
+                      <button onClick={replay} style={{ padding:'7px 10px', borderRadius:8, background:'rgba(255,255,255,.05)', color:C.text2, fontSize:11, fontWeight:600, border:`1px solid ${C.bdr}`, cursor:'pointer', fontFamily:'var(--lp-ff)' }}>↺</button>
+                    </div>
+                    {insight && <div style={{ marginTop:9, fontSize:10, color:C.text2, lineHeight:1.6, padding:'8px 10px', background:'rgba(0,212,255,.04)', borderLeft:'2px solid #00D4FF', borderRadius:'0 6px 6px 0', transition:'opacity .3s' }}>{insight}</div>}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Card 3: After */}
+            <div style={{ background:C.glass, border:'1px solid rgba(0,229,160,.25)', borderRadius:12, overflow:'hidden', opacity:afterVisible?1:.35, transition:'opacity .6s', boxShadow:'0 0 24px rgba(0,229,160,.08)' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 14px', background:'rgba(0,229,160,.05)', borderBottom:`1px solid ${C.bdr}` }}>
+                <span style={{ width:8, height:8, borderRadius:'50%', background:'#00E5A0', boxShadow:'0 0 8px rgba(0,229,160,.9)', flexShrink:0 }} />
+                <span style={{ fontSize:11, fontWeight:700, color:C.text2, flex:1 }}>After CareerAiHub</span>
+                <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:5, background:'rgba(0,229,160,.1)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.25)' }}>Result</span>
+              </div>
+              <div style={{ padding:14 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+                  <div style={{ width:56, height:56, borderRadius:'50%', border:'2px solid #00E5A0', background:'rgba(0,229,160,.08)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, boxShadow:'0 0 20px rgba(0,229,160,.25)', flexDirection:'column' }}>
+                    <span style={{ fontSize:16, fontWeight:800, color:'#00E5A0', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>{afterScore<40?'—':afterScore+'%'}</span>
+                    <span style={{ fontSize:7, color:'#00E5A0', opacity:.7 }}>ATS score</span>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:11, fontWeight:700, color:'var(--lp-text)', lineHeight:1.3 }}>{afterTitle}</div>
+                    <div style={{ fontSize:10, color:C.text3, lineHeight:1.4, marginTop:2 }}>{afterSub}</div>
+                  </div>
+                </div>
+                <div style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'3px 9px', borderRadius:10, background:'rgba(0,229,160,.1)', border:'1px solid rgba(0,229,160,.25)', fontSize:10, fontWeight:700, color:'#00E5A0', marginBottom:8, opacity:showDelta?1:0, transition:'opacity .5s' }}>↑ +53 points · from 38% to 91%</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:5, marginBottom:8 }}>
+                  {dimLabels.map((lbl,i) => (
+                    <div key={i} style={{ padding:'6px 8px', borderRadius:6, background:'rgba(255,255,255,.03)', border:`1px solid ${C.bdr}` }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:3 }}>
+                        <div style={{ fontSize:8, color:C.text3, fontWeight:600 }}>{lbl}</div>
+                        <div style={{ fontSize:11, fontWeight:800, color:dimColors[i], fontFamily:'var(--lp-ffm)' }}>{dimVals[dimKeys[i]]}</div>
+                      </div>
+                      <div style={{ height:3, borderRadius:2, background:'rgba(255,255,255,.06)' }}>
+                        <div style={{ height:3, borderRadius:2, background:dimColors[i], width:`${dimBars[barKeys[i]]}%`, transition:'width 1s ease' }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display:'flex', gap:3, flexWrap:'wrap', marginBottom:8, opacity:showKw?1:0, transition:'opacity .5s' }}>
+                  {['product strategy','OKR framework','roadmap','SQL'].map(k => <span key={k} style={{ fontSize:8, fontWeight:600, padding:'2px 6px', borderRadius:4, background:'rgba(0,229,160,.1)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.2)' }}>{k}</span>)}
+                  <span style={{ fontSize:8, fontWeight:600, padding:'2px 6px', borderRadius:4, background:'rgba(255,77,106,.09)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.18)' }}>go-to-market</span>
+                </div>
+                {showNote && <div style={{ fontSize:10, color:C.text2, lineHeight:1.6, padding:'8px 10px', background:'rgba(0,212,255,.04)', borderLeft:'2px solid #00D4FF', borderRadius:'0 6px 6px 0', opacity:showNote?1:0, transition:'opacity .5s' }}><strong style={{ color:'#00D4FF' }}>AI:</strong> 4 keywords added, 3 bullets quantified. Passes 94% of Senior PM roles in Singapore.</div>}
+                {finalBanner && <div style={{ marginTop:8, padding:'8px 10px', borderRadius:8, background:'rgba(0,229,160,.07)', border:'1px solid rgba(0,229,160,.28)' }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:'#00E5A0' }}>Interview-ready — all 6 fixes applied</div>
+                  <div style={{ fontSize:10, color:'#00E5A0', opacity:.75, marginTop:2 }}>Passes 94% of Senior PM roles in SG</div>
+                </div>}
+              </div>
+            </div>
+
+          </div>
+
+          {/* CTA */}
+          <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10, paddingTop:20, borderTop:'1px solid rgba(255,255,255,.07)' }}>
+            <button onClick={onJoin} style={{ display:'inline-flex', alignItems:'center', gap:10, padding:'15px 40px', borderRadius:30, background:'linear-gradient(135deg,#00D4FF,#B026FF)', color:'#fff', fontSize:15, fontWeight:700, border:'none', cursor:'pointer', fontFamily:'var(--lp-ff)', boxShadow:'0 0 36px rgba(0,212,255,.4),0 8px 28px rgba(0,0,0,.3)', letterSpacing:'.01em' }}>
+              <span style={{ fontSize:17 }}>⚡</span>
+              Scan my resume with AI — free
+              <span style={{ fontSize:14, opacity:.85 }}>→</span>
+            </button>
+            <div style={{ fontSize:11, color:'var(--lp-text3)' }}>No account needed · ATS results in 20 seconds · 1 free scan included</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1054,13 +1280,6 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
   const text = useTypewriter(TYPEWRITER_PHRASES);
   const [liveCount, setLiveCount] = useState(512);
   const [statsStarted, setStatsStarted] = useState(false);
-
-  // Hero ATS scanner state
-  const [atsJob, setAtsJob] = useState('');
-  const [atsResume, setAtsResume] = useState('Led a team of 5 engineers to deliver a new payment feature, improving checkout conversion by 15%.');
-  const [atsScanning, setAtsScanning] = useState(false);
-  const [atsResult, setAtsResult] = useState(null);
-
   const statsRef = useRef(null);
 
   useEffect(() => {
@@ -1079,19 +1298,6 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
     return () => io.disconnect();
   }, []);
 
-  const runHeroAts = async () => {
-    setAtsScanning(true); setAtsResult(null);
-    await new Promise(r => setTimeout(r, 1400));
-    const kws = getHeroKwSet(atsJob);
-    const resume = atsResume.toLowerCase();
-    const found = kws.found.filter(k => resume.includes(k.toLowerCase()));
-    const missing = kws.missing.filter(k => !resume.includes(k.toLowerCase()));
-    const score = Math.min(92, Math.max(28, 30 + found.length * 8 + Math.floor(Math.random() * 10)));
-    const verdict = score >= 70 ? { text: '✓ Good match', cls: 'good' } : score >= 50 ? { text: '⚠ Needs work', cls: 'mid' } : { text: '✗ Low match', cls: 'low' };
-    setAtsResult({ score, verdict, found: found.length ? found : kws.found.slice(0, 3), missing: missing.slice(0, 4) });
-    setAtsScanning(false);
-  };
-
   return (
     <header className="hero">
       <div className="hero-top">
@@ -1102,7 +1308,7 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
           <p className="hero-sub">One AI memory learns your profile once — and powers every module from ATS scoring to salary negotiation.</p>
           <div className="hero-btns">
             <button className="btn-p" onClick={onJoin}>✦ Start free — no card needed</button>
-            <button className="btn-o" onClick={() => document.getElementById('feat-sec')?.scrollIntoView({ behavior: 'smooth' })}>See all 10 tools ↓</button>
+            <button className="btn-o" onClick={() => document.getElementById('ats-demo')?.scrollIntoView({ behavior: 'smooth' })}>See ATS demo ↓</button>
           </div>
           <div className="cta-microcopy">Free to start · No credit card required · ATS results in 20 seconds</div>
           <div className="hero-fill">
@@ -1133,6 +1339,12 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
               <span className="hf-live-text"><strong>{liveCount.toLocaleString()}</strong> job seekers active · <strong>2,400+</strong> resumes analyzed</span>
               <span className="hf-live-badge">Live</span>
             </div>
+            <div className="stats-card" ref={statsRef} style={{ marginTop:14 }}>
+              <div className="stats-card-hd">📊 Why job seekers use CareerAiHub</div>
+              <div className="stats-grid">
+                {STATS.map((s, i) => <StatBox key={i} stat={s} started={statsStarted} />)}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1140,61 +1352,543 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
         <SearchCard onJoin={onJoin} onModuleSelect={onModuleSelect} onTrackerOpen={onTrackerOpen} onSnack={onSnack} onAgenticCta={onAgenticCta} />
       </div>
 
-      {/* BOTTOM — ATS scanner + stats */}
-      <div className="hero-bottom reveal" ref={statsRef}>
-        <div className="ats-card">
-          <div className="ats-card-hd">
-            <span className="ats-card-dot" />
-            <span>ATS Resume Scanner</span>
-            <span className="ats-live-badge">Live</span>
-          </div>
-          <div className="ats-body">
-            <div className="ats-input-row">
-              <div className="ats-field">
-                <div className="ats-field-lbl">Job Title</div>
-                <input className="ats-input" placeholder="e.g. Product Manager" value={atsJob} onChange={e => setAtsJob(e.target.value)} />
+      {/* BOTTOM — Full-width animated ATS demo */}
+      <AtsDemoSection onJoin={onJoin} />
+    </header>
+  );
+}
+
+// ── LAYER DEMO PANELS ─────────────────────────────────────────────────────────
+
+const DS = {
+  bg:'#09090d', s1:'#111218', s2:'#161820', s3:'#1c1f2c',
+  bdr:'rgba(255,255,255,0.06)', bdr2:'rgba(255,255,255,0.12)',
+  text:'#e8eaf0', text2:'#8b92a8', text3:'#3d4560',
+  teal:'#00d4aa', tdim:'rgba(0,212,170,0.1)', tb:'rgba(0,212,170,0.25)',
+  cyan:'#00c8ff', cdim:'rgba(0,200,255,0.1)', cb:'rgba(0,200,255,0.25)',
+  green:'#00e5a0', gdim:'rgba(0,229,160,0.1)', gb:'rgba(0,229,160,0.25)',
+  gold:'#f5c842', goldim:'rgba(245,200,66,0.1)', goldb:'rgba(245,200,66,0.25)',
+  red:'#ff5f6e', rdim:'rgba(255,95,110,0.1)',
+  purple:'#b026ff', pdim:'rgba(176,38,255,0.1)', pb:'rgba(176,38,255,0.25)',
+};
+
+function DemoShell({ label, accent, borderC, onClose, onNext, children }) {
+  return (
+    <div style={{ marginTop:20, borderRadius:12, overflow:'hidden', border:`1px solid ${borderC}`, boxShadow:`0 0 40px rgba(0,0,0,0.3)` }}>
+      <div style={{ background:`rgba(9,9,13,0.97)`, borderBottom:`1px solid ${borderC}`, padding:'10px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', backdropFilter:'blur(12px)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:11, fontFamily:'var(--lp-ffm)', color:accent }}>
+          <span style={{ width:6, height:6, borderRadius:'50%', background:accent, boxShadow:`0 0 8px ${accent}`, display:'inline-block' }} />
+          {label}
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          {onNext && <button onClick={onNext} style={{ background:`${accent}22`, border:`1px solid ${accent}55`, color:accent, cursor:'pointer', fontSize:11, fontFamily:'var(--lp-ffm)', padding:'4px 12px', borderRadius:6 }}>Explore next layer →</button>}
+          <button onClick={onClose} style={{ background:'none', border:'none', color:DS.text3, cursor:'pointer', fontSize:11, fontFamily:'var(--lp-ffm)' }}>✕ Close</button>
+        </div>
+      </div>
+      <div style={{ background:DS.bg, color:DS.text, fontFamily:'DM Sans, sans-serif', fontSize:13, overflow:'auto', maxHeight:640 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function L1DemoPanel({ onClose, onNext }) {
+  const colStyle = { display:'flex', flexDirection:'column', borderRight:`1px solid ${DS.bdr}`, overflow:'hidden', minWidth:0 };
+  const hdStyle = { padding:'10px 14px', borderBottom:`1px solid ${DS.bdr}`, flexShrink:0 };
+  const bodyStyle = { flex:1, overflowY:'auto', padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 };
+  const lbl = { fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:4 };
+  return (
+    <DemoShell label="LAYER 01 — RESUME CREATION · LIVE DEMO" accent={DS.teal} borderC={DS.tb} onClose={onClose} onNext={onNext}>
+      {/* topbar */}
+      <div style={{ height:44, background:'rgba(9,9,13,0.96)', borderBottom:`1px solid ${DS.bdr}`, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', flexShrink:0 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <span style={{ fontFamily:'Syne,sans-serif', fontSize:14, fontWeight:700 }}>CareerAiHub</span>
+          <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'3px 10px', borderRadius:20, background:DS.tdim, color:DS.teal, border:`1px solid ${DS.tb}`, display:'flex', alignItems:'center', gap:5 }}>
+            <span style={{ width:5, height:5, borderRadius:'50%', background:DS.teal, boxShadow:`0 0 6px ${DS.teal}` }} />LAYER 01 — RESUME CREATION
+          </span>
+        </div>
+        <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+          <span style={{ fontSize:10, fontFamily:'JetBrains Mono,monospace', padding:'4px 12px', borderRadius:6, background:DS.s2, border:`1px solid ${DS.bdr2}`, color:DS.text2 }}>ATS Score <span style={{ color:DS.cyan }}>78%</span></span>
+          <button style={{ padding:'5px 14px', borderRadius:6, fontSize:11, fontWeight:600, background:DS.teal, color:'#000', border:'none', cursor:'pointer' }}>Export →</button>
+        </div>
+      </div>
+      {/* 3-col */}
+      <div style={{ display:'grid', gridTemplateColumns:'210px 1fr 230px', height:540, overflow:'hidden' }}>
+        {/* LEFT: Cover Letter */}
+        <div style={colStyle}>
+          <div style={hdStyle}><div style={{ fontFamily:'Syne,sans-serif', fontSize:12, fontWeight:700 }}>Cover Letter</div><div style={{ fontSize:9, color:DS.text2, fontFamily:'JetBrains Mono,monospace' }}>Auto-generated · AI Co-pilot</div></div>
+          <div style={bodyStyle}>
+            <div><div style={lbl}>Tone Control</div>
+              <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                <span style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.text3 }}>Formal</span>
+                <div style={{ flex:1, height:4, background:DS.s3, borderRadius:4, position:'relative' }}>
+                  <div style={{ position:'absolute', top:-5, left:'35%', width:14, height:14, borderRadius:'50%', background:DS.teal, boxShadow:`0 0 8px ${DS.teal}` }} />
+                </div>
+                <span style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.text3 }}>Direct</span>
               </div>
-              <div className="ats-field">
-                <div className="ats-field-lbl">Resume Snippet</div>
-                <textarea className="ats-input ats-ta" placeholder="Paste a few lines from your resume..." value={atsResume} onChange={e => setAtsResume(e.target.value)} />
+              <div style={{ textAlign:'center', fontSize:9, color:DS.teal, fontFamily:'JetBrains Mono,monospace', marginTop:2 }}>Professional</div>
+            </div>
+            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, padding:'10px 12px', fontSize:11, lineHeight:1.8, color:DS.text2 }}>
+              <p style={{ marginBottom:6 }}>Dear Hiring Manager,</p>
+              <p style={{ marginBottom:6 }}>I am writing to express my strong interest in the <strong style={{ color:DS.teal }}>Senior AI Engineer</strong> position. With five years building large-scale ML systems, I've reduced inference latency by <span style={{ color:DS.cyan }}>40%</span> while maintaining &gt;99.9% uptime.</p>
+              <span style={{ display:'inline-block', width:6, height:12, background:DS.teal, animation:'blink 1s step-end infinite', verticalAlign:'middle' }} />
+            </div>
+            <div><div style={lbl}>Templates</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:4 }}>
+                {[['🗂','Executive',true],['⚡','Modern',false],['🎯','Minimal',false],['📐','Classic',false]].map(([ic,nm,act])=>(
+                  <div key={nm} style={{ background:act?DS.tdim:DS.s2, border:`1px solid ${act?DS.teal:DS.bdr}`, borderRadius:6, padding:'6px 8px', textAlign:'center', cursor:'pointer' }}>
+                    <div style={{ fontSize:14 }}>{ic}</div><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:act?DS.teal:DS.text2 }}>{nm}</div>
+                  </div>
+                ))}
               </div>
             </div>
-            <button className="ats-scan-btn" disabled={atsScanning} onClick={runHeroAts}>
-              {atsScanning ? 'Scanning...' : 'Scan with AI →'}
-            </button>
-            {atsResult && (
-              <div className="ats-result">
-                <div className="ats-score-row">
-                  <div className="ats-score-wrap">
-                    <div className="ats-score-label">ATS Match Score</div>
-                    <div className="ats-score-num">{atsResult.score}%</div>
-                    <div className="ats-score-bar-wrap"><div className="ats-score-bar" style={{ width: atsResult.score + '%' }} /></div>
-                  </div>
-                  <div className={`ats-verdict ${atsResult.verdict.cls}`}>{atsResult.verdict.text}</div>
-                </div>
-                <div className="ats-keywords">
-                  <div className="ats-kw-label">Keywords found</div>
-                  <div>{atsResult.found.map(k => <span key={k} className="mk-tag m">{k}</span>)}</div>
-                  <div className="ats-kw-label" style={{ marginTop: 8 }}>Missing — add these to improve score</div>
-                  <div>{atsResult.missing.map(k => <span key={k} className="mk-tag x">{k}</span>)}</div>
-                </div>
-                <div className="ats-cta-strip">
-                  <span className="ats-cta-text">Sign up free to scan your full resume and get line-by-line improvement suggestions</span>
-                  <button className="ats-cta-btn" onClick={onJoin}>✦ Scan full resume →</button>
-                </div>
+            <div><div style={lbl}>Export</div>
+              <div style={{ display:'flex', gap:6 }}>
+                <button style={{ flex:1, padding:7, borderRadius:6, fontSize:10, fontWeight:600, background:DS.rdim, color:DS.red, border:`1px solid rgba(255,95,110,0.25)`, cursor:'pointer', fontFamily:'JetBrains Mono,monospace' }}>📄 PDF</button>
+                <button style={{ flex:1, padding:7, borderRadius:6, fontSize:10, fontWeight:600, background:DS.cdim, color:DS.cyan, border:`1px solid ${DS.cb}`, cursor:'pointer', fontFamily:'JetBrains Mono,monospace' }}>📝 DOCX</button>
               </div>
-            )}
+            </div>
+            <div><div style={lbl}>Saved Versions</div>
+              <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+                {[['Draft 5','Current',true],['Draft 4 · ATS 74%','',false],['Draft 3 · ATS 68%','',false]].map(([nm,tag,cur])=>(
+                  <div key={nm} style={{ display:'flex', alignItems:'center', gap:8, padding:'5px 8px', borderRadius:6, background:DS.s2, border:`1px solid ${cur?DS.teal:DS.bdr}`, cursor:'pointer' }}>
+                    <div style={{ width:6, height:6, borderRadius:'50%', background:cur?DS.teal:DS.text3, boxShadow:cur?`0 0 5px ${DS.teal}`:undefined }} />
+                    <span style={{ fontSize:10, fontFamily:'JetBrains Mono,monospace', color:cur?DS.teal:DS.text2, flex:1 }}>{nm}</span>
+                    {tag && <span style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', padding:'2px 6px', borderRadius:3, background:DS.tdim, color:DS.teal }}>{tag}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="stats-card">
-          <div className="stats-card-hd">📊 Why job seekers use CareerAiHub</div>
-          <div className="stats-grid">
-            {STATS.map((s, i) => <StatBox key={i} stat={s} started={statsStarted} />)}
+        {/* CENTER: Editor */}
+        <div style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          <div style={{ padding:'8px 16px', borderBottom:`1px solid ${DS.bdr}`, display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+            {['✦ XYZ Mode','B','I','H1','H2','🔗 Link'].map((t,i)=>(
+              <span key={i} style={{ padding:'4px 10px', borderRadius:5, fontSize:10, fontFamily:'JetBrains Mono,monospace', background:i===0?DS.tdim:DS.s2, border:`1px solid ${i===0?DS.tb:DS.bdr}`, color:i===0?DS.teal:DS.text3, cursor:'pointer' }}>{t}</span>
+            ))}
+            <span style={{ marginLeft:'auto', fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3 }}>AI co-pilot active 🤖</span>
+          </div>
+          <div style={{ flex:1, overflowY:'auto', padding:'20px 24px', display:'flex', flexDirection:'column', gap:20 }}>
+            <div style={{ textAlign:'center' }}>
+              <div style={{ fontFamily:'Syne,sans-serif', fontSize:20, fontWeight:800 }}>Ivy Nguyen</div>
+              <div style={{ fontSize:10, color:DS.text2, fontFamily:'JetBrains Mono,monospace', marginTop:4 }}>ivy.nguyen@email.com · +65 9123 4567 · Singapore</div>
+            </div>
+            <div>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
+                <div style={{ fontFamily:'Syne,sans-serif', fontSize:11, fontWeight:700, color:DS.teal, textTransform:'uppercase', letterSpacing:'.1em' }}>Experience</div>
+                <div style={{ flex:1, height:1, background:DS.tb }} />
+              </div>
+              <div style={{ marginBottom:12 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                  <span style={{ fontSize:12, fontWeight:600, fontFamily:'Syne,sans-serif' }}>Senior AI Engineer</span>
+                  <span style={{ fontSize:10, color:DS.text2, fontFamily:'JetBrains Mono,monospace' }}>2022 – Present</span>
+                </div>
+                <div style={{ fontSize:11, color:DS.text2, marginBottom:6 }}>DataCore · Singapore</div>
+                {[
+                  { text:'Reduced inference latency by 40% (X) while maintaining 99.9% uptime (Y) by quantizing transformer models and migrating to TensorRT (Z).', xyz:true },
+                  { text:'Architected RAG-based retrieval pipeline using LangChain + AWS Bedrock, reducing manual review time by 60%.', xyz:false },
+                ].map((b,i)=>(
+                  <div key={i} style={{ display:'flex', gap:8, alignItems:'flex-start', padding:'4px 8px', borderRadius:6, background:b.xyz?DS.tdim:'transparent', borderLeft:b.xyz?`2px solid ${DS.teal}`:'none', marginBottom:4 }}>
+                    <div style={{ width:4, height:4, borderRadius:'50%', background:b.xyz?DS.teal:DS.text3, marginTop:7, flexShrink:0 }} />
+                    <div style={{ fontSize:12, lineHeight:1.7, flex:1 }}>
+                      {b.text}
+                      {b.xyz && <><span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'1px 5px', borderRadius:3, background:'rgba(0,200,255,0.15)', color:DS.cyan, marginLeft:4 }}>X</span><span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'1px 5px', borderRadius:3, background:'rgba(0,229,160,0.15)', color:DS.green, marginLeft:2 }}>Y</span><span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'1px 5px', borderRadius:3, background:'rgba(245,200,66,0.15)', color:DS.gold, marginLeft:2 }}>Z</span></>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+                <div style={{ fontFamily:'Syne,sans-serif', fontSize:11, fontWeight:700, color:DS.teal, textTransform:'uppercase', letterSpacing:'.1em' }}>Skills</div>
+                <div style={{ flex:1, height:1, background:DS.tb }} />
+              </div>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
+                {['PyTorch','TensorFlow','LangChain','AWS Bedrock','Python','SQL','RAG','MLOps'].map(s=>(
+                  <span key={s} style={{ padding:'3px 10px', borderRadius:20, fontSize:10, fontFamily:'JetBrains Mono,monospace', background:DS.tdim, color:DS.teal, border:`1px solid ${DS.tb}` }}>{s}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* RIGHT: ATS Copilot */}
+        <div style={{ display:'flex', flexDirection:'column', borderLeft:`1px solid ${DS.bdr}`, overflow:'hidden' }}>
+          <div style={hdStyle}><div style={{ fontFamily:'Syne,sans-serif', fontSize:12, fontWeight:700 }}>ATS Copilot</div><div style={{ fontSize:9, color:DS.text2, fontFamily:'JetBrains Mono,monospace' }}>Live scoring · Gap analysis</div></div>
+          <div style={bodyStyle}>
+            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:10, padding:14 }}>
+              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:8 }}>ATS Match Score</div>
+              <svg width="100" height="60" viewBox="0 0 120 70" style={{ overflow:'visible' }}>
+                <path d="M10 65 A55 55 0 0 1 110 65" fill="none" stroke={DS.s3} strokeWidth="10" strokeLinecap="round"/>
+                <path d="M10 65 A55 55 0 0 1 110 65" fill="none" stroke={DS.cyan} strokeWidth="10" strokeLinecap="round" strokeDasharray="173" strokeDashoffset="45" style={{ filter:`drop-shadow(0 0 6px ${DS.cyan})` }}/>
+                <text x="60" y="58" textAnchor="middle" fontFamily="Syne,sans-serif" fontSize="20" fontWeight="800" fill={DS.text}>78</text>
+                <text x="60" y="70" textAnchor="middle" fontFamily="JetBrains Mono,monospace" fontSize="9" fill={DS.text3}>/ 100</text>
+              </svg>
+            </div>
+            <div style={{ background:DS.rdim, border:`1px solid rgba(255,95,110,0.2)`, borderRadius:8, padding:'10px 12px' }}>
+              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.red, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6 }}>Missing Keywords</div>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:4 }}>
+                {['OKR framework','growth metrics','A/B testing','SQL'].map(k=>(
+                  <span key={k} style={{ padding:'3px 9px', borderRadius:4, fontSize:9, fontFamily:'JetBrains Mono,monospace', background:'rgba(255,95,110,0.1)', color:DS.red, border:'1px solid rgba(255,95,110,0.2)', cursor:'pointer' }}>{k}</span>
+                ))}
+              </div>
+            </div>
+            <div style={{ background:DS.gdim, border:`1px solid ${DS.gb}`, borderRadius:8, padding:'10px 12px' }}>
+              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.green, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6 }}>Matched Keywords</div>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:4 }}>
+                {['PyTorch','LangChain','RAG','AWS','system design'].map(k=>(
+                  <span key={k} style={{ padding:'3px 9px', borderRadius:4, fontSize:9, fontFamily:'JetBrains Mono,monospace', background:DS.gdim, color:DS.green, border:`1px solid ${DS.gb}` }}>{k}</span>
+                ))}
+              </div>
+            </div>
+            <div>
+              {[['Keyword match','78%',DS.cyan,78],['Format score','92%',DS.green,92],['XYZ coverage','65%',DS.gold,65]].map(([l,v,c,w])=>(
+                <div key={l} style={{ marginBottom:6 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, fontFamily:'JetBrains Mono,monospace', color:DS.text2, marginBottom:3 }}>
+                    <span>{l}</span><span style={{ color:c }}>{v}</span>
+                  </div>
+                  <div style={{ height:3, background:DS.s3, borderRadius:3, overflow:'hidden' }}>
+                    <div style={{ height:'100%', width:`${w}%`, borderRadius:3, background:c }} />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </header>
+    </DemoShell>
+  );
+}
+
+function L2DemoPanel({ onClose, onNext }) {
+  const [tab, setTab] = useState(0);
+  const tabStyle = (i) => ({ padding:'10px 18px', fontSize:11, fontFamily:'JetBrains Mono,monospace', color:tab===i?DS.cyan:DS.text3, cursor:'pointer', borderBottom:`2px solid ${tab===i?DS.cyan:'transparent'}`, background:'none', border_top:'none', border_left:'none', border_right:'none', borderBottomWidth:2, borderBottomStyle:'solid', borderBottomColor:tab===i?DS.cyan:'transparent', transition:'all .2s' });
+  return (
+    <DemoShell label="LAYER 02 — INTERVIEW + SALARY PREP · LIVE DEMO" accent={DS.cyan} borderC={DS.cb} onClose={onClose} onNext={onNext}>
+      <div style={{ height:44, background:'rgba(9,9,13,0.96)', borderBottom:`1px solid ${DS.bdr}`, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <span style={{ fontFamily:'Syne,sans-serif', fontSize:14, fontWeight:700 }}>CareerAiHub</span>
+          <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'3px 10px', borderRadius:20, background:DS.cdim, color:DS.cyan, border:`1px solid ${DS.cb}`, display:'flex', alignItems:'center', gap:5 }}>
+            <span style={{ width:5, height:5, borderRadius:'50%', background:DS.cyan, boxShadow:`0 0 6px ${DS.cyan}` }} />LAYER 02 — INTERVIEW + SALARY PREP
+          </span>
+        </div>
+        <button style={{ padding:'5px 14px', borderRadius:6, fontSize:11, fontWeight:600, background:DS.cyan, color:'#000', border:'none', cursor:'pointer' }}>Try Free →</button>
+      </div>
+      <div style={{ display:'flex', borderBottom:`1px solid ${DS.bdr}`, padding:'0 18px', background:DS.bg }}>
+        {[['🎯 Mock Interview',0],['🔥 HM Simulator',1],['💰 Salary Coach',2]].map(([l,i])=>(
+          <button key={i} onClick={()=>setTab(i)} style={{ ...tabStyle(i), background:'none', border:'none', borderBottom:`2px solid ${tab===i?DS.cyan:'transparent'}` }}>{l}</button>
+        ))}
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', height:500, overflow:'hidden' }}>
+        {/* Col 1: Mock Interview */}
+        <div style={{ display:'flex', flexDirection:'column', borderRight:`1px solid ${DS.bdr}`, overflow:'hidden' }}>
+          <div style={{ padding:'10px 16px', borderBottom:`1px solid ${DS.bdr}` }}>
+            <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em' }}>Module 1</div>
+            <div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700 }}>Mock Interviews</div>
+            <div style={{ fontSize:10, color:DS.text2 }}>Role-specific · AI-scored</div>
+          </div>
+          <div style={{ flex:1, overflowY:'auto', padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 }}>
+            <select style={{ width:'100%', padding:'7px 10px', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:7, color:DS.text, fontSize:11, fontFamily:'JetBrains Mono,monospace', outline:'none' }}>
+              <option>Senior AI Engineer</option><option>ML Research Scientist</option>
+            </select>
+            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:10, padding:12 }}>
+              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, marginBottom:5 }}>Question 2 of 8 · <span style={{ color:DS.cyan }}>Senior AI Engineer</span></div>
+              <div style={{ fontSize:12, lineHeight:1.7, marginBottom:10 }}>"Describe a time you optimised a production ML model for latency without sacrificing accuracy."</div>
+              <span style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'2px 8px', borderRadius:4, background:DS.cdim, color:DS.cyan, border:`1px solid ${DS.cb}` }}>🎯 Behavioural</span>
+            </div>
+            <div style={{ background:DS.gdim, border:`1px solid ${DS.gb}`, borderRadius:10, padding:12 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
+                <div><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.green }}>AI Score</div><div style={{ fontFamily:'Syne,sans-serif', fontSize:22, fontWeight:800, color:DS.green }}>88</div><div style={{ fontSize:9, color:DS.text3, fontFamily:'JetBrains Mono,monospace' }}>/ 100</div></div>
+                <div style={{ textAlign:'right' }}><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3 }}>Trend</div><div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700, color:DS.green }}>▲ +6</div></div>
+              </div>
+              {[['Clarity',90,DS.cyan],['Structure',88,DS.green],['Specificity',85,DS.teal],['Impact',80,DS.gold]].map(([l,v,c])=>(
+                <div key={l} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
+                  <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text2, width:70 }}>{l}</span>
+                  <div style={{ flex:1, height:3, background:DS.s3, borderRadius:3, overflow:'hidden' }}><div style={{ height:'100%', width:`${v}%`, background:c, boxShadow:`0 0 4px ${c}` }} /></div>
+                  <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text, width:28, textAlign:'right' }}>{v}</span>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:5 }}>Question Bank</div>
+              {[['Tell me about yourself','green'],['ML model optimization','green'],['System design at scale','cyan'],['Handling ambiguity','text3'],['Salary expectations','text3']].map(([q,c])=>(
+                <div key={q} style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 8px', borderRadius:7, background:DS.s2, border:`1px solid ${c==='cyan'?DS.cb:DS.bdr}`, fontSize:11, cursor:'pointer', marginBottom:4 }}>
+                  <div style={{ width:5, height:5, borderRadius:'50%', background:c==='green'?DS.green:c==='cyan'?DS.cyan:DS.text3, boxShadow:c==='cyan'?`0 0 4px ${DS.cyan}`:undefined, flexShrink:0 }} />{q}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* Col 2: HM Simulator */}
+        <div style={{ display:'flex', flexDirection:'column', borderRight:`1px solid ${DS.bdr}`, overflow:'hidden' }}>
+          <div style={{ padding:'10px 16px', borderBottom:`1px solid ${DS.bdr}` }}>
+            <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em' }}>Module 2</div>
+            <div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700 }}>HM Simulator</div>
+            <div style={{ fontSize:10, color:DS.text2 }}>Pressure-test · Follow-up probes</div>
+          </div>
+          <div style={{ flex:1, overflowY:'auto', padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 }}>
+            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, padding:'9px 12px', fontSize:10, color:DS.text2, lineHeight:1.6 }}>
+              <strong style={{ color:DS.text }}>HM Context:</strong> Senior AI Engineer · Series B fintech · Team of 8. Resume loaded into AI memory.
+            </div>
+            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, padding:'10px 12px' }}>
+              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:5 }}>Pressure Level</div>
+              <div style={{ height:6, background:DS.s3, borderRadius:6, overflow:'hidden' }}><div style={{ height:'100%', width:'65%', borderRadius:6, background:`linear-gradient(90deg,${DS.green},${DS.gold},${DS.red})` }} /></div>
+              <div style={{ display:'flex', justifyContent:'space-between', fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, marginTop:3 }}><span>Warm-up</span><span>Moderate</span><span>Pressure</span></div>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+              <div style={{ maxWidth:'88%' }}>
+                <div style={{ background:DS.rdim, border:'1px solid rgba(255,95,110,0.2)', borderRadius:'10px 10px 10px 2px', padding:'9px 12px', fontSize:11, lineHeight:1.6 }}>
+                  <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.red, marginBottom:3 }}>HM Simulator</div>
+                  I reviewed your RAG pipeline work. You mentioned cutting review time by 60%. How exactly did you measure that, and who validated those numbers?
+                  <div><span style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:8, fontFamily:'JetBrains Mono,monospace', padding:'2px 7px', borderRadius:4, background:'rgba(255,95,110,0.15)', color:DS.red, border:'1px solid rgba(255,95,110,0.2)', marginTop:5 }}>🔥 Probing claim</span></div>
+                </div>
+              </div>
+              <div style={{ maxWidth:'88%', marginLeft:'auto' }}>
+                <div style={{ background:DS.cdim, border:`1px solid ${DS.cb}`, borderRadius:'10px 10px 2px 10px', padding:'9px 12px', fontSize:11, lineHeight:1.6 }}>
+                  <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.cyan, marginBottom:3, textAlign:'right' }}>You</div>
+                  We tracked ticket resolution time in Jira before and after deployment across 3 product teams over 6 weeks. PM and engineering lead signed off on the metric.
+                </div>
+              </div>
+              <div style={{ maxWidth:'88%' }}>
+                <div style={{ background:DS.rdim, border:'1px solid rgba(255,95,110,0.2)', borderRadius:'10px 10px 10px 2px', padding:'9px 12px', fontSize:11, lineHeight:1.6 }}>
+                  <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.red, marginBottom:3 }}>HM Simulator</div>
+                  Good. Now walk me through the architecture decision. Why LangChain over a custom solution?<span style={{ display:'inline-block', width:6, height:12, background:DS.red, animation:'blink 1s step-end infinite', verticalAlign:'middle', marginLeft:4 }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Col 3: Salary Coach */}
+        <div style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          <div style={{ padding:'10px 16px', borderBottom:`1px solid ${DS.bdr}` }}>
+            <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em' }}>Module 3</div>
+            <div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700 }}>Salary Coach</div>
+            <div style={{ fontSize:10, color:DS.text2 }}>Benchmark · Negotiate · Win</div>
+          </div>
+          <div style={{ flex:1, overflowY:'auto', padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 }}>
+            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:10, padding:14 }}>
+              <div style={{ fontSize:10, fontFamily:'JetBrains Mono,monospace', color:DS.text2, marginBottom:10 }}>Senior AI Engineer · Singapore market</div>
+              {[['Your Level','SGD 12K/mo',DS.cyan,82],['P75','SGD 14K/mo',DS.text3,100],['P25','SGD 9K/mo',DS.text3,62]].map(([l,v,c,w])=>(
+                <div key={l} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:7 }}>
+                  <span style={{ fontSize:10, color:DS.text2, width:72, flexShrink:0, fontFamily:'JetBrains Mono,monospace' }}>{l}</span>
+                  <div style={{ flex:1, height:18, background:DS.s3, borderRadius:4, overflow:'hidden' }}>
+                    <div style={{ height:'100%', width:`${w}%`, background:c===DS.cyan?`linear-gradient(90deg,${DS.cyan},rgba(0,200,255,0.6))`:DS.s3, display:'flex', alignItems:'center', justifyContent:'flex-end', paddingRight:6, fontSize:9, fontFamily:'JetBrains Mono,monospace', color:c===DS.cyan?'#000':DS.text3, fontWeight:600 }}>{v}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ background:DS.goldim, border:`1px solid ${DS.goldb}`, borderRadius:10, padding:12 }}>
+              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.gold, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6 }}>Current Offer</div>
+              <div style={{ fontFamily:'Syne,sans-serif', fontSize:26, fontWeight:800, color:DS.gold, marginBottom:4 }}>SGD 11,000</div>
+              <div style={{ fontSize:10, color:DS.text2, marginBottom:10 }}>per month · + 15% annual bonus</div>
+              <input placeholder="Counter offer (e.g. 13,500)" style={{ width:'100%', padding:'7px 10px', background:DS.s2, border:`1px solid ${DS.bdr2}`, borderRadius:6, color:DS.text, fontSize:12, fontFamily:'JetBrains Mono,monospace', outline:'none', marginBottom:6 }} readOnly />
+              <button style={{ width:'100%', padding:8, borderRadius:6, background:DS.gold, color:'#000', border:'none', cursor:'pointer', fontSize:11, fontWeight:700 }}>Generate counter script →</button>
+            </div>
+            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, padding:'10px 12px' }}>
+              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:7 }}>Negotiation Tips</div>
+              {[['💡','You are $2K below market. Frame your counter around the P75 benchmark.'],['⏱','Wait 24–48 hrs before countering. Eagerness costs leverage.'],['📊','Reference your 40% latency reduction — quantified impact = credibility.']].map(([ic,tip])=>(
+                <div key={ic} style={{ display:'flex', gap:7, marginBottom:6, fontSize:11, lineHeight:1.5 }}>
+                  <span style={{ color:DS.gold, flexShrink:0 }}>{ic}</span><span>{tip}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </DemoShell>
+  );
+}
+
+function L3DemoPanel({ onClose, onNext }) {
+  const credentials = [
+    { school:'National University of Singapore', degree:'B.Sc Computer Science', year:'2021', gpa:'3.84 / 4.0', verified:true, hash:'0x4a7f…c3d2' },
+    { school:'AWS Certified Solutions Architect', degree:'Professional Certification', year:'2023', gpa:'Score: 892/1000', verified:true, hash:'0x9b3e…f1a8' },
+    { school:'Google Data Analytics', degree:'Professional Certificate', year:'2023', gpa:'Distinction', verified:false, hash:'Pending' },
+  ];
+  return (
+    <DemoShell label="LAYER 03 — VERIFIED CREDENTIALS · LIVE DASHBOARD" accent={DS.green} borderC={DS.gb} onClose={onClose} onNext={onNext}>
+      <div style={{ padding:'20px 24px', display:'flex', flexDirection:'column', gap:20 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div>
+            <div style={{ fontFamily:'Syne,sans-serif', fontSize:18, fontWeight:800 }}>Ivy Nguyen</div>
+            <div style={{ fontSize:11, color:DS.text2, fontFamily:'JetBrains Mono,monospace', marginTop:2 }}>Singapore · Senior AI Engineer</div>
+          </div>
+          <div style={{ display:'flex', gap:8 }}>
+            <div style={{ padding:'6px 14px', borderRadius:20, background:DS.gdim, border:`1px solid ${DS.gb}`, fontSize:10, fontFamily:'JetBrains Mono,monospace', color:DS.green, display:'flex', alignItems:'center', gap:6 }}>
+              <span style={{ width:7, height:7, borderRadius:'50%', background:DS.green, boxShadow:`0 0 8px ${DS.green}` }} />✓ Identity Verified
+            </div>
+            <div style={{ padding:'6px 14px', borderRadius:20, background:'rgba(124,92,252,0.1)', border:'1px solid rgba(124,92,252,0.25)', fontSize:10, fontFamily:'JetBrains Mono,monospace', color:'#7c5cfc', display:'flex', alignItems:'center', gap:5 }}>
+              🔗 2 On-Chain
+            </div>
+          </div>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
+          {[['Trust Score','94 / 100',DS.green],['Verified Credentials','2 active',DS.cyan],['Recruiter Views','18 this week',DS.gold]].map(([l,v,c])=>(
+            <div key={l} style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:12, padding:'14px 16px' }}>
+              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:4 }}>{l}</div>
+              <div style={{ fontFamily:'Syne,sans-serif', fontSize:20, fontWeight:800, color:c }}>{v}</div>
+            </div>
+          ))}
+        </div>
+        <div>
+          <div style={{ fontSize:11, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:12 }}>Credential Ledger</div>
+          <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+            {credentials.map((c,i)=>(
+              <div key={i} style={{ background:DS.s2, border:`1px solid ${c.verified?DS.gb:DS.bdr}`, borderRadius:12, padding:'14px 18px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+                  <div style={{ width:40, height:40, borderRadius:10, background:c.verified?DS.gdim:'rgba(255,255,255,0.04)', border:`1px solid ${c.verified?DS.gb:DS.bdr}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>🎓</div>
+                  <div>
+                    <div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700 }}>{c.school}</div>
+                    <div style={{ fontSize:11, color:DS.text2 }}>{c.degree} · {c.year}</div>
+                    <div style={{ fontSize:10, color:DS.text3, fontFamily:'JetBrains Mono,monospace', marginTop:2 }}>{c.gpa}</div>
+                  </div>
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:6 }}>
+                  {c.verified
+                    ? <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:10, fontFamily:'JetBrains Mono,monospace', padding:'4px 12px', borderRadius:20, background:DS.gdim, color:DS.green, border:`1px solid ${DS.gb}` }}>✓ Verified</span>
+                    : <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:10, fontFamily:'JetBrains Mono,monospace', padding:'4px 12px', borderRadius:20, background:DS.goldim, color:DS.gold, border:`1px solid ${DS.goldb}` }}>⏳ Pending</span>
+                  }
+                  <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3 }}>🔗 {c.hash}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ background:`linear-gradient(135deg,rgba(0,229,160,0.08),rgba(124,92,252,0.08))`, border:`1px solid ${DS.gb}`, borderRadius:12, padding:'16px 20px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div>
+            <div style={{ fontFamily:'Syne,sans-serif', fontSize:14, fontWeight:700, marginBottom:4 }}>School Partnership Program</div>
+            <div style={{ fontSize:12, color:DS.text2 }}>Connect your institution · Students get free verified credentials · Recruiters trust your profile from day one.</div>
+          </div>
+          <button style={{ padding:'8px 18px', borderRadius:8, background:DS.green, color:'#000', border:'none', cursor:'pointer', fontSize:12, fontWeight:700, flexShrink:0, marginLeft:16 }}>Join waitlist →</button>
+        </div>
+      </div>
+    </DemoShell>
+  );
+}
+
+function L4DemoPanel({ onClose, onNext }) {
+  const candidates = [
+    { name:'Ivy Nguyen', role:'Senior AI Engineer · 5yr exp', score:97, avatar:'IN', verified:true, skills:['PyTorch','LangChain','AWS'] },
+    { name:'Marcus Lim', role:'ML Research Scientist · 7yr exp', score:91, avatar:'ML', verified:true, skills:['TF','CUDA','Research'] },
+    { name:'Priya Sharma', role:'Data Engineering Lead · 6yr exp', score:84, avatar:'PS', verified:false, skills:['Spark','Databricks','SQL'] },
+  ];
+  return (
+    <DemoShell label="LAYER 04 AI MARKETPLACE — LIVE DEMO" accent={DS.purple} borderC={DS.pb} onClose={onClose} onNext={onNext}>
+      <div style={{ height:44, background:'rgba(9,9,13,0.96)', borderBottom:`1px solid ${DS.bdr}`, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <span style={{ fontFamily:'Syne,sans-serif', fontSize:14, fontWeight:700 }}>CareerAiHub</span>
+          <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'3px 10px', borderRadius:20, background:DS.pdim, color:DS.purple, border:`1px solid ${DS.pb}`, display:'flex', alignItems:'center', gap:5 }}>
+            <span style={{ width:5, height:5, borderRadius:'50%', background:DS.purple, boxShadow:`0 0 6px ${DS.purple}`, animation:'lp-pulse 2s infinite' }} />LAYER 04 — AI MARKETPLACE
+          </span>
+        </div>
+        <div style={{ display:'flex', gap:8 }}>
+          <span style={{ fontSize:10, fontFamily:'JetBrains Mono,monospace', padding:'4px 12px', borderRadius:6, background:DS.s2, border:`1px solid ${DS.bdr2}`, color:DS.text2 }}>Plan: <span style={{ color:DS.purple }}>Recruiter Pro</span></span>
+          <button style={{ padding:'5px 14px', borderRadius:6, fontSize:11, fontWeight:600, background:DS.purple, color:'#fff', border:'none', cursor:'pointer' }}>+ Post Role</button>
+        </div>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'240px 1fr 220px', height:520, overflow:'hidden' }}>
+        {/* Left: Match Criteria */}
+        <div style={{ display:'flex', flexDirection:'column', borderRight:`1px solid ${DS.bdr}`, overflow:'hidden' }}>
+          <div style={{ padding:'12px 16px', borderBottom:`1px solid ${DS.bdr}` }}>
+            <div style={{ fontFamily:'Syne,sans-serif', fontSize:12, fontWeight:700 }}>Match Criteria</div>
+            <div style={{ fontSize:10, color:DS.text2, fontFamily:'JetBrains Mono,monospace' }}>AI match engine · Verified only</div>
+          </div>
+          <div style={{ flex:1, overflowY:'auto', padding:'12px 16px', display:'flex', flexDirection:'column', gap:12 }}>
+            {[['Role',null,'Senior AI Engineer'],['Experience',null,'5+ years'],['Location',null,'Singapore']].map(([l,,v])=>(
+              <div key={l}><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:5 }}>{l}</div>
+                <div style={{ width:'100%', padding:'8px 11px', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, color:DS.text, fontSize:12, fontFamily:'DM Sans,sans-serif' }}>{v}</div>
+              </div>
+            ))}
+            <div><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:5 }}>Required Skills</div>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
+                {['PyTorch','LangChain','AWS','Python','System Design'].map(s=>(
+                  <span key={s} style={{ padding:'4px 10px', borderRadius:20, fontSize:10, fontFamily:'JetBrains Mono,monospace', background:DS.cdim, color:DS.cyan, border:`1px solid ${DS.cb}`, cursor:'pointer' }}>{s}</span>
+                ))}
+                <span style={{ padding:'4px 10px', borderRadius:20, fontSize:10, fontFamily:'JetBrains Mono,monospace', background:'transparent', color:DS.text3, border:`1px dashed ${DS.bdr2}`, cursor:'pointer' }}>+ Add</span>
+              </div>
+            </div>
+            <div style={{ display:'flex', gap:6 }}>
+              <div style={{ flex:1 }}><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:5 }}>Min Salary</div>
+                <div style={{ padding:'8px 11px', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, color:DS.text, fontSize:12 }}>SGD 10K</div>
+              </div>
+              <div style={{ flex:1 }}><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:5 }}>Max Salary</div>
+                <div style={{ padding:'8px 11px', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, color:DS.text, fontSize:12 }}>SGD 15K</div>
+              </div>
+            </div>
+            <button style={{ padding:10, borderRadius:8, background:`linear-gradient(135deg,${DS.purple},${DS.cyan})`, color:'#fff', fontSize:12, fontWeight:700, border:'none', cursor:'pointer', fontFamily:'Syne,sans-serif', boxShadow:`0 0 20px rgba(176,38,255,0.25)` }}>⚡ Run AI Match</button>
+          </div>
+        </div>
+        {/* Center: Candidate Pipeline */}
+        <div style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          <div style={{ padding:'12px 18px', borderBottom:`1px solid ${DS.bdr}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:DS.text2 }}><span style={{ color:DS.cyan, fontWeight:600 }}>3</span> verified matches · AI-ranked</span>
+            <div style={{ display:'flex', gap:4 }}>
+              {['Match Score','Verified','Recency'].map((c,i)=>(
+                <span key={c} style={{ padding:'3px 10px', borderRadius:20, fontSize:10, fontFamily:'JetBrains Mono,monospace', border:`1px solid ${DS.bdr}`, background:i===0?DS.cdim:'transparent', color:i===0?DS.cyan:DS.text3, cursor:'pointer' }}>{c}</span>
+              ))}
+            </div>
+          </div>
+          <div style={{ flex:1, overflowY:'auto', padding:'12px 18px', display:'flex', flexDirection:'column', gap:10 }}>
+            {candidates.map((c,i)=>(
+              <div key={i} style={{ background:i===0?DS.cdim:DS.s1, border:`1px solid ${i===0?DS.cb:DS.bdr}`, borderRadius:12, padding:14, cursor:'pointer', transition:'all .2s', boxShadow:i===0?`0 0 20px rgba(0,200,255,0.08)`:undefined }}>
+                <div style={{ display:'flex', alignItems:'flex-start', gap:10, marginBottom:10 }}>
+                  <div style={{ position:'relative', flexShrink:0 }}>
+                    <div style={{ width:36, height:36, borderRadius:'50%', background:`linear-gradient(135deg,${DS.purple},${DS.cyan})`, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:800, color:'#fff' }}>{c.avatar}</div>
+                    {c.verified && <div style={{ position:'absolute', bottom:-2, right:-2, width:14, height:14, borderRadius:'50%', background:DS.green, border:`2px solid ${DS.bg}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:7, boxShadow:`0 0 8px ${DS.green}` }}>✓</div>}
+                  </div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700 }}>{c.name}</div>
+                    <div style={{ fontSize:11, color:DS.text2 }}>{c.role}</div>
+                  </div>
+                  <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:18, fontWeight:700, color:DS.cyan, textAlign:'right', lineHeight:1 }}>{c.score}<div style={{ fontSize:8, color:DS.text3 }}>/ 100</div></div>
+                </div>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:4, marginBottom:10 }}>
+                  {c.skills.map(s=><span key={s} style={{ padding:'3px 9px', borderRadius:20, fontSize:9, fontFamily:'JetBrains Mono,monospace', background:DS.s3, color:DS.text2, border:`1px solid ${DS.bdr}` }}>{s}</span>)}
+                </div>
+                <div style={{ display:'flex', gap:6 }}>
+                  <button style={{ flex:1, padding:'6px 10px', borderRadius:7, background:DS.purple, color:'#fff', border:'none', cursor:'pointer', fontSize:10, fontWeight:700 }}>Open TrustChat →</button>
+                  <button style={{ padding:'6px 10px', borderRadius:7, background:DS.s3, color:DS.text2, border:`1px solid ${DS.bdr2}`, cursor:'pointer', fontSize:10 }}>View Profile</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Right: TrustChat */}
+        <div style={{ display:'flex', flexDirection:'column', borderLeft:`1px solid ${DS.bdr}`, overflow:'hidden' }}>
+          <div style={{ padding:'10px 14px', borderBottom:`1px solid ${DS.bdr}` }}>
+            <div style={{ fontFamily:'Syne,sans-serif', fontSize:12, fontWeight:700 }}>TrustChat</div>
+            <div style={{ fontSize:9, color:DS.text2, fontFamily:'JetBrains Mono,monospace' }}>Ivy Nguyen · 97% match</div>
+          </div>
+          <div style={{ padding:'10px 14px', borderBottom:`1px solid ${DS.bdr}`, background:DS.gdim }}>
+            <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.green, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6 }}>Verified Credentials</div>
+            {[['NUS B.Sc Computer Science','2021 · GPA 3.84'],['AWS Solutions Architect Pro','2023 · Score 892']].map(([t,s])=>(
+              <div key={t} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5 }}>
+                <span style={{ width:5, height:5, borderRadius:'50%', background:DS.green, boxShadow:`0 0 5px ${DS.green}`, flexShrink:0 }} />
+                <div><div style={{ fontSize:10, fontWeight:600 }}>{t}</div><div style={{ fontSize:9, color:DS.text3, fontFamily:'JetBrains Mono,monospace' }}>{s}</div></div>
+              </div>
+            ))}
+          </div>
+          <div style={{ flex:1, overflowY:'auto', padding:'10px 14px', display:'flex', flexDirection:'column', gap:8 }}>
+            <div style={{ background:DS.pdim, border:`1px solid ${DS.pb}`, borderRadius:'10px 10px 10px 2px', padding:'8px 10px', fontSize:11, lineHeight:1.6 }}>
+              <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.purple, marginBottom:3 }}>Recruiter</div>
+              Hi Ivy, saw your verified profile — impressive LangChain work. Are you open to a Series B fintech role?
+            </div>
+            <div style={{ background:DS.s3, border:`1px solid ${DS.bdr}`, borderRadius:'10px 10px 2px 10px', padding:'8px 10px', fontSize:11, lineHeight:1.6, marginLeft:'auto', maxWidth:'90%' }}>
+              <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.cyan, marginBottom:3, textAlign:'right' }}>Ivy</div>
+              Hi! Yes, I'm actively looking. Happy to share my work on the RAG pipeline in detail.
+            </div>
+            <div style={{ background:DS.pdim, border:`1px solid ${DS.pb}`, borderRadius:'10px 10px 10px 2px', padding:'8px 10px', fontSize:11, lineHeight:1.6 }}>
+              <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.purple, marginBottom:3 }}>Recruiter</div>
+              Can we schedule a call this week?<span style={{ display:'inline-block', width:5, height:11, background:DS.purple, animation:'blink 1s step-end infinite', verticalAlign:'middle', marginLeft:4 }} />
+            </div>
+          </div>
+          <div style={{ padding:'8px 14px', borderTop:`1px solid ${DS.bdr}`, display:'flex', gap:6, flexShrink:0 }}>
+            <input placeholder="Type a message…" style={{ flex:1, padding:'7px 10px', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:7, color:DS.text, fontSize:11, outline:'none' }} readOnly />
+            <button style={{ padding:'7px 14px', borderRadius:7, background:DS.purple, color:'#fff', border:'none', cursor:'pointer', fontSize:11, fontWeight:700 }}>Send</button>
+          </div>
+        </div>
+      </div>
+    </DemoShell>
   );
 }
 
@@ -1202,9 +1896,29 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
 
 function PlatformLayers({ onJoin }) {
   const [active, setActive] = useState(0);
+  const [demoLayer, setDemoLayer] = useState(null);
+  const sectionRef = useRef(null);
   const d = LAYER_DATA[active];
+  const handleTab = (i) => { setActive(i); setDemoLayer(null); };
+  const handleCta = () => { setDemoLayer(active); };
+  const goNextLayer = () => {
+    const next = (active + 1) % LAYER_DATA.length;
+    setActive(next);
+    setDemoLayer(next);
+  };
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) setDemoLayer(null);
+    }, { threshold: 0.05 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
-    <section className="section alt">
+    <section className="section alt" ref={sectionRef}>
       <div className="reveal">
         <div className="ey">Platform architecture</div>
         <h2 className="sh">Four layers. One memory. Built to compound.</h2>
@@ -1213,7 +1927,7 @@ function PlatformLayers({ onJoin }) {
       <div className="reveal d1">
         <div className="layer-tabs">
           {LAYER_DATA.map((layer, i) => (
-            <button key={i} className={`ltab ${layer.label}${active === i ? ' on' : ''}`} onClick={() => setActive(i)}>
+            <button key={i} className={`ltab ${layer.label}${active === i ? ' on' : ''}`} onClick={() => handleTab(i)}>
               <div className="ltab-n">{layer.n}</div>
               <div className="ltab-title">{layer.title}</div>
               <div className="ltab-sub">{layer.sub}</div>
@@ -1231,7 +1945,7 @@ function PlatformLayers({ onJoin }) {
               <div className="lp-title">{d.panelTitle}</div>
               <div className="lp-desc">{d.desc}</div>
             </div>
-            <button className={`lp-cta ${d.ctaCls}`} onClick={onJoin}>{d.cta}</button>
+            <button className={`lp-cta ${d.ctaCls}`} onClick={handleCta}>{d.cta}</button>
           </div>
           <div className="lp-mods lp-anim">
             {d.mods.map((m, i) => (
@@ -1250,6 +1964,68 @@ function PlatformLayers({ onJoin }) {
               </div>
             ))}
           </div>
+          {demoLayer === 0 && <L1DemoPanel onClose={() => setDemoLayer(null)} onNext={goNextLayer} />}
+          {demoLayer === 1 && <L2DemoPanel onClose={() => setDemoLayer(null)} onNext={goNextLayer} />}
+          {demoLayer === 2 && <L3DemoPanel onClose={() => setDemoLayer(null)} onNext={goNextLayer} />}
+          {demoLayer === 3 && <L4DemoPanel onClose={() => setDemoLayer(null)} onNext={goNextLayer} />}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── FUNNEL METRICS STRIP ──────────────────────────────────────────────────────
+
+function FunnelStrip() {
+  return (
+    <div className="lp-funnel-strip">
+      <div className="lp-funnel-live">
+        <span className="lp-funnel-dot" />
+        <span className="lp-funnel-label">Live today on CareerAiHub</span>
+      </div>
+      <div className="lp-funnel-stats">
+        <div className="lp-funnel-stat"><span className="lp-funnel-n">47</span><span className="lp-funnel-s">resumes scanned</span></div>
+        <span className="lp-funnel-sep">·</span>
+        <div className="lp-funnel-stat"><span className="lp-funnel-n">31</span><span className="lp-funnel-s">accounts created</span></div>
+        <span className="lp-funnel-sep">·</span>
+        <div className="lp-funnel-stat"><span className="lp-funnel-n">12</span><span className="lp-funnel-s">upgrades today</span></div>
+      </div>
+    </div>
+  );
+}
+
+// ── PLATFORM ARCH (FLAT) ──────────────────────────────────────────────────────
+
+function PlatformArchSection() {
+  const rows = [
+    { icon:'🧠', acc:'var(--lp-teal-dim)', bdr:'var(--lp-teal-b)', title:'Data layer · AI Memory', desc:'Upload your resume once. AI reads, indexes, and retains your full professional history — seeding context into every module instantly. Every session writes back, compounding your profile over time.', lbl:'Layer 01', statusBg:'var(--lp-teal-dim)', statusC:'var(--lp-teal)', statusBdr:'var(--lp-teal-b)', statusTxt:'Live', dot:true },
+    { icon:'⚡', acc:'var(--lp-teal-dim)', bdr:'var(--lp-teal-b)', title:'Intelligence layer · 10 AI Modules', desc:'ATS Scanner · ATS Builder · JD Analyzer · STAR Builder · HM Simulator · Mock Interview · Salary Coach · Cover Letter · Get Ready · Job Search — all powered by the same AI memory, all compounding with each session.', lbl:'Layer 02', statusBg:'var(--lp-teal-dim)', statusC:'var(--lp-teal)', statusBdr:'var(--lp-teal-b)', statusTxt:'Live', dot:true },
+    { icon:'🏅', acc:'var(--lp-amber-dim)', bdr:'var(--lp-amber-b)', title:'Verification layer · Readiness Certificate', desc:"Candidates who hit 80/100 across all interview dimensions earn a shareable Readiness Certificate — blockchain-anchored, verifiable by employers. The credential that proves you didn't just prepare, you proved it.", lbl:'Layer 03', statusBg:'var(--lp-amber-dim)', statusC:'var(--lp-amber)', statusBdr:'var(--lp-amber-b)', statusTxt:'Building', dot:false, dim:true },
+    { icon:'🌐', acc:'var(--lp-purple-dim)', bdr:'var(--lp-purple-b)', title:'Market layer · Live Singapore Data', desc:'Real-time salary benchmarks, hiring velocity signals, and role-level demand pulled from 20+ platforms. Powers every salary recommendation, job search rank, and market intelligence alert — live, not cached.', lbl:'Layer 04', statusBg:'var(--lp-purple-dim)', statusC:'var(--lp-purple)', statusBdr:'var(--lp-purple-b)', statusTxt:'Planned', dot:false, dim:true },
+  ];
+  return (
+    <section className="section alt">
+      <div className="reveal">
+        <div className="ey">Platform architecture</div>
+        <h2 className="sh">Four layers. One memory. Built to compound.</h2>
+        <p className="ss">Each layer builds on the last. Your profile deepens with every session — every module smarter, every recommendation more precise.</p>
+      </div>
+      <div className="reveal d1">
+        <div className="lp-arch-list">
+          {rows.map((r, i) => (
+            <div key={i} className="lp-arch-row" style={{ opacity: r.dim ? 0.85 : 1 }}>
+              <div className="lp-arch-icon" style={{ background: r.acc, border: `1px solid ${r.bdr}` }}>{r.icon}</div>
+              <div className="lp-arch-body">
+                <div className="lp-arch-title">{r.title}</div>
+                <div className="lp-arch-desc">{r.desc}</div>
+              </div>
+              <div className="lp-arch-lbl">{r.lbl}</div>
+              <div className="lp-arch-status" style={{ background: r.statusBg, color: r.statusC, border: `1px solid ${r.statusBdr}` }}>
+                {r.dot && <span className="lp-arch-dot" style={{ background: r.statusC }} />}
+                {r.statusTxt}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -1407,39 +2183,71 @@ function TestimonialsSection() {
 
 // ── TRUST SECTION ─────────────────────────────────────────────────────────────
 
-function TrustSection() {
+const TRUST_QA = [
+  {
+    q: 'Why CareerAiHub over five separate tools?',
+    points: [
+      'One AI memory powers every module — your resume data flows across all 10 tools without re-entering anything.',
+      'Compounding intelligence: each session makes the next one smarter, unlike stateless tools that forget you.',
+      'Singapore-specific: salary benchmarks, job boards, and market data tuned for SEA — not US-generic.',
+      'All-in at $19/month vs $175+/month for LinkedIn Premium + Resume.io + Interviewing.io combined.',
+    ],
+  },
+  {
+    q: 'Is my resume data safe with you?',
+    points: [
+      'AES-256 encryption at rest, TLS 1.3 in transit — your resume is encrypted from the moment it lands.',
+      'We never sell or share your data with recruiters, job boards, or any third party. Your data powers only your own modules.',
+      'Delete anytime: request full deletion from account settings, processed within 24 hours and purged from backups within 30 days.',
+      'PDPA compliant (Singapore) with GDPR compliance planned for our European expansion.',
+    ],
+  },
+  {
+    q: 'How is this different from just using ChatGPT?',
+    points: [
+      'ChatGPT has no memory of your resume, target role, or salary data — you re-explain yourself every session.',
+      'CareerAiHub has structured modules purpose-built for hiring: ATS scoring, STAR frameworks, live salary benchmarks.',
+      'We pull live Singapore job data and salary ranges — ChatGPT cannot access real-time market intelligence.',
+      'Readiness Certificate and blockchain-verifiable credentials are not possible through a generic chat interface.',
+    ],
+  },
+  {
+    q: 'What happens after the free tier?',
+    points: [
+      'Free tier never expires: job search, market intelligence, and 1–2 uses per module stay free forever.',
+      'Premium at $19/month unlocks unlimited use of all 10 tools with full AI memory — cancel anytime.',
+      'Pro Get Ready adds the AI-built study plan and Readiness Certificate for interview-ready candidates.',
+      '7-day free trial on all paid plans — no credit card required to start the trial.',
+    ],
+  },
+];
+
+function TrustSection({ onPrivacy, onTerms }) {
   return (
     <section className="section lp-trust-section" id="trust">
       <div className="reveal">
-        <div className="ey">Your data, protected</div>
-        <h2 className="sh">Your resume is yours. Always.</h2>
-        <p className="ss" style={{ marginBottom: 32 }}>We know you're uploading something personal. Here's exactly how we handle it.</p>
+        <div className="ey">Why CareerAiHub</div>
+        <h2 className="sh">The questions everyone asks.</h2>
+        <p className="ss" style={{ marginBottom: 32 }}>Straight answers — no marketing fluff.</p>
       </div>
-      <div className="lp-trust-grid reveal d1">
-        <div className="lp-trust-item">
-          <div className="lp-trust-icon">🔒</div>
-          <h3 className="lp-trust-title">Encrypted in transit and at rest</h3>
-          <p className="lp-trust-desc">Your resume is encrypted with AES-256 the moment it's uploaded. It travels over TLS 1.3 and is stored in encrypted form. Only you can access it.</p>
-        </div>
-        <div className="lp-trust-item">
-          <div className="lp-trust-icon">🚫</div>
-          <h3 className="lp-trust-title">Never sold. Never shared.</h3>
-          <p className="lp-trust-desc">We do not sell your data to recruiters, job boards, or third parties. Ever. Your resume is used only to power your own CareerAiHub modules — nothing else.</p>
-        </div>
-        <div className="lp-trust-item">
-          <div className="lp-trust-icon">🗑️</div>
-          <h3 className="lp-trust-title">Delete anytime</h3>
-          <p className="lp-trust-desc">You can delete your resume, your profile, and all associated data from your account settings at any time. We process deletion within 24 hours.</p>
-        </div>
-        <div className="lp-trust-item">
-          <div className="lp-trust-icon">🇸🇬</div>
-          <h3 className="lp-trust-title">PDPA compliant · Singapore</h3>
-          <p className="lp-trust-desc">CareerAiHub is built to comply with Singapore's Personal Data Protection Act (PDPA). We are working toward GDPR compliance for our planned expansion into Europe.</p>
-        </div>
+      <div className="lp-qa-grid reveal d1">
+        {TRUST_QA.map((item, i) => (
+          <div key={i} className="lp-qa-item">
+            <div className="lp-qa-q">{item.q}</div>
+            <ul className="lp-qa-list">
+              {item.points.map((pt, j) => (
+                <li key={j} className="lp-qa-point">
+                  <span className="lp-qa-dot" />
+                  {pt}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
       <div className="lp-trust-links reveal d2">
-        <span className="lp-trust-link">Privacy Policy ↗</span>
-        <span className="lp-trust-link">Terms of Service ↗</span>
+        <button className="lp-trust-link" onClick={onPrivacy}>Privacy Policy ↗</button>
+        <button className="lp-trust-link" onClick={onTerms}>Terms of Service ↗</button>
         <span className="lp-trust-link">Security Statement ↗</span>
         <span className="lp-trust-link">Data Deletion Request ↗</span>
       </div>
@@ -1466,7 +2274,7 @@ function GrowthSection({ onJoin }) {
   };
 
   return (
-    <section className="section lp-growth-section" id="growth">
+    <section className="section alt lp-growth-section" id="growth">
       <div className="lp-growth-inner">
         <div className="reveal">
           <div className="ey">Refer a friend</div>
@@ -1513,41 +2321,63 @@ function GrowthSection({ onJoin }) {
 
 // ── HOW IT WORKS ─────────────────────────────────────────────────────────────
 
-function HowItWorksSection({ onJoin }) {
+function HowItWorksSection({ onJoin, onSampleReport }) {
+  const ss = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   return (
     <section className="section lp-hiw-section" id="how-it-works">
       <div className="reveal">
         <div className="ey">How it works</div>
-        <h2 className="sh">From first visit to job offer — in three steps.</h2>
-        <p className="ss" style={{ marginBottom: 36 }}>No learning curve. No setup. Start with the free job search and ATS scan — the platform builds your profile from there.</p>
+        <h2 className="sh" style={{whiteSpace:'nowrap'}}>Six steps. <span style={{background:'var(--lp-grad-primary)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>Zero guesswork.</span></h2>
+        <p className="ss" style={{ marginBottom: 24 }}>From first upload to signed offer. Every step builds on the last. Your AI memory compounds with each session.</p>
       </div>
-      <div className="lp-hiw-steps reveal d1">
-        <div className="lp-hiw-step">
-          <div className="lp-hiw-num">01</div>
-          <div className="lp-hiw-icon">📄</div>
-          <h3 className="lp-hiw-title">Upload your resume once</h3>
-          <p className="lp-hiw-desc">CareerAiHub reads your resume in 20 seconds and seeds your AI memory. Every module — interviews, salary, cover letters — instantly knows your background. No re-entering your experience, ever.</p>
-          <div className="lp-hiw-badge">Free · No account needed</div>
-        </div>
-        <div className="lp-hiw-connector"><div className="lp-hiw-line" /><div className="lp-hiw-arrow">→</div></div>
-        <div className="lp-hiw-step">
-          <div className="lp-hiw-num">02</div>
-          <div className="lp-hiw-icon">⚡</div>
-          <h3 className="lp-hiw-title">Get your AI-powered score</h3>
-          <p className="lp-hiw-desc">See your ATS match score against any job description. Find out exactly which keywords you're missing, which sections need work, and what to fix before you apply. Most users improve 20+ points in one session.</p>
-          <div className="lp-hiw-badge">1 free scan included</div>
-        </div>
-        <div className="lp-hiw-connector"><div className="lp-hiw-line" /><div className="lp-hiw-arrow">→</div></div>
-        <div className="lp-hiw-step">
-          <div className="lp-hiw-num">03</div>
-          <div className="lp-hiw-icon">🎯</div>
-          <h3 className="lp-hiw-title">Apply with confidence</h3>
-          <p className="lp-hiw-desc">Fix your resume, practice your interview answers, know your market salary — then apply. Your application tracker logs every role automatically. The AI memory improves with every session.</p>
-          <div className="lp-hiw-badge">Upgrade for unlimited access</div>
-        </div>
+
+      {/* Free tier steps */}
+      <div className="lp-hiw6-grid reveal d2">
+        {[
+          {num:'01',tag:'Free · no account',tagCls:'free',title:'Drop your resume',desc:'CareerAiHub reads your full work history and builds a persistent AI memory. Every module instantly knows your story. You never re-enter your background again.',bullets:FEAT_DATA[11].bullets,outcome:'AI memory activated — all modules know your background',dotColor:'var(--lp-teal)'},
+          {num:'02',tag:'Free · 1 scan',tagCls:'free',title:'Get your ATS score',desc:"Paste any job description. See your exact match percentage, which keywords you're missing, and what to fix before you apply — before a recruiter sees your name.",bullets:FEAT_DATA[1].bullets,outcome:'Most users jump 20+ ATS points in a single session',dotColor:'var(--lp-teal)'},
+          {num:'03',tag:'Free',tagCls:'free',title:'Apply in 5 minutes',desc:'AI memory powers a tailored application. Search 20+ live job boards. One-click apply with ATS score already checked — no blank page, no copy-paste.',bullets:FEAT_DATA[0].bullets,outcome:'329 open roles in Singapore · AI-ranked for you',dotColor:'var(--lp-teal)'},
+        ].map((s,i)=>(
+          <div key={i} className="lp-hiw6-step">
+            <span className={`lp-hiw6-tag ${s.tagCls}`}>{s.tag}</span>
+            <div className="lp-hiw6-step-num">{s.num}</div>
+            <div className="lp-hiw6-step-title">{s.title}</div>
+            <div className="lp-hiw6-step-desc">{s.desc}</div>
+            <ul className="lp-hiw6-bullets">{s.bullets.map((b,j)=><li key={j} className="lp-hiw6-bullet"><span className="lp-hiw6-bdot"/>{ b}</li>)}</ul>
+            <div className="lp-hiw6-outcome"><span className="lp-hiw6-dot" style={{background:s.dotColor,animation:'lp-pulse 2s infinite'}}/>{s.outcome}</div>
+          </div>
+        ))}
       </div>
+
+      {/* Upgrade divider */}
+      <div className="lp-hiw6-divider reveal d2">
+        <div style={{flex:1,height:1,background:'linear-gradient(90deg,transparent,rgba(176,38,255,.3))'}}/>
+        <span style={{fontSize:12,fontWeight:700,color:'var(--lp-text2)',whiteSpace:'nowrap'}}>Upgrade to unlock Premium features →</span>
+        <button onClick={() => ss('price-sec')} className="lp-hiw6-plans-btn">See plans</button>
+        <div style={{flex:1,height:1,background:'linear-gradient(90deg,rgba(176,38,255,.3),transparent)'}}/>
+      </div>
+
+      {/* Premium steps (blurred/locked) */}
+      <div className="lp-hiw6-grid reveal d3" style={{marginBottom:28}}>
+        {[
+          {num:'04',tag:'Premium',tagCls:'premium',title:'AI mock interviews',desc:'Practice with an AI that knows your resume and target role. Scored on clarity, STAR structure, and relevance. Battle-ready before the real call.',bullets:FEAT_DATA[5].bullets,dotColor:'var(--lp-violet)'},
+          {num:'05',tag:'Pro',tagCls:'pro',title:'Get Ready readiness plan',desc:'Scored across 5 interview dimensions. AI builds your personalized study plan targeting weakest areas first. Hit 80/100 to earn a shareable Readiness Certificate.',bullets:FEAT_DATA[9].bullets,dotColor:'var(--lp-violet)'},
+          {num:'06',tag:'Premium',tagCls:'premium',title:'Negotiate with market data',desc:'Live salary benchmarks for your exact role and level. Practice your counter-offer with AI — scripts, pushback simulations, data-backed anchoring. Users average +$8K first-year comp.',bullets:FEAT_DATA[6].bullets,dotColor:'var(--lp-violet)'},
+        ].map((s,i)=>(
+          <div key={i} className="lp-hiw6-step premium">
+            <span className={`lp-hiw6-tag ${s.tagCls}`}>{s.tag}</span>
+            <div className="lp-hiw6-blur">
+              <div className="lp-hiw6-step-num">{s.num}</div>
+              <div className="lp-hiw6-step-title">{s.title}</div>
+              <div className="lp-hiw6-step-desc">{s.desc}</div>
+              <ul className="lp-hiw6-bullets">{s.bullets.map((b,j)=><li key={j} className="lp-hiw6-bullet"><span className="lp-hiw6-bdot"/>{b}</li>)}</ul>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="lp-hiw-sample reveal d2">
-        <button className="lp-hiw-sample-btn" onClick={onJoin}>See a sample ATS report →</button>
+        <button className="lp-hiw-sample-btn" onClick={onSampleReport}>See a sample ATS report →</button>
         <span className="lp-hiw-sample-note">No signup · Opens in 2 seconds</span>
       </div>
     </section>
@@ -1556,7 +2386,32 @@ function HowItWorksSection({ onJoin }) {
 
 // ── PRICING ───────────────────────────────────────────────────────────────────
 
-function PricingSection({ onJoin }) {
+function PricingSection({ onJoin, onGetReady }) {
+  const features = [
+    { label: 'Job search', free: '✓', premium: '✓', pro: '✓', rec: '—' },
+    { label: 'Market intelligence', free: '✓', premium: '✓', pro: '✓', rec: '—' },
+    { label: 'Resume ATS scan', free: '1 scan', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
+    { label: 'ATS Builder + editor', free: '—', premium: '✓', pro: '✓', rec: '—' },
+    { label: 'JD Analyzer', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
+    { label: 'STAR Answer Builder', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
+    { label: 'HM Simulator', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
+    { label: 'Mock Interview Coach', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
+    { label: 'Salary Coach + negotiation', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
+    { label: 'Cover Letter Generator', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
+    { label: 'AI Memory (full)', free: '—', premium: '✓', pro: '✓', rec: '—' },
+    { label: 'Get Ready plan', free: '—', premium: '—', pro: '✓', rec: '—' },
+    { label: 'Readiness Certificate', free: '—', premium: '—', pro: '✓', rec: '—' },
+    { label: 'Verified candidate pipeline', free: '—', premium: '—', pro: '—', rec: '✓' },
+    { label: 'AI match shortlisting', free: '—', premium: '—', pro: '—', rec: '✓' },
+    { label: 'TrustChat + recruiter dashboard', free: '—', premium: '—', pro: '—', rec: '✓' },
+  ];
+
+  const cellColor = (v) => {
+    if (v === '—') return { color: 'var(--lp-text3)' };
+    if (v.startsWith('✓')) return { color: 'var(--lp-teal)', fontWeight: 600 };
+    return { color: 'var(--lp-amber)', fontSize: 11 };
+  };
+
   return (
     <section className="section alt" id="price-sec">
       <div className="reveal">
@@ -1564,46 +2419,60 @@ function PricingSection({ onJoin }) {
         <h2 className="sh">Try free. Upgrade when it works.</h2>
         <p className="ss">No card required to start. Free tier gives you enough to feel the value — then upgrade to unlock every tool, unlimited.</p>
       </div>
-      <div className="price-grid reveal d1">
-        <article className="pcard">
-          <h3 className="pc-name">Free</h3>
-          <div className="pc-price">$0<span>/month</span></div>
-          <div className="pc-note">No credit card · always</div>
-          <ul className="pc-feats">
-            <li className="pcf"><span className="ck">✓</span>1 resume ATS scan</li>
-            <li className="pcf"><span className="ck">✓</span>1–2 free uses per module</li>
-            <li className="pcf"><span className="ck">✓</span>Job search — always free</li>
-            <li className="pcf"><span className="ck">✓</span>Market intelligence — always free</li>
-          </ul>
-          <button className="pbtn" onClick={onJoin}>Start free — no card →</button>
-        </article>
-        <article className="pcard hot">
-          <h3 className="pc-name">Premium</h3>
-          <div className="pc-price">$19<span>/month</span></div>
-          <div className="pc-note">$180/year · saves 20%</div>
-          <ul className="pc-feats">
-            <li className="pcf"><span className="ck">✓</span>Unlimited resume scans + full editor</li>
-            <li className="pcf"><span className="ck">✓</span>Unlimited mock interviews + HM simulator</li>
-            <li className="pcf"><span className="ck">✓</span>Unlimited salary coaching + negotiation</li>
-            <li className="pcf"><span className="ck">✓</span>Full AI memory across all 10 modules</li>
-            <li className="pcf"><span className="ck">✓</span>Unlimited JD analyzer + STAR builder</li>
-            <li className="pcf"><span className="ck">✓</span>Unlimited cover letter generation</li>
-          </ul>
-          <button className="pbtn pri" onClick={onJoin}>Start 7-day free trial →</button>
-        </article>
-        <article className="pcard">
-          <h3 className="pc-name">Recruiter</h3>
-          <div className="pc-price">SGD 299<span>/mo</span></div>
-          <div className="pc-note">Enterprise from SGD 1,500/mo</div>
-          <ul className="pc-feats">
-            <li className="pcf"><span className="ck">✓</span>Verified candidate pipeline</li>
-            <li className="pcf"><span className="ck">✓</span>AI match shortlisting</li>
-            <li className="pcf"><span className="ck">✓</span>TrustChat + credential sidebar</li>
-            <li className="pcf"><span className="ck">✓</span>Recruiter dashboard + analytics</li>
-            <li className="pcf"><span className="ck">✓</span>10–20× ROI vs headhunter fees</li>
-          </ul>
-          <button className="pbtn" onClick={onJoin}>Request pilot →</button>
-        </article>
+
+      <div className="reveal d1" style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '34%' }} />
+            <col style={{ width: '16.5%' }} />
+            <col style={{ width: '16.5%' }} />
+            <col style={{ width: '16.5%' }} />
+            <col style={{ width: '16.5%' }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--lp-text3)', background: 'rgba(255,255,255,.02)', borderBottom: '1px solid var(--lp-bdr)' }}>Feature</th>
+              {[
+                { name: 'Free', price: '$0/mo', note: 'No card needed', cta: 'Start free', fn: onJoin, hot: false },
+                { name: 'Premium', price: '$19/mo', note: '$180/year · 20% off', cta: '7-day trial', fn: onJoin, hot: false },
+                { name: 'Pro · Get Ready', price: '$24.99/mo', note: '$239/year · 20% off', cta: 'Open Get Ready ✦', fn: onGetReady, hot: true },
+                { name: 'Recruiter', price: null, note: 'Enterprise pricing', cta: 'Know more →', fn: onJoin, hot: false },
+              ].map((col, i) => (
+                <th key={i} style={{ padding: '12px 10px', textAlign: 'center', background: col.hot ? 'rgba(0,212,255,.04)' : 'rgba(255,255,255,.02)', borderBottom: `2px solid ${col.hot ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`, position: 'relative' }}>
+                  {col.hot && <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', fontSize: 9, fontWeight: 800, padding: '2px 10px', borderRadius: 20, background: 'var(--lp-teal)', color: '#000', whiteSpace: 'nowrap' }}>MOST POPULAR</div>}
+                  <div style={{ fontSize: 12, fontWeight: 800, color: col.hot ? 'var(--lp-teal)' : 'var(--lp-text)', marginBottom: 4 }}>{col.name}</div>
+                  {col.price
+                    ? <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--lp-text)', fontFamily: 'var(--lp-ffd)', lineHeight: 1 }}>{col.price}</div>
+                    : <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text2)', fontStyle: 'italic' }}>Talk to us</div>
+                  }
+                  <div style={{ fontSize: 10, color: 'var(--lp-text3)', margin: '4px 0 10px' }}>{col.note}</div>
+                  <button onClick={col.fn} style={{ width: '100%', padding: '8px 6px', borderRadius: 8, border: col.hot ? 'none' : '1px solid var(--lp-bdr)', background: col.hot ? 'var(--lp-grad-primary)' : 'rgba(255,255,255,.04)', color: col.hot ? '#000' : 'var(--lp-text)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--lp-ff)' }}>
+                    {col.cta}
+                  </button>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {features.map((f, i) => (
+              <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,.01)' }}>
+                <td style={{ padding: '10px 16px', color: 'var(--lp-text2)', borderBottom: '1px solid rgba(255,255,255,.04)', fontSize: 12 }}>{f.label}</td>
+                {['free', 'premium', 'pro', 'rec'].map((k, ci) => (
+                  <td key={k} style={{ padding: '10px 10px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,.04)', background: ci === 2 ? 'rgba(0,212,255,.02)' : 'transparent', ...cellColor(f[k]) }}>{f[k]}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="reveal d2" style={{ marginTop: 22, background: 'linear-gradient(135deg,rgba(0,212,255,.06) 0%,rgba(176,38,255,.05) 100%)', border: '1px solid var(--lp-teal-b)', borderRadius: 'var(--lp-rl)', padding: '22px 28px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 240 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--lp-teal)', marginBottom: 6 }}>New in Pro — Get Ready</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 6, lineHeight: 1.3 }}>Interview-ready in 9 days.<br />AI builds your plan from your exact weaknesses.</div>
+          <div style={{ fontSize: 12, color: 'var(--lp-text2)', lineHeight: 1.7 }}>After your mock interview, the AI scores you across 5 dimensions. It then creates a session-by-session study plan targeting your weakest areas first — and re-scores your plan every 7 days as you improve. When you hit 80+ on all dimensions, you earn a shareable Readiness Certificate.</div>
+        </div>
+        <button className="pbtn pri" style={{ width: 'auto', padding: '12px 28px', whiteSpace: 'nowrap', flexShrink: 0 }} onClick={onGetReady}>See Get Ready demo ✦</button>
       </div>
     </section>
   );
@@ -1617,16 +2486,17 @@ function CompareSection() {
     ['JD analyzer + STAR builder', '✓ Live', '—', '—', '—'],
     ['AI mock interview + HM simulator', '✓ Live', '—', '—', '✓'],
     ['Salary coach + negotiation roleplay', '✓ Live', '—', '—', '—'],
-    ['Cover letter generator', '✓ Live', '—', '—', '—'],
+    ['Get Ready — interview readiness plan', '✓ Pro only', '—', '—', '—'],
+    ['Readiness Certificate at 80+ score', '✓ Pro only', '—', '—', '—'],
     ['AI memory across all modules', '✓ Live', '—', '—', '—'],
     ['Blockchain credential verification', '◎ Roadmap', '—', '—', '—'],
-    ['Monthly price', '$19/mo', '$40/mo', '$25/mo', '$40/mo'],
+    ['Monthly price', '$24.99/mo', '$40/mo', '$25/mo', '$40/mo'],
   ];
   return (
     <section className="section" id="compare-sec">
       <div className="reveal">
         <div className="ey">CareerAiHub vs alternatives</div>
-        <h2 className="sh">$19/month vs $175+. One platform vs five.</h2>
+        <h2 className="sh">$24.99/month vs $175+. One platform vs five.</h2>
         <p className="ss" style={{ marginBottom: 22 }}>The most complete AI career tool in Southeast Asia — at a fraction of what you'd pay for LinkedIn Premium, Resume.io, and Interviewing.io combined.</p>
       </div>
       <div className="reveal d1" style={{ border: '1px solid var(--lp-bdr)', borderRadius: 'var(--lp-rl)', overflow: 'hidden' }}>
@@ -1686,12 +2556,12 @@ function FAQSection() {
 
 // ── FOOTER ────────────────────────────────────────────────────────────────────
 
-function FooterSection({ onJoin }) {
+function FooterSection({ onJoin, onPrivacy, onTerms }) {
   return (
     <footer className="footer">
       <div className="footer-grid">
         <div>
-          <div className="fb"><LogoMark size={22} radius={6} /><span className="lp-wordmark">CareerAiHub</span></div>
+          <div className="fb"><LogoMark size={22} /><span className="lp-wordmark">career<span className="lp-wordmark-ai">ai</span>hub</span></div>
           <p className="fbsub">The AI career operating system for every professional — from first job to executive role. Singapore · 2026 · careeraihub.com</p>
         </div>
         <nav className="fcol">
@@ -1709,14 +2579,17 @@ function FooterSection({ onJoin }) {
         </nav>
         <nav className="fcol">
           <div className="fch">Legal</div>
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/terms">Terms of Service</a>
+          <button style={{background:'none',border:'none',color:'inherit',cursor:'pointer',padding:0,fontSize:'inherit',fontFamily:'inherit',textAlign:'left'}} onClick={onPrivacy}>Privacy Policy</button>
+          <button style={{background:'none',border:'none',color:'inherit',cursor:'pointer',padding:0,fontSize:'inherit',fontFamily:'inherit',textAlign:'left'}} onClick={onTerms}>Terms of Service</button>
           <a href="/sitemap.xml">Sitemap</a>
         </nav>
       </div>
       <div className="fbot">
         <span>© 2026 CareerAiHub Pte. Ltd. · Singapore</span>
-        <div className="fbot-links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div>
+        <div className="fbot-links">
+          <button style={{background:'none',border:'none',color:'inherit',cursor:'pointer',fontFamily:'inherit',fontSize:'inherit'}} onClick={onPrivacy}>Privacy</button>
+          <button style={{background:'none',border:'none',color:'inherit',cursor:'pointer',fontFamily:'inherit',fontSize:'inherit'}} onClick={onTerms}>Terms</button>
+        </div>
       </div>
     </footer>
   );
@@ -1758,7 +2631,7 @@ function TrackerOverlay({ onClose, onSnack }) {
       <div className="lp-tv-nav">
         <div className="lp-tv-nav-inner">
           <div className="lp-tv-logo">
-            <LogoMark size={20} radius={5} /><span className="lp-wordmark">CareerAiHub</span>
+            <LogoMark size={20} /><span className="lp-wordmark">career<span className="lp-wordmark-ai">ai</span>hub</span>
           </div>
           <span className="lp-tv-title">Application Tracker</span>
           <button className="lp-tv-close" onClick={onClose}>✕ Close</button>
@@ -1912,6 +2785,296 @@ function CoverLetterModal({ onClose }) {
   );
 }
 
+// ── STUDY PLAN MODAL ─────────────────────────────────────────────────────────
+
+function StudyPlanModal({ onClose }) {
+  const [tab, setTab] = useState('dashboard');
+  const TABS = [['dashboard', 'Dashboard'], ['modules', 'Study modules'], ['readiness', 'Readiness score']];
+  return (
+    <div className="lp-modal-overlay" onClick={onClose}>
+      <div className="lp-sp-modal" onClick={e => e.stopPropagation()}>
+        <div className="lp-modal-hd">
+          <div className="lp-modal-title">
+            ✦ Get Ready
+            <span className="lp-sp-modal-badge">Interview Readiness · Minh Tran</span>
+          </div>
+          <button className="lp-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="lp-modal-body">
+          <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
+            {TABS.map(([k, label]) => (
+              <button key={k} className={`lp-sp-tab${tab === k ? ' on' : ''}`} onClick={() => setTab(k)}>{label}</button>
+            ))}
+          </div>
+
+          {tab === 'dashboard' && (
+            <div>
+              <div className="lp-sp-score-strip">
+                {[{n:38,l:'Concrete examples',c:'#FF4D6A'},{n:44,l:'STAR structure',c:'#FFD233'},{n:72,l:'Clarity',c:'#00E5A0'},{n:84,l:'Role knowledge',c:'#00E5A0'},{n:'61/100',l:'Overall readiness',c:'var(--lp-teal)',sm:true}].map((s,i)=>(
+                  <div key={i} className="lp-sp-sc">
+                    <div className="lp-sp-sc-num" style={{color:s.c,fontSize:s.sm?18:undefined}}>{s.n}</div>
+                    <div className="lp-sp-sc-lbl">{s.l}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="lp-sp-coach">
+                <div className="lp-sp-coach-av">AI</div>
+                <div className="lp-sp-coach-text"><strong>Based on your last 2 sessions,</strong> your biggest gap is concrete examples — you score 38/100. You describe situations generally without naming outcomes, numbers, or impact. Your readiness plan targets this first. Once you clear 70, we move to STAR structure. <strong>Estimated time to interview-ready: 9 days.</strong></div>
+              </div>
+              <div className="lp-sp-next">
+                <div>
+                  <div className="lp-sp-next-lbl">Recommended next · start now</div>
+                  <div className="lp-sp-next-title">Concrete examples drill — behavioral questions</div>
+                  <div className="lp-sp-next-meta">20 min · targets your weakest dimension · session 1 of 3</div>
+                </div>
+                <button className="lp-sp-start-btn" onClick={onClose}>Start session →</button>
+              </div>
+              <div className="lp-sp-section-lbl">Your readiness plan</div>
+              <div className="lp-sp-mod-grid">
+                {[
+                  {title:'Concrete examples',badge:'Weakest',bc:'weak',pct:38,bg:'#FF4D6A',desc:'Anchor every answer with a specific number, outcome, or named result.',sessions:'3 sessions · unlocked · start today',active:true},
+                  {title:'STAR structure',badge:'Gap',bc:'weak',pct:44,bg:'#FFD233',desc:'Situation · Task · Action · Result — every behavioral answer follows this arc.',sessions:'2 sessions · unlocks after concrete examples clears 70'},
+                  {title:'Clarity + delivery',badge:'Good',bc:'ok',pct:72,bg:'#00E5A0',desc:'Maintenance sessions only — 1 drill/week to hold your score above 70.',sessions:'1 maintenance session/week'},
+                  {title:'Salary negotiation roleplay',badge:'Locked',bc:'locked',pct:0,bg:'var(--lp-bdr)',desc:'Live AI roleplay · market data · pre-built scripts. Unlocks at readiness 75+.',sessions:'Unlocks when readiness reaches 75',locked:true},
+                ].map((m,i)=>(
+                  <div key={i} className={`lp-sp-mod${m.active?' sp-active':''}${m.locked?' sp-locked':''}`}>
+                    <div className="lp-sp-mod-hd">
+                      <span className="lp-sp-mod-title">{m.title}</span>
+                      <span className={`lp-sp-mod-badge sp-badge-${m.bc}`}>{m.badge}</span>
+                    </div>
+                    <div className="lp-sp-bar-bg"><div className="lp-sp-bar" style={{width:m.pct+'%',background:m.bg}}/></div>
+                    <div className="lp-sp-mod-desc">{m.desc}</div>
+                    <div className="lp-sp-mod-sessions">{m.sessions}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="lp-sp-upgrade-strip">
+                <div className="lp-sp-upgrade-text"><strong>Get Ready · Pro — $24.99/month</strong> · This plan re-scores every 7 days. Once you hit 80+ on all 5 dimensions, we generate your shareable Readiness Certificate.</div>
+                <button className="lp-sp-upgrade-btn" onClick={onClose}>Upgrade to Pro ✦</button>
+              </div>
+            </div>
+          )}
+
+          {tab === 'modules' && (
+            <div>
+              <div className="lp-sp-section-lbl">Get Ready modules — AI-sequenced for you</div>
+              <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                {[
+                  {n:'1',title:'Concrete examples drill',badge:'Active — session 1/3',bc:'weak',pct:38,bg:'#FF4D6A',desc:"You'll practice 6 behavioral questions. For each, AI coaches you to replace vague language with a specific number, outcome, or named result. Score must reach 70 before module 2 unlocks.",active:true},
+                  {n:'2',title:'STAR structure mastery',badge:'Unlocks after module 1',bc:'',pct:44,bg:'#FFD233',desc:'2-session deep dive on Situation, Task, Action, Result framing. AI gives real-time feedback on each section of your answer.'},
+                  {n:'3',title:'Clarity + filler word reduction',badge:'Maintenance',bc:'ok',pct:72,bg:'#00E5A0',desc:'You\'re already strong here. 1 drill per week keeps you above 70. AI tracks "um", "like", and hedging language across every session.'},
+                  {n:'4',title:'Salary negotiation roleplay',badge:'Premium · locked',bc:'locked',pct:0,bg:'var(--lp-bdr)',desc:'AI plays the hiring manager. Practice counter-offer language with live Singapore market data for your target role. Most users gain SGD 800–1,200/month after 3 sessions.',locked:true},
+                  {n:'5',title:'Weakness framing',badge:'Premium · locked',bc:'locked',pct:0,bg:'var(--lp-bdr)',desc:'The most-failed question type. Pre-built frameworks, AI scores your framing, practice until it sounds natural — not rehearsed.',locked:true},
+                ].map((m,i)=>(
+                  <div key={i} className={`lp-sp-mod${m.active?' sp-active':''}${m.locked?' sp-locked':''}`} style={{borderRadius:'var(--lp-r)'}}>
+                    <div className="lp-sp-mod-hd">
+                      <span className="lp-sp-mod-title">{m.n} · {m.title}</span>
+                      <span className={`lp-sp-mod-badge${m.bc?' sp-badge-'+m.bc:''}`} style={!m.bc?{background:'var(--lp-bg5)',color:'var(--lp-text3)'}:{}}>{m.badge}</span>
+                    </div>
+                    <div className="lp-sp-bar-bg"><div className="lp-sp-bar" style={{width:m.pct+'%',background:m.bg}}/></div>
+                    <div className="lp-sp-mod-desc">{m.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab === 'readiness' && (
+            <div>
+              <div className="lp-sp-section-lbl">Readiness breakdown — Senior Product Manager · Singapore</div>
+              <div style={{marginBottom:18}}>
+                {[
+                  {label:'Concrete examples',pct:38,color:'#FF4D6A'},
+                  {label:'STAR structure',pct:44,color:'#FFD233'},
+                  {label:'Clarity',pct:72,color:'#00E5A0'},
+                  {label:'Role knowledge',pct:84,color:'#00E5A0'},
+                  {label:'Answer relevance',pct:68,color:'#00D4FF'},
+                ].map((r,i)=>(
+                  <div key={i} className="lp-sp-rb-row">
+                    <div className="lp-sp-rb-lbl">{r.label}</div>
+                    <div className="lp-sp-rb-bg"><div className="lp-sp-rb-fill" style={{width:r.pct+'%',background:r.color}}/></div>
+                    <div className="lp-sp-rb-pct" style={{color:r.color}}>{r.pct}%</div>
+                  </div>
+                ))}
+              </div>
+              <div className="lp-sp-coach" style={{marginBottom:20}}>
+                <div className="lp-sp-coach-av">AI</div>
+                <div className="lp-sp-coach-text"><strong>Overall readiness: 61/100.</strong> You need 80+ on all 5 dimensions to unlock your Readiness Certificate. Your two critical gaps — concrete examples (38) and STAR structure (44) — are both fixable with focused practice. At 1 session per day, you reach 80+ in approximately <strong>9 days.</strong></div>
+              </div>
+              <div className="lp-sp-gate">
+                <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'var(--lp-text3)',marginBottom:8}}>Readiness certificate unlocks at</div>
+                <div className="lp-sp-gate-num">80 / 100</div>
+                <div className="lp-sp-gate-lbl">across all 5 dimensions</div>
+                <div className="lp-sp-gate-sub">Shareable with employers · proves genuine interview preparation</div>
+              </div>
+              <div className="lp-sp-upgrade-strip">
+                <div className="lp-sp-upgrade-text"><strong>Pro plan includes</strong> — plan re-scored every 7 days, readiness certificate at 80+, and salary negotiation modules that unlock as you progress.</div>
+                <button className="lp-sp-upgrade-btn" onClick={onClose}>Unlock Get Ready — $24.99/mo ✦</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── SAMPLE REPORT MODAL ───────────────────────────────────────────────────────
+
+function SampleReportModal({ onClose }) {
+  return (
+    <div className="lp-modal-overlay" onClick={onClose}>
+      <div className="lp-modal-box" onClick={e => e.stopPropagation()}>
+        <div className="lp-modal-hd">
+          <div className="lp-modal-title">Sample ATS Report — Senior Product Manager</div>
+          <button className="lp-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="lp-modal-body">
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',background:'var(--lp-amber-dim)',border:'1px solid var(--lp-amber-b)',borderRadius:'var(--lp-rs)',marginBottom:20,fontSize:11,color:'var(--lp-amber)'}}>
+            <span>👁</span><strong>Demo mode</strong> — real analysis from an anonymised beta user. Your report will be personalised to your actual resume.
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:16,padding:16,background:'var(--lp-bg3)',borderRadius:'var(--lp-r)',border:'1px solid var(--lp-bdr)',marginBottom:16}}>
+            <div style={{textAlign:'center',flexShrink:0}}>
+              <div style={{fontSize:44,fontWeight:800,color:'var(--lp-amber)',fontFamily:'var(--lp-ffm)',letterSpacing:-1.5,lineHeight:1}}>74%</div>
+              <div style={{fontSize:10,color:'var(--lp-text3)',marginTop:3}}>ATS Match</div>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:700,color:'var(--lp-amber)',marginBottom:6}}>3 gaps found — fixing them could push to 91%+</div>
+              <div style={{height:6,borderRadius:3,background:'var(--lp-bg4)',overflow:'hidden',marginBottom:8}}><div style={{width:'74%',height:'100%',background:'var(--lp-amber)',borderRadius:3}}/></div>
+              <div style={{fontSize:11,color:'var(--lp-text2)'}}>Passing 5 of 8 ATS filters. Three critical keywords missing.</div>
+            </div>
+          </div>
+          <div style={{marginBottom:14}}>
+            <div style={{fontSize:11,fontWeight:700,color:'var(--lp-text3)',textTransform:'uppercase',letterSpacing:'.07em',marginBottom:10}}>Findings — grouped by severity</div>
+            <div style={{padding:'12px 14px',background:'var(--lp-red-dim)',border:'1px solid rgba(255,107,107,.2)',borderRadius:'var(--lp-rs)',marginBottom:8}}>
+              <div style={{fontSize:11,fontWeight:700,color:'var(--lp-red)',marginBottom:5}}>High — Missing critical keywords</div>
+              <div style={{fontSize:12,color:'var(--lp-text2)',marginBottom:8}}>These appear in 78% of Senior PM job descriptions but are absent from this resume.</div>
+              <div><span className="mk-tag x">OKR framework</span><span className="mk-tag x">go-to-market</span></div>
+            </div>
+            <div style={{padding:'12px 14px',background:'var(--lp-amber-dim)',border:'1px solid var(--lp-amber-b)',borderRadius:'var(--lp-rs)',marginBottom:8}}>
+              <div style={{fontSize:11,fontWeight:700,color:'var(--lp-amber)',marginBottom:5}}>Medium — Weak impact language</div>
+              <div style={{fontSize:12,color:'var(--lp-text2)'}}>3 bullets use passive voice. ATS and recruiters favour active, quantified verbs.</div>
+            </div>
+            <div style={{padding:'12px 14px',background:'var(--lp-teal-dim)',border:'1px solid var(--lp-teal-b)',borderRadius:'var(--lp-rs)'}}>
+              <div style={{fontSize:11,fontWeight:700,color:'var(--lp-teal)',marginBottom:5}}>Passing — Strong keywords found</div>
+              <div><span className="mk-tag m">product strategy</span><span className="mk-tag m">roadmap</span><span className="mk-tag m">agile</span><span className="mk-tag m">data-driven</span></div>
+            </div>
+          </div>
+          <div style={{marginBottom:16}}>
+            <div style={{fontSize:11,fontWeight:700,color:'var(--lp-text3)',textTransform:'uppercase',letterSpacing:'.07em',marginBottom:8}}>Before → After — one bullet rewritten</div>
+            <div className="lp-ats-diff-row">
+              <div className="lp-ats-diff-panel before"><div className="lp-ats-diff-lbl">Before</div><div className="lp-ats-diff-text">Helped drive product roadmap for checkout feature, working with engineering team.</div></div>
+              <div className="lp-ats-diff-arrow">→</div>
+              <div className="lp-ats-diff-panel after"><div className="lp-ats-diff-lbl">After</div><div className="lp-ats-diff-text">Spearheaded go-to-market strategy for checkout redesign, applying OKR framework to reduce abandonment 34% with 8-person engineering team.</div></div>
+            </div>
+          </div>
+          <div style={{padding:16,background:'var(--lp-teal-dim)',border:'1px solid var(--lp-teal-b)',borderRadius:'var(--lp-r)'}}>
+            <div style={{fontSize:13,fontWeight:700,color:'var(--lp-teal)',marginBottom:4}}>Your real report is personalised to your resume and target role.</div>
+            <div style={{fontSize:12,color:'var(--lp-text2)',marginBottom:14}}>Paste your resume snippet above to see your actual ATS score, specific gaps, and line-by-line rewrites.</div>
+            <button className="lp-sp-start-btn" onClick={onClose}>Get my real score — free</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── PRIVACY MODAL ─────────────────────────────────────────────────────────────
+
+function PrivacyModal({ onClose }) {
+  return (
+    <div className="lp-modal-overlay" onClick={onClose}>
+      <div className="lp-modal-box" onClick={e => e.stopPropagation()}>
+        <div className="lp-modal-hd">
+          <div className="lp-modal-title">Privacy Policy — CareerAiHub</div>
+          <button className="lp-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="lp-modal-body">
+          <div className="lp-legal-content">
+            <p style={{fontSize:11,color:'var(--lp-text3)',marginBottom:16}}>Last updated: April 2026 · CareerAiHub Pte. Ltd. · Singapore</p>
+            <h3>1. What data we collect</h3>
+            <p>We collect your resume file (PDF or DOCX), your email address when you create an account, and your usage data within the platform (modules used, scores generated, sessions completed). We do not collect payment card data directly — this is handled by our payment processor.</p>
+            <h3>2. How we use your data</h3>
+            <p>Your resume is used solely to power your CareerAiHub modules — ATS scoring, cover letter generation, interview coaching, and salary benchmarking. It is never shared with recruiters, employers, or third-party advertisers without your explicit consent.</p>
+            <h3>3. Data storage and security</h3>
+            <p>All data is encrypted at rest (AES-256) and in transit (TLS 1.3). Your resume is stored on secure cloud infrastructure in Singapore. We conduct regular security audits and access is restricted to essential engineering staff only.</p>
+            <h3>4. Your rights (PDPA)</h3>
+            <ul>
+              <li>Access your personal data at any time from your account settings</li>
+              <li>Request correction of inaccurate data</li>
+              <li>Request deletion of your data — processed within 24 hours</li>
+              <li>Withdraw consent for data processing at any time</li>
+            </ul>
+            <h3>5. Cookies</h3>
+            <p>We use essential cookies for session management and optional analytics cookies (Google Analytics 4) to understand platform usage. You can decline optional cookies via the consent banner.</p>
+            <h3>6. Contact</h3>
+            <p>For any privacy questions: privacy@careeraihub.com · CareerAiHub Pte. Ltd. · Singapore</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── TERMS OF SERVICE MODAL ────────────────────────────────────────────────────
+
+function ToSModal({ onClose }) {
+  return (
+    <div className="lp-modal-overlay" onClick={onClose}>
+      <div className="lp-modal-box" onClick={e => e.stopPropagation()}>
+        <div className="lp-modal-hd">
+          <div className="lp-modal-title">Terms of Service — CareerAiHub</div>
+          <button className="lp-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="lp-modal-body">
+          <div className="lp-legal-content">
+            <p style={{fontSize:11,color:'var(--lp-text3)',marginBottom:16}}>Last updated: April 2026 · CareerAiHub Pte. Ltd. · Singapore</p>
+            <h3>1. Acceptance of terms</h3>
+            <p>By using CareerAiHub, you agree to these Terms of Service. If you do not agree, please do not use the platform.</p>
+            <h3>2. Service description</h3>
+            <p>CareerAiHub provides AI-powered career tools including resume scanning, ATS scoring, mock interview coaching, salary benchmarking, and related services. Features marked "Building next" or "Planned" are roadmap items and not currently available.</p>
+            <h3>3. User obligations</h3>
+            <ul>
+              <li>You must be 18 years or older to use the platform</li>
+              <li>You may only upload resumes and documents you have the right to share</li>
+              <li>You may not use the platform for any unlawful purpose</li>
+              <li>You may not attempt to reverse-engineer or copy the platform</li>
+            </ul>
+            <h3>4. Subscription and billing</h3>
+            <p>Premium subscriptions are billed monthly at $19 USD (Premium) or $24.99 USD (Pro · Get Ready), or annually at $180 USD / $239 USD respectively. You may cancel at any time. Refunds are available within 7 days of initial purchase if you are unsatisfied.</p>
+            <h3>5. Limitation of liability</h3>
+            <p>CareerAiHub provides career guidance tools, not guaranteed employment outcomes. AI-generated scores and suggestions are for informational purposes. We are not liable for employment decisions made by third parties.</p>
+            <h3>6. Governing law</h3>
+            <p>These terms are governed by the laws of Singapore. Disputes shall be resolved in Singapore courts.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── COOKIE BANNER ─────────────────────────────────────────────────────────────
+
+function CookieBanner({ onPrivacy, onTerms }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!localStorage.getItem('lp_cookie_consent')) setVisible(true);
+  }, []);
+  if (!visible) return null;
+  const accept = () => { localStorage.setItem('lp_cookie_consent', '1'); setVisible(false); };
+  const decline = () => { localStorage.setItem('lp_cookie_consent', 'declined'); setVisible(false); };
+  return (
+    <div className="lp-cookie-banner show">
+      <div className="lp-cookie-text">
+        We use cookies to improve your experience and analyze platform usage. Your resume data is encrypted and never sold.{' '}
+        <button onClick={onPrivacy}>Privacy Policy</button> · <button onClick={onTerms}>Terms of Service</button>
+      </div>
+      <button className="lp-cookie-decline" onClick={decline}>Decline optional</button>
+      <button className="lp-cookie-accept" onClick={accept}>Accept &amp; continue</button>
+    </div>
+  );
+}
+
 // ── SNACK ─────────────────────────────────────────────────────────────────────
 
 function SuccessSnack({ msg, visible }) {
@@ -1927,13 +3090,25 @@ function SuccessSnack({ msg, visible }) {
 
 export default function LandingPage({ setAuthModal, onModuleSelect }) {
   const [activePill, setActivePill] = useState(0);
+  const [featModalOpen, setFeatModalOpen] = useState(false);
+  const [featModalTab, setFeatModalTab] = useState(0);
   const [trackerOpen, setTrackerOpen] = useState(false);
   const [coverLetterOpen, setCoverLetterOpen] = useState(false);
+  const [studyPlanOpen, setStudyPlanOpen] = useState(false);
+  const [sampleReportOpen, setSampleReportOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [tosOpen, setTosOpen] = useState(false);
+  const [lightMode, setLightMode] = useState(false);
   const [snack, setSnack] = useState({ msg: '', visible: false });
   const [navScrolled, setNavScrolled] = useState(false);
   const [scrollPct, setScrollPct] = useState(0);
   const rootRef = useRef(null);
   useScrollReveal(rootRef);
+
+  useEffect(() => {
+    document.body.classList.toggle('lp-light', lightMode);
+    return () => document.body.classList.remove('lp-light');
+  }, [lightMode]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -1945,32 +3120,6 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    const SECTIONS = [
-      { id: 'feat-sec', cls: null },
-    ];
-    const featEl = document.getElementById('feat-sec');
-    if (!featEl) return;
-    const ftabs = featEl.querySelectorAll('.ftab');
-    const scanIndex = 1;
-    const simulateIndex = 5;
-    const themeMap = { [scanIndex]: 'theme-cyan', [simulateIndex]: 'theme-purple' };
-    const applyTheme = (cls) => {
-      document.documentElement.classList.remove('theme-cyan', 'theme-purple');
-      if (cls) document.documentElement.classList.add(cls);
-    };
-    const io = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) { applyTheme(null); }
-    }, { threshold: 0.05 });
-    if (featEl) io.observe(featEl);
-    const handleFtabClick = (i) => applyTheme(themeMap[i] || null);
-    ftabs.forEach((btn, i) => btn.addEventListener('click', () => handleFtabClick(i)));
-    return () => {
-      io.disconnect();
-      ftabs.forEach((btn, i) => btn.removeEventListener('click', () => handleFtabClick(i)));
-      applyTheme(null);
-    };
-  }, []);
 
   const showSnack = (msg) => {
     setSnack({ msg, visible: true });
@@ -1993,12 +3142,12 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
         <div className="lp-amb-orb a1" /><div className="lp-amb-orb a2" /><div className="lp-amb-orb a3" />
       </div>
 
-      <NavBar onSignIn={onSignIn} onJoin={onJoin} scrolled={navScrolled} />
-      <TransitBanner />
-      <HubNav onModuleSelect={onModuleSelect} onTrackerOpen={() => setTrackerOpen(true)} />
-      <TickerBar />
+      <NavBar onSignIn={onSignIn} onJoin={onJoin} scrolled={navScrolled} lightMode={lightMode} onToggleLightMode={() => setLightMode(lm => !lm)} />
+      <HubNav onModuleSelect={onModuleSelect} onTrackerOpen={() => setTrackerOpen(true)} onGetReady={() => setStudyPlanOpen(true)} onFeatModal={(tab) => { setFeatModalTab(tab ?? 0); setFeatModalOpen(true); }} />
 
       <HeroSection onJoin={onJoin} onModuleSelect={onModuleSelect} onTrackerOpen={() => setTrackerOpen(true)} onSnack={showSnack} onAgenticCta={() => setCoverLetterOpen(true)} />
+
+      <FunnelStrip />
 
       <div className="sec-divider" />
 
@@ -2006,11 +3155,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
 
       <div className="sec-divider" />
 
-      <HowItWorksSection onJoin={onJoin} />
-
-      <div className="sec-divider" />
-
-      <FeatureSection onJoin={onJoin} activePill={activePill} onModuleSelect={onModuleSelect} />
+      <HowItWorksSection onJoin={onJoin} onSampleReport={() => setSampleReportOpen(true)} />
 
       <div className="sec-divider" />
 
@@ -2018,11 +3163,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
 
       <div className="sec-divider" />
 
-      <PricingSection onJoin={onJoin} />
-
-      <div className="sec-divider" />
-
-      <CompareSection />
+      <PricingSection onJoin={onJoin} onGetReady={() => setStudyPlanOpen(true)} />
 
       <div className="sec-divider" />
 
@@ -2030,16 +3171,38 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
 
       <div className="sec-divider" />
 
-      <TrustSection />
+      <TrustSection onPrivacy={() => setPrivacyOpen(true)} onTerms={() => setTosOpen(true)} />
 
       <div className="sec-divider" />
 
       <GrowthSection onJoin={onJoin} />
 
-      <FooterSection onJoin={onJoin} />
+      <FooterSection onJoin={onJoin} onPrivacy={() => setPrivacyOpen(true)} onTerms={() => setTosOpen(true)} />
 
       {trackerOpen && <TrackerOverlay onClose={() => setTrackerOpen(false)} onSnack={showSnack} />}
       {coverLetterOpen && <CoverLetterModal onClose={() => setCoverLetterOpen(false)} />}
+      {studyPlanOpen && <StudyPlanModal onClose={() => setStudyPlanOpen(false)} />}
+      {sampleReportOpen && <SampleReportModal onClose={() => setSampleReportOpen(false)} />}
+      {privacyOpen && <PrivacyModal onClose={() => setPrivacyOpen(false)} />}
+      {tosOpen && <ToSModal onClose={() => setTosOpen(false)} />}
+      {featModalOpen && (
+        <div style={{ position:'fixed', inset:0, zIndex:2000, background:'rgba(9,12,18,.92)', backdropFilter:'blur(10px)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 24px', borderBottom:'1px solid rgba(255,255,255,.08)', flexShrink:0 }}>
+            <div style={{ fontSize:12, fontWeight:700, color:'var(--lp-teal)', textTransform:'uppercase', letterSpacing:'.08em' }}>Every tool, explored</div>
+            <button onClick={() => setFeatModalOpen(false)} style={{ background:'none', border:'1px solid rgba(255,255,255,.1)', color:'var(--lp-text2)', cursor:'pointer', borderRadius:6, padding:'5px 14px', fontSize:12, fontFamily:'var(--lp-ff)' }}>✕ Close</button>
+          </div>
+          <div style={{ flex:1, overflow:'auto' }}>
+            <FeatureSection onJoin={onJoin} activePill={featModalTab} onModuleSelect={(id) => { onModuleSelect?.(id); setFeatModalOpen(false); }} />
+          </div>
+        </div>
+      )}
+      <CookieBanner onPrivacy={() => { setPrivacyOpen(true); }} onTerms={() => { setTosOpen(true); }} />
+      <button className="lp-get-ready-float" onClick={() => setStudyPlanOpen(true)}>
+        <span className="lp-float-dot" />✦ Get Ready
+      </button>
+      <button className="lp-feedback-btn" onClick={() => { window.open('mailto:feedback@careeraihub.com?subject=CareerAiHub%20Feedback&body=Hi%2C%0A%0AFeedback%3A%0A%0A'); }}>
+        💬 Send feedback
+      </button>
       <SuccessSnack msg={snack.msg} visible={snack.visible} />
     </div>
   );
