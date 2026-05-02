@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './landing.css';
 import { OrbitMark } from '../../components/OrbitMark';
+import { l1Html, l1HtmlHeight, l2Html, l2HtmlHeight, l3Html, l3HtmlHeight, l4Html, l4HtmlHeight } from './demoHtml';
 
 // ── DATA ─────────────────────────────────────────────────────────────────────
 
@@ -121,7 +122,7 @@ const LAYER_DATA = [
     status: 'live', ey: 'Layer 02 — Live now', panelTitle: 'Interview + salary preparation',
     desc: "AI coaches that know your resume, your target role, and every past session. The mock interview knows which role you're targeting. HM Simulator pressure-tests your answers. Salary coach knows your market level.",
     cta: 'See How It Works →', ctaCls: 'cta-t',
-    bg: 'var(--lp-teal-dim)', eyC: 'var(--lp-teal)', borderC: 'var(--lp-teal-b2)',
+    bg: 'var(--lp-violet-dim)', eyC: 'var(--lp-violet)', borderC: 'var(--lp-violet-b)',
     mods: [
       { n: 'Mock interviews', d: 'Role-specific question sets. AI scoring and feedback. Tracks improvement across sessions.' },
       { n: 'HM simulator', d: 'Simulates a hiring manager. Pressure-tests your answers. Knows your experience from memory.' },
@@ -140,7 +141,7 @@ const LAYER_DATA = [
     cta: 'See Demo →', ctaCls: 'cta-a',
     bg: 'var(--lp-amber-dim)', eyC: 'var(--lp-amber)', borderC: 'var(--lp-amber-b)',
     mods: [
-      { n: 'School partnerships', d: "Institutional onboarding via Dr. Lilian Koh's network. Free student access via MOU." },
+      { n: 'School partnerships', d: "University partnerships with free student access via MOU. Institutions issue credentials directly onto your profile." },
       { n: 'Credential verify', d: 'Blockchain-backed degree and certification verification. Green verified badge on profile.' },
       { n: 'Skills assessment', d: 'Verified skills tests linked to credential. Displayed on profile. Recruiter-searchable.' },
     ],
@@ -725,6 +726,17 @@ function SearchCard({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgenticC
   const [atsMap, setAtsMap] = useState({});
   const [ms1, setMs1] = useState(306);
   const [appCount, setAppCount] = useState(0);
+  const [liveCount, setLiveCount] = useState(512);
+
+  useEffect(() => {
+    let v = 512, dir = 1;
+    const t = setInterval(() => {
+      const delta = Math.floor(Math.random() * 3) + 1;
+      v += dir * delta; if (v >= 750) dir = -1; if (v <= 480) dir = 1;
+      setLiveCount(v);
+    }, 3800);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     const refresh = () => {
@@ -865,6 +877,10 @@ function SearchCard({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgenticC
             <div className="ms-top"><span className="ms-val">+18%</span><span className="ms-live">↑ YoY</span></div>
             <span className="ms-lbl">hiring velocity</span>
           </div>
+        </div>
+        <div className="sc-live-bar">
+          <span className="sc-live-dot" />
+          <span className="sc-live-text"><strong>{liveCount.toLocaleString()}</strong> job seekers active · <strong>2,400+</strong> resumes analyzed</span>
         </div>
         <div className="search-body">
           <div className="fg2">
@@ -1278,19 +1294,8 @@ function AtsDemoSection({ onJoin }) {
 
 function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgenticCta }) {
   const text = useTypewriter(TYPEWRITER_PHRASES);
-  const [liveCount, setLiveCount] = useState(512);
   const [statsStarted, setStatsStarted] = useState(false);
   const statsRef = useRef(null);
-
-  useEffect(() => {
-    let v = 512, dir = 1;
-    const t = setInterval(() => {
-      const delta = Math.floor(Math.random() * 3) + 1;
-      v += dir * delta; if (v >= 750) dir = -1; if (v <= 480) dir = 1;
-      setLiveCount(v);
-    }, 3800);
-    return () => clearInterval(t);
-  }, []);
 
   useEffect(() => {
     const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setStatsStarted(true); io.disconnect(); } }, { threshold: 0.2 });
@@ -1325,19 +1330,6 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
                 <div className="hf-stat-n"><span className="hf-acc">5×</span></div>
                 <div className="hf-stat-l">faster job search<br />with AI memory</div>
               </div>
-            </div>
-            <div className="hf-free">
-              <div className="hf-free-label">No account needed to start</div>
-              <div className="hf-free-items">
-                <div className="hf-free-item"><span className="hf-free-icon">🔍</span><span className="hf-free-text">Job search</span><span className="hf-free-badge">Free</span></div>
-                <div className="hf-free-item"><span className="hf-free-icon">📊</span><span className="hf-free-text">Market intel</span><span className="hf-free-badge">Free</span></div>
-                <div className="hf-free-item"><span className="hf-free-icon">💰</span><span className="hf-free-text">Salary data</span><span className="hf-free-badge">Free</span></div>
-              </div>
-            </div>
-            <div className="hf-live">
-              <span className="hf-live-dot" />
-              <span className="hf-live-text"><strong>{liveCount.toLocaleString()}</strong> job seekers active · <strong>2,400+</strong> resumes analyzed</span>
-              <span className="hf-live-badge">Live</span>
             </div>
             <div className="stats-card" ref={statsRef} style={{ marginTop:14 }}>
               <div className="stats-card-hd">📊 Why job seekers use CareerAiHub</div>
@@ -1385,7 +1377,7 @@ function DemoShell({ label, accent, borderC, onClose, onNext, children }) {
           <button onClick={onClose} style={{ background:'none', border:'none', color:DS.text3, cursor:'pointer', fontSize:11, fontFamily:'var(--lp-ffm)' }}>✕ Close</button>
         </div>
       </div>
-      <div style={{ background:DS.bg, color:DS.text, fontFamily:'DM Sans, sans-serif', fontSize:13, overflow:'auto', maxHeight:640 }}>
+      <div style={{ background:DS.bg, color:DS.text, fontFamily:'DM Sans, sans-serif', fontSize:13 }}>
         {children}
       </div>
     </div>
@@ -1393,501 +1385,33 @@ function DemoShell({ label, accent, borderC, onClose, onNext, children }) {
 }
 
 function L1DemoPanel({ onClose, onNext }) {
-  const colStyle = { display:'flex', flexDirection:'column', borderRight:`1px solid ${DS.bdr}`, overflow:'hidden', minWidth:0 };
-  const hdStyle = { padding:'10px 14px', borderBottom:`1px solid ${DS.bdr}`, flexShrink:0 };
-  const bodyStyle = { flex:1, overflowY:'auto', padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 };
-  const lbl = { fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:4 };
   return (
     <DemoShell label="LAYER 01 — RESUME CREATION · LIVE DEMO" accent={DS.teal} borderC={DS.tb} onClose={onClose} onNext={onNext}>
-      {/* topbar */}
-      <div style={{ height:44, background:'rgba(9,9,13,0.96)', borderBottom:`1px solid ${DS.bdr}`, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', flexShrink:0 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <span style={{ fontFamily:'Syne,sans-serif', fontSize:14, fontWeight:700 }}>CareerAiHub</span>
-          <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'3px 10px', borderRadius:20, background:DS.tdim, color:DS.teal, border:`1px solid ${DS.tb}`, display:'flex', alignItems:'center', gap:5 }}>
-            <span style={{ width:5, height:5, borderRadius:'50%', background:DS.teal, boxShadow:`0 0 6px ${DS.teal}` }} />LAYER 01 — RESUME CREATION
-          </span>
-        </div>
-        <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-          <span style={{ fontSize:10, fontFamily:'JetBrains Mono,monospace', padding:'4px 12px', borderRadius:6, background:DS.s2, border:`1px solid ${DS.bdr2}`, color:DS.text2 }}>ATS Score <span style={{ color:DS.cyan }}>78%</span></span>
-          <button style={{ padding:'5px 14px', borderRadius:6, fontSize:11, fontWeight:600, background:DS.teal, color:'#000', border:'none', cursor:'pointer' }}>Export →</button>
-        </div>
-      </div>
-      {/* 3-col */}
-      <div style={{ display:'grid', gridTemplateColumns:'210px 1fr 230px', height:540, overflow:'hidden' }}>
-        {/* LEFT: Cover Letter */}
-        <div style={colStyle}>
-          <div style={hdStyle}><div style={{ fontFamily:'Syne,sans-serif', fontSize:12, fontWeight:700 }}>Cover Letter</div><div style={{ fontSize:9, color:DS.text2, fontFamily:'JetBrains Mono,monospace' }}>Auto-generated · AI Co-pilot</div></div>
-          <div style={bodyStyle}>
-            <div><div style={lbl}>Tone Control</div>
-              <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                <span style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.text3 }}>Formal</span>
-                <div style={{ flex:1, height:4, background:DS.s3, borderRadius:4, position:'relative' }}>
-                  <div style={{ position:'absolute', top:-5, left:'35%', width:14, height:14, borderRadius:'50%', background:DS.teal, boxShadow:`0 0 8px ${DS.teal}` }} />
-                </div>
-                <span style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.text3 }}>Direct</span>
-              </div>
-              <div style={{ textAlign:'center', fontSize:9, color:DS.teal, fontFamily:'JetBrains Mono,monospace', marginTop:2 }}>Professional</div>
-            </div>
-            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, padding:'10px 12px', fontSize:11, lineHeight:1.8, color:DS.text2 }}>
-              <p style={{ marginBottom:6 }}>Dear Hiring Manager,</p>
-              <p style={{ marginBottom:6 }}>I am writing to express my strong interest in the <strong style={{ color:DS.teal }}>Senior AI Engineer</strong> position. With five years building large-scale ML systems, I've reduced inference latency by <span style={{ color:DS.cyan }}>40%</span> while maintaining &gt;99.9% uptime.</p>
-              <span style={{ display:'inline-block', width:6, height:12, background:DS.teal, animation:'blink 1s step-end infinite', verticalAlign:'middle' }} />
-            </div>
-            <div><div style={lbl}>Templates</div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:4 }}>
-                {[['🗂','Executive',true],['⚡','Modern',false],['🎯','Minimal',false],['📐','Classic',false]].map(([ic,nm,act])=>(
-                  <div key={nm} style={{ background:act?DS.tdim:DS.s2, border:`1px solid ${act?DS.teal:DS.bdr}`, borderRadius:6, padding:'6px 8px', textAlign:'center', cursor:'pointer' }}>
-                    <div style={{ fontSize:14 }}>{ic}</div><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:act?DS.teal:DS.text2 }}>{nm}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div><div style={lbl}>Export</div>
-              <div style={{ display:'flex', gap:6 }}>
-                <button style={{ flex:1, padding:7, borderRadius:6, fontSize:10, fontWeight:600, background:DS.rdim, color:DS.red, border:`1px solid rgba(255,95,110,0.25)`, cursor:'pointer', fontFamily:'JetBrains Mono,monospace' }}>📄 PDF</button>
-                <button style={{ flex:1, padding:7, borderRadius:6, fontSize:10, fontWeight:600, background:DS.cdim, color:DS.cyan, border:`1px solid ${DS.cb}`, cursor:'pointer', fontFamily:'JetBrains Mono,monospace' }}>📝 DOCX</button>
-              </div>
-            </div>
-            <div><div style={lbl}>Saved Versions</div>
-              <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
-                {[['Draft 5','Current',true],['Draft 4 · ATS 74%','',false],['Draft 3 · ATS 68%','',false]].map(([nm,tag,cur])=>(
-                  <div key={nm} style={{ display:'flex', alignItems:'center', gap:8, padding:'5px 8px', borderRadius:6, background:DS.s2, border:`1px solid ${cur?DS.teal:DS.bdr}`, cursor:'pointer' }}>
-                    <div style={{ width:6, height:6, borderRadius:'50%', background:cur?DS.teal:DS.text3, boxShadow:cur?`0 0 5px ${DS.teal}`:undefined }} />
-                    <span style={{ fontSize:10, fontFamily:'JetBrains Mono,monospace', color:cur?DS.teal:DS.text2, flex:1 }}>{nm}</span>
-                    {tag && <span style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', padding:'2px 6px', borderRadius:3, background:DS.tdim, color:DS.teal }}>{tag}</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* CENTER: Editor */}
-        <div style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
-          <div style={{ padding:'8px 16px', borderBottom:`1px solid ${DS.bdr}`, display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
-            {['✦ XYZ Mode','B','I','H1','H2','🔗 Link'].map((t,i)=>(
-              <span key={i} style={{ padding:'4px 10px', borderRadius:5, fontSize:10, fontFamily:'JetBrains Mono,monospace', background:i===0?DS.tdim:DS.s2, border:`1px solid ${i===0?DS.tb:DS.bdr}`, color:i===0?DS.teal:DS.text3, cursor:'pointer' }}>{t}</span>
-            ))}
-            <span style={{ marginLeft:'auto', fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3 }}>AI co-pilot active 🤖</span>
-          </div>
-          <div style={{ flex:1, overflowY:'auto', padding:'20px 24px', display:'flex', flexDirection:'column', gap:20 }}>
-            <div style={{ textAlign:'center' }}>
-              <div style={{ fontFamily:'Syne,sans-serif', fontSize:20, fontWeight:800 }}>Ivy Nguyen</div>
-              <div style={{ fontSize:10, color:DS.text2, fontFamily:'JetBrains Mono,monospace', marginTop:4 }}>ivy.nguyen@email.com · +65 9123 4567 · Singapore</div>
-            </div>
-            <div>
-              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-                <div style={{ fontFamily:'Syne,sans-serif', fontSize:11, fontWeight:700, color:DS.teal, textTransform:'uppercase', letterSpacing:'.1em' }}>Experience</div>
-                <div style={{ flex:1, height:1, background:DS.tb }} />
-              </div>
-              <div style={{ marginBottom:12 }}>
-                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-                  <span style={{ fontSize:12, fontWeight:600, fontFamily:'Syne,sans-serif' }}>Senior AI Engineer</span>
-                  <span style={{ fontSize:10, color:DS.text2, fontFamily:'JetBrains Mono,monospace' }}>2022 – Present</span>
-                </div>
-                <div style={{ fontSize:11, color:DS.text2, marginBottom:6 }}>DataCore · Singapore</div>
-                {[
-                  { text:'Reduced inference latency by 40% (X) while maintaining 99.9% uptime (Y) by quantizing transformer models and migrating to TensorRT (Z).', xyz:true },
-                  { text:'Architected RAG-based retrieval pipeline using LangChain + AWS Bedrock, reducing manual review time by 60%.', xyz:false },
-                ].map((b,i)=>(
-                  <div key={i} style={{ display:'flex', gap:8, alignItems:'flex-start', padding:'4px 8px', borderRadius:6, background:b.xyz?DS.tdim:'transparent', borderLeft:b.xyz?`2px solid ${DS.teal}`:'none', marginBottom:4 }}>
-                    <div style={{ width:4, height:4, borderRadius:'50%', background:b.xyz?DS.teal:DS.text3, marginTop:7, flexShrink:0 }} />
-                    <div style={{ fontSize:12, lineHeight:1.7, flex:1 }}>
-                      {b.text}
-                      {b.xyz && <><span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'1px 5px', borderRadius:3, background:'rgba(0,200,255,0.15)', color:DS.cyan, marginLeft:4 }}>X</span><span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'1px 5px', borderRadius:3, background:'rgba(0,229,160,0.15)', color:DS.green, marginLeft:2 }}>Y</span><span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'1px 5px', borderRadius:3, background:'rgba(245,200,66,0.15)', color:DS.gold, marginLeft:2 }}>Z</span></>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
-                <div style={{ fontFamily:'Syne,sans-serif', fontSize:11, fontWeight:700, color:DS.teal, textTransform:'uppercase', letterSpacing:'.1em' }}>Skills</div>
-                <div style={{ flex:1, height:1, background:DS.tb }} />
-              </div>
-              <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
-                {['PyTorch','TensorFlow','LangChain','AWS Bedrock','Python','SQL','RAG','MLOps'].map(s=>(
-                  <span key={s} style={{ padding:'3px 10px', borderRadius:20, fontSize:10, fontFamily:'JetBrains Mono,monospace', background:DS.tdim, color:DS.teal, border:`1px solid ${DS.tb}` }}>{s}</span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* RIGHT: ATS Copilot */}
-        <div style={{ display:'flex', flexDirection:'column', borderLeft:`1px solid ${DS.bdr}`, overflow:'hidden' }}>
-          <div style={hdStyle}><div style={{ fontFamily:'Syne,sans-serif', fontSize:12, fontWeight:700 }}>ATS Copilot</div><div style={{ fontSize:9, color:DS.text2, fontFamily:'JetBrains Mono,monospace' }}>Live scoring · Gap analysis</div></div>
-          <div style={bodyStyle}>
-            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:10, padding:14 }}>
-              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:8 }}>ATS Match Score</div>
-              <svg width="100" height="60" viewBox="0 0 120 70" style={{ overflow:'visible' }}>
-                <path d="M10 65 A55 55 0 0 1 110 65" fill="none" stroke={DS.s3} strokeWidth="10" strokeLinecap="round"/>
-                <path d="M10 65 A55 55 0 0 1 110 65" fill="none" stroke={DS.cyan} strokeWidth="10" strokeLinecap="round" strokeDasharray="173" strokeDashoffset="45" style={{ filter:`drop-shadow(0 0 6px ${DS.cyan})` }}/>
-                <text x="60" y="58" textAnchor="middle" fontFamily="Syne,sans-serif" fontSize="20" fontWeight="800" fill={DS.text}>78</text>
-                <text x="60" y="70" textAnchor="middle" fontFamily="JetBrains Mono,monospace" fontSize="9" fill={DS.text3}>/ 100</text>
-              </svg>
-            </div>
-            <div style={{ background:DS.rdim, border:`1px solid rgba(255,95,110,0.2)`, borderRadius:8, padding:'10px 12px' }}>
-              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.red, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6 }}>Missing Keywords</div>
-              <div style={{ display:'flex', flexWrap:'wrap', gap:4 }}>
-                {['OKR framework','growth metrics','A/B testing','SQL'].map(k=>(
-                  <span key={k} style={{ padding:'3px 9px', borderRadius:4, fontSize:9, fontFamily:'JetBrains Mono,monospace', background:'rgba(255,95,110,0.1)', color:DS.red, border:'1px solid rgba(255,95,110,0.2)', cursor:'pointer' }}>{k}</span>
-                ))}
-              </div>
-            </div>
-            <div style={{ background:DS.gdim, border:`1px solid ${DS.gb}`, borderRadius:8, padding:'10px 12px' }}>
-              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.green, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6 }}>Matched Keywords</div>
-              <div style={{ display:'flex', flexWrap:'wrap', gap:4 }}>
-                {['PyTorch','LangChain','RAG','AWS','system design'].map(k=>(
-                  <span key={k} style={{ padding:'3px 9px', borderRadius:4, fontSize:9, fontFamily:'JetBrains Mono,monospace', background:DS.gdim, color:DS.green, border:`1px solid ${DS.gb}` }}>{k}</span>
-                ))}
-              </div>
-            </div>
-            <div>
-              {[['Keyword match','78%',DS.cyan,78],['Format score','92%',DS.green,92],['XYZ coverage','65%',DS.gold,65]].map(([l,v,c,w])=>(
-                <div key={l} style={{ marginBottom:6 }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:10, fontFamily:'JetBrains Mono,monospace', color:DS.text2, marginBottom:3 }}>
-                    <span>{l}</span><span style={{ color:c }}>{v}</span>
-                  </div>
-                  <div style={{ height:3, background:DS.s3, borderRadius:3, overflow:'hidden' }}>
-                    <div style={{ height:'100%', width:`${w}%`, borderRadius:3, background:c }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <iframe srcdoc={l1Html} style={{ width:'100%', height:l1HtmlHeight, border:'none', display:'block', background:'#09090d' }} title="Layer 01 Resume Creation Demo" />
     </DemoShell>
   );
 }
 
 function L2DemoPanel({ onClose, onNext }) {
-  const [tab, setTab] = useState(0);
-  const tabStyle = (i) => ({ padding:'10px 18px', fontSize:11, fontFamily:'JetBrains Mono,monospace', color:tab===i?DS.cyan:DS.text3, cursor:'pointer', borderBottom:`2px solid ${tab===i?DS.cyan:'transparent'}`, background:'none', border_top:'none', border_left:'none', border_right:'none', borderBottomWidth:2, borderBottomStyle:'solid', borderBottomColor:tab===i?DS.cyan:'transparent', transition:'all .2s' });
   return (
     <DemoShell label="LAYER 02 — INTERVIEW + SALARY PREP · LIVE DEMO" accent={DS.cyan} borderC={DS.cb} onClose={onClose} onNext={onNext}>
-      <div style={{ height:44, background:'rgba(9,9,13,0.96)', borderBottom:`1px solid ${DS.bdr}`, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <span style={{ fontFamily:'Syne,sans-serif', fontSize:14, fontWeight:700 }}>CareerAiHub</span>
-          <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'3px 10px', borderRadius:20, background:DS.cdim, color:DS.cyan, border:`1px solid ${DS.cb}`, display:'flex', alignItems:'center', gap:5 }}>
-            <span style={{ width:5, height:5, borderRadius:'50%', background:DS.cyan, boxShadow:`0 0 6px ${DS.cyan}` }} />LAYER 02 — INTERVIEW + SALARY PREP
-          </span>
-        </div>
-        <button style={{ padding:'5px 14px', borderRadius:6, fontSize:11, fontWeight:600, background:DS.cyan, color:'#000', border:'none', cursor:'pointer' }}>Try Free →</button>
-      </div>
-      <div style={{ display:'flex', borderBottom:`1px solid ${DS.bdr}`, padding:'0 18px', background:DS.bg }}>
-        {[['🎯 Mock Interview',0],['🔥 HM Simulator',1],['💰 Salary Coach',2]].map(([l,i])=>(
-          <button key={i} onClick={()=>setTab(i)} style={{ ...tabStyle(i), background:'none', border:'none', borderBottom:`2px solid ${tab===i?DS.cyan:'transparent'}` }}>{l}</button>
-        ))}
-      </div>
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', height:500, overflow:'hidden' }}>
-        {/* Col 1: Mock Interview */}
-        <div style={{ display:'flex', flexDirection:'column', borderRight:`1px solid ${DS.bdr}`, overflow:'hidden' }}>
-          <div style={{ padding:'10px 16px', borderBottom:`1px solid ${DS.bdr}` }}>
-            <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em' }}>Module 1</div>
-            <div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700 }}>Mock Interviews</div>
-            <div style={{ fontSize:10, color:DS.text2 }}>Role-specific · AI-scored</div>
-          </div>
-          <div style={{ flex:1, overflowY:'auto', padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 }}>
-            <select style={{ width:'100%', padding:'7px 10px', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:7, color:DS.text, fontSize:11, fontFamily:'JetBrains Mono,monospace', outline:'none' }}>
-              <option>Senior AI Engineer</option><option>ML Research Scientist</option>
-            </select>
-            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:10, padding:12 }}>
-              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, marginBottom:5 }}>Question 2 of 8 · <span style={{ color:DS.cyan }}>Senior AI Engineer</span></div>
-              <div style={{ fontSize:12, lineHeight:1.7, marginBottom:10 }}>"Describe a time you optimised a production ML model for latency without sacrificing accuracy."</div>
-              <span style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'2px 8px', borderRadius:4, background:DS.cdim, color:DS.cyan, border:`1px solid ${DS.cb}` }}>🎯 Behavioural</span>
-            </div>
-            <div style={{ background:DS.gdim, border:`1px solid ${DS.gb}`, borderRadius:10, padding:12 }}>
-              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:8 }}>
-                <div><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.green }}>AI Score</div><div style={{ fontFamily:'Syne,sans-serif', fontSize:22, fontWeight:800, color:DS.green }}>88</div><div style={{ fontSize:9, color:DS.text3, fontFamily:'JetBrains Mono,monospace' }}>/ 100</div></div>
-                <div style={{ textAlign:'right' }}><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3 }}>Trend</div><div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700, color:DS.green }}>▲ +6</div></div>
-              </div>
-              {[['Clarity',90,DS.cyan],['Structure',88,DS.green],['Specificity',85,DS.teal],['Impact',80,DS.gold]].map(([l,v,c])=>(
-                <div key={l} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:4 }}>
-                  <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text2, width:70 }}>{l}</span>
-                  <div style={{ flex:1, height:3, background:DS.s3, borderRadius:3, overflow:'hidden' }}><div style={{ height:'100%', width:`${v}%`, background:c, boxShadow:`0 0 4px ${c}` }} /></div>
-                  <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text, width:28, textAlign:'right' }}>{v}</span>
-                </div>
-              ))}
-            </div>
-            <div>
-              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:5 }}>Question Bank</div>
-              {[['Tell me about yourself','green'],['ML model optimization','green'],['System design at scale','cyan'],['Handling ambiguity','text3'],['Salary expectations','text3']].map(([q,c])=>(
-                <div key={q} style={{ display:'flex', alignItems:'center', gap:8, padding:'6px 8px', borderRadius:7, background:DS.s2, border:`1px solid ${c==='cyan'?DS.cb:DS.bdr}`, fontSize:11, cursor:'pointer', marginBottom:4 }}>
-                  <div style={{ width:5, height:5, borderRadius:'50%', background:c==='green'?DS.green:c==='cyan'?DS.cyan:DS.text3, boxShadow:c==='cyan'?`0 0 4px ${DS.cyan}`:undefined, flexShrink:0 }} />{q}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        {/* Col 2: HM Simulator */}
-        <div style={{ display:'flex', flexDirection:'column', borderRight:`1px solid ${DS.bdr}`, overflow:'hidden' }}>
-          <div style={{ padding:'10px 16px', borderBottom:`1px solid ${DS.bdr}` }}>
-            <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em' }}>Module 2</div>
-            <div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700 }}>HM Simulator</div>
-            <div style={{ fontSize:10, color:DS.text2 }}>Pressure-test · Follow-up probes</div>
-          </div>
-          <div style={{ flex:1, overflowY:'auto', padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 }}>
-            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, padding:'9px 12px', fontSize:10, color:DS.text2, lineHeight:1.6 }}>
-              <strong style={{ color:DS.text }}>HM Context:</strong> Senior AI Engineer · Series B fintech · Team of 8. Resume loaded into AI memory.
-            </div>
-            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, padding:'10px 12px' }}>
-              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:5 }}>Pressure Level</div>
-              <div style={{ height:6, background:DS.s3, borderRadius:6, overflow:'hidden' }}><div style={{ height:'100%', width:'65%', borderRadius:6, background:`linear-gradient(90deg,${DS.green},${DS.gold},${DS.red})` }} /></div>
-              <div style={{ display:'flex', justifyContent:'space-between', fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, marginTop:3 }}><span>Warm-up</span><span>Moderate</span><span>Pressure</span></div>
-            </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-              <div style={{ maxWidth:'88%' }}>
-                <div style={{ background:DS.rdim, border:'1px solid rgba(255,95,110,0.2)', borderRadius:'10px 10px 10px 2px', padding:'9px 12px', fontSize:11, lineHeight:1.6 }}>
-                  <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.red, marginBottom:3 }}>HM Simulator</div>
-                  I reviewed your RAG pipeline work. You mentioned cutting review time by 60%. How exactly did you measure that, and who validated those numbers?
-                  <div><span style={{ display:'inline-flex', alignItems:'center', gap:4, fontSize:8, fontFamily:'JetBrains Mono,monospace', padding:'2px 7px', borderRadius:4, background:'rgba(255,95,110,0.15)', color:DS.red, border:'1px solid rgba(255,95,110,0.2)', marginTop:5 }}>🔥 Probing claim</span></div>
-                </div>
-              </div>
-              <div style={{ maxWidth:'88%', marginLeft:'auto' }}>
-                <div style={{ background:DS.cdim, border:`1px solid ${DS.cb}`, borderRadius:'10px 10px 2px 10px', padding:'9px 12px', fontSize:11, lineHeight:1.6 }}>
-                  <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.cyan, marginBottom:3, textAlign:'right' }}>You</div>
-                  We tracked ticket resolution time in Jira before and after deployment across 3 product teams over 6 weeks. PM and engineering lead signed off on the metric.
-                </div>
-              </div>
-              <div style={{ maxWidth:'88%' }}>
-                <div style={{ background:DS.rdim, border:'1px solid rgba(255,95,110,0.2)', borderRadius:'10px 10px 10px 2px', padding:'9px 12px', fontSize:11, lineHeight:1.6 }}>
-                  <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.red, marginBottom:3 }}>HM Simulator</div>
-                  Good. Now walk me through the architecture decision. Why LangChain over a custom solution?<span style={{ display:'inline-block', width:6, height:12, background:DS.red, animation:'blink 1s step-end infinite', verticalAlign:'middle', marginLeft:4 }} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Col 3: Salary Coach */}
-        <div style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
-          <div style={{ padding:'10px 16px', borderBottom:`1px solid ${DS.bdr}` }}>
-            <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em' }}>Module 3</div>
-            <div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700 }}>Salary Coach</div>
-            <div style={{ fontSize:10, color:DS.text2 }}>Benchmark · Negotiate · Win</div>
-          </div>
-          <div style={{ flex:1, overflowY:'auto', padding:'12px 14px', display:'flex', flexDirection:'column', gap:10 }}>
-            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:10, padding:14 }}>
-              <div style={{ fontSize:10, fontFamily:'JetBrains Mono,monospace', color:DS.text2, marginBottom:10 }}>Senior AI Engineer · Singapore market</div>
-              {[['Your Level','SGD 12K/mo',DS.cyan,82],['P75','SGD 14K/mo',DS.text3,100],['P25','SGD 9K/mo',DS.text3,62]].map(([l,v,c,w])=>(
-                <div key={l} style={{ display:'flex', alignItems:'center', gap:8, marginBottom:7 }}>
-                  <span style={{ fontSize:10, color:DS.text2, width:72, flexShrink:0, fontFamily:'JetBrains Mono,monospace' }}>{l}</span>
-                  <div style={{ flex:1, height:18, background:DS.s3, borderRadius:4, overflow:'hidden' }}>
-                    <div style={{ height:'100%', width:`${w}%`, background:c===DS.cyan?`linear-gradient(90deg,${DS.cyan},rgba(0,200,255,0.6))`:DS.s3, display:'flex', alignItems:'center', justifyContent:'flex-end', paddingRight:6, fontSize:9, fontFamily:'JetBrains Mono,monospace', color:c===DS.cyan?'#000':DS.text3, fontWeight:600 }}>{v}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ background:DS.goldim, border:`1px solid ${DS.goldb}`, borderRadius:10, padding:12 }}>
-              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.gold, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6 }}>Current Offer</div>
-              <div style={{ fontFamily:'Syne,sans-serif', fontSize:26, fontWeight:800, color:DS.gold, marginBottom:4 }}>SGD 11,000</div>
-              <div style={{ fontSize:10, color:DS.text2, marginBottom:10 }}>per month · + 15% annual bonus</div>
-              <input placeholder="Counter offer (e.g. 13,500)" style={{ width:'100%', padding:'7px 10px', background:DS.s2, border:`1px solid ${DS.bdr2}`, borderRadius:6, color:DS.text, fontSize:12, fontFamily:'JetBrains Mono,monospace', outline:'none', marginBottom:6 }} readOnly />
-              <button style={{ width:'100%', padding:8, borderRadius:6, background:DS.gold, color:'#000', border:'none', cursor:'pointer', fontSize:11, fontWeight:700 }}>Generate counter script →</button>
-            </div>
-            <div style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, padding:'10px 12px' }}>
-              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:7 }}>Negotiation Tips</div>
-              {[['💡','You are $2K below market. Frame your counter around the P75 benchmark.'],['⏱','Wait 24–48 hrs before countering. Eagerness costs leverage.'],['📊','Reference your 40% latency reduction — quantified impact = credibility.']].map(([ic,tip])=>(
-                <div key={ic} style={{ display:'flex', gap:7, marginBottom:6, fontSize:11, lineHeight:1.5 }}>
-                  <span style={{ color:DS.gold, flexShrink:0 }}>{ic}</span><span>{tip}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <iframe srcdoc={l2Html} style={{ width:'100%', height:l2HtmlHeight, border:'none', display:'block', background:'#09090d' }} title="Layer 02 Interview Salary Demo" />
     </DemoShell>
   );
 }
 
 function L3DemoPanel({ onClose, onNext }) {
-  const credentials = [
-    { school:'National University of Singapore', degree:'B.Sc Computer Science', year:'2021', gpa:'3.84 / 4.0', verified:true, hash:'0x4a7f…c3d2' },
-    { school:'AWS Certified Solutions Architect', degree:'Professional Certification', year:'2023', gpa:'Score: 892/1000', verified:true, hash:'0x9b3e…f1a8' },
-    { school:'Google Data Analytics', degree:'Professional Certificate', year:'2023', gpa:'Distinction', verified:false, hash:'Pending' },
-  ];
   return (
-    <DemoShell label="LAYER 03 — VERIFIED CREDENTIALS · LIVE DASHBOARD" accent={DS.green} borderC={DS.gb} onClose={onClose} onNext={onNext}>
-      <div style={{ padding:'20px 24px', display:'flex', flexDirection:'column', gap:20 }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <div>
-            <div style={{ fontFamily:'Syne,sans-serif', fontSize:18, fontWeight:800 }}>Ivy Nguyen</div>
-            <div style={{ fontSize:11, color:DS.text2, fontFamily:'JetBrains Mono,monospace', marginTop:2 }}>Singapore · Senior AI Engineer</div>
-          </div>
-          <div style={{ display:'flex', gap:8 }}>
-            <div style={{ padding:'6px 14px', borderRadius:20, background:DS.gdim, border:`1px solid ${DS.gb}`, fontSize:10, fontFamily:'JetBrains Mono,monospace', color:DS.green, display:'flex', alignItems:'center', gap:6 }}>
-              <span style={{ width:7, height:7, borderRadius:'50%', background:DS.green, boxShadow:`0 0 8px ${DS.green}` }} />✓ Identity Verified
-            </div>
-            <div style={{ padding:'6px 14px', borderRadius:20, background:'rgba(124,92,252,0.1)', border:'1px solid rgba(124,92,252,0.25)', fontSize:10, fontFamily:'JetBrains Mono,monospace', color:'#7c5cfc', display:'flex', alignItems:'center', gap:5 }}>
-              🔗 2 On-Chain
-            </div>
-          </div>
-        </div>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
-          {[['Trust Score','94 / 100',DS.green],['Verified Credentials','2 active',DS.cyan],['Recruiter Views','18 this week',DS.gold]].map(([l,v,c])=>(
-            <div key={l} style={{ background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:12, padding:'14px 16px' }}>
-              <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:4 }}>{l}</div>
-              <div style={{ fontFamily:'Syne,sans-serif', fontSize:20, fontWeight:800, color:c }}>{v}</div>
-            </div>
-          ))}
-        </div>
-        <div>
-          <div style={{ fontSize:11, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:12 }}>Credential Ledger</div>
-          <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-            {credentials.map((c,i)=>(
-              <div key={i} style={{ background:DS.s2, border:`1px solid ${c.verified?DS.gb:DS.bdr}`, borderRadius:12, padding:'14px 18px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:14 }}>
-                  <div style={{ width:40, height:40, borderRadius:10, background:c.verified?DS.gdim:'rgba(255,255,255,0.04)', border:`1px solid ${c.verified?DS.gb:DS.bdr}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>🎓</div>
-                  <div>
-                    <div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700 }}>{c.school}</div>
-                    <div style={{ fontSize:11, color:DS.text2 }}>{c.degree} · {c.year}</div>
-                    <div style={{ fontSize:10, color:DS.text3, fontFamily:'JetBrains Mono,monospace', marginTop:2 }}>{c.gpa}</div>
-                  </div>
-                </div>
-                <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end', gap:6 }}>
-                  {c.verified
-                    ? <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:10, fontFamily:'JetBrains Mono,monospace', padding:'4px 12px', borderRadius:20, background:DS.gdim, color:DS.green, border:`1px solid ${DS.gb}` }}>✓ Verified</span>
-                    : <span style={{ display:'flex', alignItems:'center', gap:5, fontSize:10, fontFamily:'JetBrains Mono,monospace', padding:'4px 12px', borderRadius:20, background:DS.goldim, color:DS.gold, border:`1px solid ${DS.goldb}` }}>⏳ Pending</span>
-                  }
-                  <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3 }}>🔗 {c.hash}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div style={{ background:`linear-gradient(135deg,rgba(0,229,160,0.08),rgba(124,92,252,0.08))`, border:`1px solid ${DS.gb}`, borderRadius:12, padding:'16px 20px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <div>
-            <div style={{ fontFamily:'Syne,sans-serif', fontSize:14, fontWeight:700, marginBottom:4 }}>School Partnership Program</div>
-            <div style={{ fontSize:12, color:DS.text2 }}>Connect your institution · Students get free verified credentials · Recruiters trust your profile from day one.</div>
-          </div>
-          <button style={{ padding:'8px 18px', borderRadius:8, background:DS.green, color:'#000', border:'none', cursor:'pointer', fontSize:12, fontWeight:700, flexShrink:0, marginLeft:16 }}>Join waitlist →</button>
-        </div>
-      </div>
+    <DemoShell label="LAYER 03 LIVE DASHBOARD" accent={DS.green} borderC={DS.gb} onClose={onClose} onNext={onNext}>
+      <iframe srcdoc={l3Html} style={{ width:'100%', height:l3HtmlHeight, border:'none', display:'block', background:'#0a0b0d' }} title="Layer 03 Verified Credentials Dashboard" />
     </DemoShell>
   );
 }
 
 function L4DemoPanel({ onClose, onNext }) {
-  const candidates = [
-    { name:'Ivy Nguyen', role:'Senior AI Engineer · 5yr exp', score:97, avatar:'IN', verified:true, skills:['PyTorch','LangChain','AWS'] },
-    { name:'Marcus Lim', role:'ML Research Scientist · 7yr exp', score:91, avatar:'ML', verified:true, skills:['TF','CUDA','Research'] },
-    { name:'Priya Sharma', role:'Data Engineering Lead · 6yr exp', score:84, avatar:'PS', verified:false, skills:['Spark','Databricks','SQL'] },
-  ];
   return (
     <DemoShell label="LAYER 04 AI MARKETPLACE — LIVE DEMO" accent={DS.purple} borderC={DS.pb} onClose={onClose} onNext={onNext}>
-      <div style={{ height:44, background:'rgba(9,9,13,0.96)', borderBottom:`1px solid ${DS.bdr}`, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <span style={{ fontFamily:'Syne,sans-serif', fontSize:14, fontWeight:700 }}>CareerAiHub</span>
-          <span style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', padding:'3px 10px', borderRadius:20, background:DS.pdim, color:DS.purple, border:`1px solid ${DS.pb}`, display:'flex', alignItems:'center', gap:5 }}>
-            <span style={{ width:5, height:5, borderRadius:'50%', background:DS.purple, boxShadow:`0 0 6px ${DS.purple}`, animation:'lp-pulse 2s infinite' }} />LAYER 04 — AI MARKETPLACE
-          </span>
-        </div>
-        <div style={{ display:'flex', gap:8 }}>
-          <span style={{ fontSize:10, fontFamily:'JetBrains Mono,monospace', padding:'4px 12px', borderRadius:6, background:DS.s2, border:`1px solid ${DS.bdr2}`, color:DS.text2 }}>Plan: <span style={{ color:DS.purple }}>Recruiter Pro</span></span>
-          <button style={{ padding:'5px 14px', borderRadius:6, fontSize:11, fontWeight:600, background:DS.purple, color:'#fff', border:'none', cursor:'pointer' }}>+ Post Role</button>
-        </div>
-      </div>
-      <div style={{ display:'grid', gridTemplateColumns:'240px 1fr 220px', height:520, overflow:'hidden' }}>
-        {/* Left: Match Criteria */}
-        <div style={{ display:'flex', flexDirection:'column', borderRight:`1px solid ${DS.bdr}`, overflow:'hidden' }}>
-          <div style={{ padding:'12px 16px', borderBottom:`1px solid ${DS.bdr}` }}>
-            <div style={{ fontFamily:'Syne,sans-serif', fontSize:12, fontWeight:700 }}>Match Criteria</div>
-            <div style={{ fontSize:10, color:DS.text2, fontFamily:'JetBrains Mono,monospace' }}>AI match engine · Verified only</div>
-          </div>
-          <div style={{ flex:1, overflowY:'auto', padding:'12px 16px', display:'flex', flexDirection:'column', gap:12 }}>
-            {[['Role',null,'Senior AI Engineer'],['Experience',null,'5+ years'],['Location',null,'Singapore']].map(([l,,v])=>(
-              <div key={l}><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:5 }}>{l}</div>
-                <div style={{ width:'100%', padding:'8px 11px', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, color:DS.text, fontSize:12, fontFamily:'DM Sans,sans-serif' }}>{v}</div>
-              </div>
-            ))}
-            <div><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:5 }}>Required Skills</div>
-              <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
-                {['PyTorch','LangChain','AWS','Python','System Design'].map(s=>(
-                  <span key={s} style={{ padding:'4px 10px', borderRadius:20, fontSize:10, fontFamily:'JetBrains Mono,monospace', background:DS.cdim, color:DS.cyan, border:`1px solid ${DS.cb}`, cursor:'pointer' }}>{s}</span>
-                ))}
-                <span style={{ padding:'4px 10px', borderRadius:20, fontSize:10, fontFamily:'JetBrains Mono,monospace', background:'transparent', color:DS.text3, border:`1px dashed ${DS.bdr2}`, cursor:'pointer' }}>+ Add</span>
-              </div>
-            </div>
-            <div style={{ display:'flex', gap:6 }}>
-              <div style={{ flex:1 }}><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:5 }}>Min Salary</div>
-                <div style={{ padding:'8px 11px', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, color:DS.text, fontSize:12 }}>SGD 10K</div>
-              </div>
-              <div style={{ flex:1 }}><div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.text3, textTransform:'uppercase', letterSpacing:'.1em', marginBottom:5 }}>Max Salary</div>
-                <div style={{ padding:'8px 11px', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:8, color:DS.text, fontSize:12 }}>SGD 15K</div>
-              </div>
-            </div>
-            <button style={{ padding:10, borderRadius:8, background:`linear-gradient(135deg,${DS.purple},${DS.cyan})`, color:'#fff', fontSize:12, fontWeight:700, border:'none', cursor:'pointer', fontFamily:'Syne,sans-serif', boxShadow:`0 0 20px rgba(176,38,255,0.25)` }}>⚡ Run AI Match</button>
-          </div>
-        </div>
-        {/* Center: Candidate Pipeline */}
-        <div style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
-          <div style={{ padding:'12px 18px', borderBottom:`1px solid ${DS.bdr}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-            <span style={{ fontFamily:'JetBrains Mono,monospace', fontSize:11, color:DS.text2 }}><span style={{ color:DS.cyan, fontWeight:600 }}>3</span> verified matches · AI-ranked</span>
-            <div style={{ display:'flex', gap:4 }}>
-              {['Match Score','Verified','Recency'].map((c,i)=>(
-                <span key={c} style={{ padding:'3px 10px', borderRadius:20, fontSize:10, fontFamily:'JetBrains Mono,monospace', border:`1px solid ${DS.bdr}`, background:i===0?DS.cdim:'transparent', color:i===0?DS.cyan:DS.text3, cursor:'pointer' }}>{c}</span>
-              ))}
-            </div>
-          </div>
-          <div style={{ flex:1, overflowY:'auto', padding:'12px 18px', display:'flex', flexDirection:'column', gap:10 }}>
-            {candidates.map((c,i)=>(
-              <div key={i} style={{ background:i===0?DS.cdim:DS.s1, border:`1px solid ${i===0?DS.cb:DS.bdr}`, borderRadius:12, padding:14, cursor:'pointer', transition:'all .2s', boxShadow:i===0?`0 0 20px rgba(0,200,255,0.08)`:undefined }}>
-                <div style={{ display:'flex', alignItems:'flex-start', gap:10, marginBottom:10 }}>
-                  <div style={{ position:'relative', flexShrink:0 }}>
-                    <div style={{ width:36, height:36, borderRadius:'50%', background:`linear-gradient(135deg,${DS.purple},${DS.cyan})`, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:800, color:'#fff' }}>{c.avatar}</div>
-                    {c.verified && <div style={{ position:'absolute', bottom:-2, right:-2, width:14, height:14, borderRadius:'50%', background:DS.green, border:`2px solid ${DS.bg}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:7, boxShadow:`0 0 8px ${DS.green}` }}>✓</div>}
-                  </div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontFamily:'Syne,sans-serif', fontSize:13, fontWeight:700 }}>{c.name}</div>
-                    <div style={{ fontSize:11, color:DS.text2 }}>{c.role}</div>
-                  </div>
-                  <div style={{ fontFamily:'JetBrains Mono,monospace', fontSize:18, fontWeight:700, color:DS.cyan, textAlign:'right', lineHeight:1 }}>{c.score}<div style={{ fontSize:8, color:DS.text3 }}>/ 100</div></div>
-                </div>
-                <div style={{ display:'flex', flexWrap:'wrap', gap:4, marginBottom:10 }}>
-                  {c.skills.map(s=><span key={s} style={{ padding:'3px 9px', borderRadius:20, fontSize:9, fontFamily:'JetBrains Mono,monospace', background:DS.s3, color:DS.text2, border:`1px solid ${DS.bdr}` }}>{s}</span>)}
-                </div>
-                <div style={{ display:'flex', gap:6 }}>
-                  <button style={{ flex:1, padding:'6px 10px', borderRadius:7, background:DS.purple, color:'#fff', border:'none', cursor:'pointer', fontSize:10, fontWeight:700 }}>Open TrustChat →</button>
-                  <button style={{ padding:'6px 10px', borderRadius:7, background:DS.s3, color:DS.text2, border:`1px solid ${DS.bdr2}`, cursor:'pointer', fontSize:10 }}>View Profile</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* Right: TrustChat */}
-        <div style={{ display:'flex', flexDirection:'column', borderLeft:`1px solid ${DS.bdr}`, overflow:'hidden' }}>
-          <div style={{ padding:'10px 14px', borderBottom:`1px solid ${DS.bdr}` }}>
-            <div style={{ fontFamily:'Syne,sans-serif', fontSize:12, fontWeight:700 }}>TrustChat</div>
-            <div style={{ fontSize:9, color:DS.text2, fontFamily:'JetBrains Mono,monospace' }}>Ivy Nguyen · 97% match</div>
-          </div>
-          <div style={{ padding:'10px 14px', borderBottom:`1px solid ${DS.bdr}`, background:DS.gdim }}>
-            <div style={{ fontSize:9, fontFamily:'JetBrains Mono,monospace', color:DS.green, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:6 }}>Verified Credentials</div>
-            {[['NUS B.Sc Computer Science','2021 · GPA 3.84'],['AWS Solutions Architect Pro','2023 · Score 892']].map(([t,s])=>(
-              <div key={t} style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5 }}>
-                <span style={{ width:5, height:5, borderRadius:'50%', background:DS.green, boxShadow:`0 0 5px ${DS.green}`, flexShrink:0 }} />
-                <div><div style={{ fontSize:10, fontWeight:600 }}>{t}</div><div style={{ fontSize:9, color:DS.text3, fontFamily:'JetBrains Mono,monospace' }}>{s}</div></div>
-              </div>
-            ))}
-          </div>
-          <div style={{ flex:1, overflowY:'auto', padding:'10px 14px', display:'flex', flexDirection:'column', gap:8 }}>
-            <div style={{ background:DS.pdim, border:`1px solid ${DS.pb}`, borderRadius:'10px 10px 10px 2px', padding:'8px 10px', fontSize:11, lineHeight:1.6 }}>
-              <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.purple, marginBottom:3 }}>Recruiter</div>
-              Hi Ivy, saw your verified profile — impressive LangChain work. Are you open to a Series B fintech role?
-            </div>
-            <div style={{ background:DS.s3, border:`1px solid ${DS.bdr}`, borderRadius:'10px 10px 2px 10px', padding:'8px 10px', fontSize:11, lineHeight:1.6, marginLeft:'auto', maxWidth:'90%' }}>
-              <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.cyan, marginBottom:3, textAlign:'right' }}>Ivy</div>
-              Hi! Yes, I'm actively looking. Happy to share my work on the RAG pipeline in detail.
-            </div>
-            <div style={{ background:DS.pdim, border:`1px solid ${DS.pb}`, borderRadius:'10px 10px 10px 2px', padding:'8px 10px', fontSize:11, lineHeight:1.6 }}>
-              <div style={{ fontSize:8, fontFamily:'JetBrains Mono,monospace', color:DS.purple, marginBottom:3 }}>Recruiter</div>
-              Can we schedule a call this week?<span style={{ display:'inline-block', width:5, height:11, background:DS.purple, animation:'blink 1s step-end infinite', verticalAlign:'middle', marginLeft:4 }} />
-            </div>
-          </div>
-          <div style={{ padding:'8px 14px', borderTop:`1px solid ${DS.bdr}`, display:'flex', gap:6, flexShrink:0 }}>
-            <input placeholder="Type a message…" style={{ flex:1, padding:'7px 10px', background:DS.s2, border:`1px solid ${DS.bdr}`, borderRadius:7, color:DS.text, fontSize:11, outline:'none' }} readOnly />
-            <button style={{ padding:'7px 14px', borderRadius:7, background:DS.purple, color:'#fff', border:'none', cursor:'pointer', fontSize:11, fontWeight:700 }}>Send</button>
-          </div>
-        </div>
-      </div>
+      <iframe srcdoc={l4Html} style={{ width:'100%', height:l4HtmlHeight, border:'none', display:'block', background:'#09090d' }} title="Layer 04 AI Marketplace Demo" />
     </DemoShell>
   );
 }
@@ -1900,7 +1424,10 @@ function PlatformLayers({ onJoin }) {
   const sectionRef = useRef(null);
   const d = LAYER_DATA[active];
   const handleTab = (i) => { setActive(i); setDemoLayer(null); };
-  const handleCta = () => { setDemoLayer(active); };
+  const handleCta = () => {
+    setDemoLayer(active);
+    setTimeout(() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+  };
   const goNextLayer = () => {
     const next = (active + 1) % LAYER_DATA.length;
     setActive(next);
@@ -1931,10 +1458,12 @@ function PlatformLayers({ onJoin }) {
               <div className="ltab-n">{layer.n}</div>
               <div className="ltab-title">{layer.title}</div>
               <div className="ltab-sub">{layer.sub}</div>
-              <span className={`lstatus ${layer.status === 'live' ? 'ls-live' : layer.status === 'building' ? 'ls-build' : 'ls-plan'}`}>
-                <span className="sdot" />
-                {layer.status === 'live' ? 'Live now' : layer.status === 'building' ? 'Building next' : 'Planned'}
-              </span>
+              {layer.status === 'live' && (
+                <span className="lstatus ls-live">
+                  <span className="sdot" />
+                  Live now
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -2222,28 +1751,35 @@ const TRUST_QA = [
   },
 ];
 
-function TrustSection({ onPrivacy, onTerms }) {
+function DataProtectedSection({ onPrivacy, onTerms }) {
   return (
     <section className="section lp-trust-section" id="trust">
       <div className="reveal">
-        <div className="ey">Why CareerAiHub</div>
-        <h2 className="sh">The questions everyone asks.</h2>
-        <p className="ss" style={{ marginBottom: 32 }}>Straight answers — no marketing fluff.</p>
+        <div className="ey">Your data, protected</div>
+        <h2 className="sh">Your resume is yours. Always.</h2>
+        <p className="ss" style={{ marginBottom: 32 }}>We know you're uploading something personal. Here's exactly how we handle it.</p>
       </div>
-      <div className="lp-qa-grid reveal d1">
-        {TRUST_QA.map((item, i) => (
-          <div key={i} className="lp-qa-item">
-            <div className="lp-qa-q">{item.q}</div>
-            <ul className="lp-qa-list">
-              {item.points.map((pt, j) => (
-                <li key={j} className="lp-qa-point">
-                  <span className="lp-qa-dot" />
-                  {pt}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+      <div className="lp-trust-grid reveal d1">
+        <div className="lp-trust-item">
+          <div className="lp-trust-icon">🔒</div>
+          <div className="lp-trust-title">Encrypted in transit and at rest</div>
+          <div className="lp-trust-desc">Your resume is encrypted with AES-256 the moment it's uploaded. It travels over TLS 1.3 and is stored in encrypted form. Only you can access it.</div>
+        </div>
+        <div className="lp-trust-item">
+          <div className="lp-trust-icon">🚫</div>
+          <div className="lp-trust-title">Never sold. Never shared.</div>
+          <div className="lp-trust-desc">We do not sell your data to recruiters, job boards, or third parties. Ever. Your resume is used only to power your own CareerAiHub modules — nothing else.</div>
+        </div>
+        <div className="lp-trust-item">
+          <div className="lp-trust-icon">🗑️</div>
+          <div className="lp-trust-title">Delete anytime</div>
+          <div className="lp-trust-desc">Delete your resume, profile, and all data from account settings at any time. We process deletion within 24 hours and purge backups within 30 days.</div>
+        </div>
+        <div className="lp-trust-item">
+          <div className="lp-trust-icon">🇸🇬</div>
+          <div className="lp-trust-title">PDPA compliant · Singapore</div>
+          <div className="lp-trust-desc">CareerAiHub is built to comply with Singapore's Personal Data Protection Act (PDPA). GDPR compliance planned for our European expansion.</div>
+        </div>
       </div>
       <div className="lp-trust-links reveal d2">
         <button className="lp-trust-link" onClick={onPrivacy}>Privacy Policy ↗</button>
@@ -2321,59 +1857,60 @@ function GrowthSection({ onJoin }) {
 
 // ── HOW IT WORKS ─────────────────────────────────────────────────────────────
 
+const HIW_STEPS = [
+  { num:'01', tag:'Free', tagCls:'free', title:'Drop your resume', desc:'CareerAiHub reads your work history once and builds a persistent AI memory — every module knows your story instantly.', bullets: FEAT_DATA[11].bullets, outcome:'AI memory activated — all modules know your background', dotColor:'var(--lp-teal)' },
+  { num:'02', tag:'Free · 1 scan', tagCls:'free', title:'Get your ATS score', desc:"Paste any job description. See your exact match %, missing keywords, and what to fix — before a recruiter sees your name.", bullets: FEAT_DATA[1].bullets, outcome:'Most users jump 20+ ATS points in a single session', dotColor:'var(--lp-teal)' },
+  { num:'03', tag:'Free', tagCls:'free', title:'Apply in 5 minutes', desc:'AI memory powers a tailored application. Search 20+ live job boards. One-click apply with ATS score already checked.', bullets: FEAT_DATA[0].bullets, outcome:'329 open roles in Singapore · AI-ranked for you', dotColor:'var(--lp-teal)' },
+  { num:'04', tag:'Premium', tagCls:'premium', title:'AI mock interviews', desc:'Practice with an AI that knows your resume and target role. Scored on clarity, STAR structure, and relevance.', bullets: FEAT_DATA[5].bullets, outcome:'Battle-ready before the real call', dotColor:'var(--lp-violet)' },
+  { num:'05', tag:'Pro', tagCls:'pro', title:'Get Ready readiness plan', desc:'Scored across 5 interview dimensions. AI builds your personalized study plan targeting weakest areas first.', bullets: FEAT_DATA[9].bullets, outcome:'Hit 80/100 to earn a shareable Readiness Certificate', dotColor:'var(--lp-violet)' },
+  { num:'06', tag:'Premium', tagCls:'premium', title:'Negotiate with market data', desc:'Live salary benchmarks for your exact role and level. Practice your counter-offer with AI — scripts, pushback simulations, data-backed anchoring.', bullets: FEAT_DATA[6].bullets, outcome:'Users average +$8K first-year comp', dotColor:'var(--lp-violet)' },
+];
+
 function HowItWorksSection({ onJoin, onSampleReport }) {
+  const [expanded, setExpanded] = useState(null);
   const ss = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const isPremium = (s) => s.tagCls !== 'free';
   return (
     <section className="section lp-hiw-section" id="how-it-works">
       <div className="reveal">
         <div className="ey">How it works</div>
         <h2 className="sh" style={{whiteSpace:'nowrap'}}>Six steps. <span style={{background:'var(--lp-grad-primary)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>Zero guesswork.</span></h2>
-        <p className="ss" style={{ marginBottom: 24 }}>From first upload to signed offer. Every step builds on the last. Your AI memory compounds with each session.</p>
+        <p className="ss" style={{ marginBottom: 24 }}>From first upload to signed offer. Every step builds on the last.</p>
       </div>
 
-      {/* Free tier steps */}
       <div className="lp-hiw6-grid reveal d2">
-        {[
-          {num:'01',tag:'Free · no account',tagCls:'free',title:'Drop your resume',desc:'CareerAiHub reads your full work history and builds a persistent AI memory. Every module instantly knows your story. You never re-enter your background again.',bullets:FEAT_DATA[11].bullets,outcome:'AI memory activated — all modules know your background',dotColor:'var(--lp-teal)'},
-          {num:'02',tag:'Free · 1 scan',tagCls:'free',title:'Get your ATS score',desc:"Paste any job description. See your exact match percentage, which keywords you're missing, and what to fix before you apply — before a recruiter sees your name.",bullets:FEAT_DATA[1].bullets,outcome:'Most users jump 20+ ATS points in a single session',dotColor:'var(--lp-teal)'},
-          {num:'03',tag:'Free',tagCls:'free',title:'Apply in 5 minutes',desc:'AI memory powers a tailored application. Search 20+ live job boards. One-click apply with ATS score already checked — no blank page, no copy-paste.',bullets:FEAT_DATA[0].bullets,outcome:'329 open roles in Singapore · AI-ranked for you',dotColor:'var(--lp-teal)'},
-        ].map((s,i)=>(
-          <div key={i} className="lp-hiw6-step">
-            <span className={`lp-hiw6-tag ${s.tagCls}`}>{s.tag}</span>
-            <div className="lp-hiw6-step-num">{s.num}</div>
+        {HIW_STEPS.map((s, i) => (
+          <div key={i} className={`lp-hiw6-step${isPremium(s) ? ' premium' : ''}`}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+              <span className={`lp-hiw6-tag ${s.tagCls}`}>{s.tag}</span>
+              <div className="lp-hiw6-step-num" style={{ margin:0, fontSize:11 }}>{s.num}</div>
+            </div>
             <div className="lp-hiw6-step-title">{s.title}</div>
             <div className="lp-hiw6-step-desc">{s.desc}</div>
-            <ul className="lp-hiw6-bullets">{s.bullets.map((b,j)=><li key={j} className="lp-hiw6-bullet"><span className="lp-hiw6-bdot"/>{ b}</li>)}</ul>
-            <div className="lp-hiw6-outcome"><span className="lp-hiw6-dot" style={{background:s.dotColor,animation:'lp-pulse 2s infinite'}}/>{s.outcome}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Upgrade divider */}
-      <div className="lp-hiw6-divider reveal d2">
-        <div style={{flex:1,height:1,background:'linear-gradient(90deg,transparent,rgba(176,38,255,.3))'}}/>
-        <span style={{fontSize:12,fontWeight:700,color:'var(--lp-text2)',whiteSpace:'nowrap'}}>Upgrade to unlock Premium features →</span>
-        <button onClick={() => ss('price-sec')} className="lp-hiw6-plans-btn">See plans</button>
-        <div style={{flex:1,height:1,background:'linear-gradient(90deg,rgba(176,38,255,.3),transparent)'}}/>
-      </div>
-
-      {/* Premium steps (blurred/locked) */}
-      <div className="lp-hiw6-grid reveal d3" style={{marginBottom:28}}>
-        {[
-          {num:'04',tag:'Premium',tagCls:'premium',title:'AI mock interviews',desc:'Practice with an AI that knows your resume and target role. Scored on clarity, STAR structure, and relevance. Battle-ready before the real call.',bullets:FEAT_DATA[5].bullets,dotColor:'var(--lp-violet)'},
-          {num:'05',tag:'Pro',tagCls:'pro',title:'Get Ready readiness plan',desc:'Scored across 5 interview dimensions. AI builds your personalized study plan targeting weakest areas first. Hit 80/100 to earn a shareable Readiness Certificate.',bullets:FEAT_DATA[9].bullets,dotColor:'var(--lp-violet)'},
-          {num:'06',tag:'Premium',tagCls:'premium',title:'Negotiate with market data',desc:'Live salary benchmarks for your exact role and level. Practice your counter-offer with AI — scripts, pushback simulations, data-backed anchoring. Users average +$8K first-year comp.',bullets:FEAT_DATA[6].bullets,dotColor:'var(--lp-violet)'},
-        ].map((s,i)=>(
-          <div key={i} className="lp-hiw6-step premium">
-            <span className={`lp-hiw6-tag ${s.tagCls}`}>{s.tag}</span>
-            <div className="lp-hiw6-blur">
-              <div className="lp-hiw6-step-num">{s.num}</div>
-              <div className="lp-hiw6-step-title">{s.title}</div>
-              <div className="lp-hiw6-step-desc">{s.desc}</div>
-              <ul className="lp-hiw6-bullets">{s.bullets.map((b,j)=><li key={j} className="lp-hiw6-bullet"><span className="lp-hiw6-bdot"/>{b}</li>)}</ul>
+            <button
+              className="lp-hiw6-toggle"
+              onClick={() => setExpanded(expanded === i ? null : i)}
+              aria-expanded={expanded === i}
+            >
+              {expanded === i ? 'Less detail ▲' : 'Show detail ▼'}
+            </button>
+            {expanded === i && (
+              <ul className="lp-hiw6-bullets" style={{ marginTop:8 }}>
+                {s.bullets.map((b, j) => <li key={j} className="lp-hiw6-bullet"><span className="lp-hiw6-bdot" />{b}</li>)}
+              </ul>
+            )}
+            <div className="lp-hiw6-outcome" style={{ marginTop: expanded === i ? 10 : 8 }}>
+              <span className="lp-hiw6-dot" style={{ background: s.dotColor, animation:'lp-pulse 2s infinite' }} />
+              {s.outcome}
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="lp-hiw6-divider reveal d2">
+        <div style={{flex:1,height:1,background:'linear-gradient(90deg,transparent,rgba(176,38,255,.3))'}}/>
+        <button onClick={() => ss('price-sec')} className="lp-hiw6-plans-btn">See pricing plans</button>
+        <div style={{flex:1,height:1,background:'linear-gradient(90deg,rgba(176,38,255,.3),transparent)'}}/>
       </div>
 
       <div className="lp-hiw-sample reveal d2">
@@ -2527,25 +2064,39 @@ function CompareSection() {
   );
 }
 
-// ── FAQ ───────────────────────────────────────────────────────────────────────
+// ── WHY CAREERAIHUB (merged FAQ + trust Q&A) ─────────────────────────────────
 
-function FAQSection() {
+const WHY_DATA = [
+  ...FAQ_DATA.map(f => ({ q: f.q, body: f.a, type: 'text' })),
+  ...TRUST_QA.map(t => ({ q: t.q, body: t.points, type: 'bullets' })),
+];
+
+function WhyCareerAiHubSection() {
   const [open, setOpen] = useState(null);
   return (
     <section className="section alt" id="faq-sec">
       <div className="reveal">
-        <div className="ey">Frequently asked questions</div>
+        <div className="ey">Why CareerAiHub</div>
         <h2 className="sh">Everything you need to know.</h2>
-        <p className="ss" style={{ marginBottom: 26 }}>Common questions about CareerAiHub, the AI career platform built for Singapore job seekers.</p>
+        <p className="ss" style={{ marginBottom: 26 }}>Common questions about CareerAiHub — the AI career platform built for Singapore job seekers.</p>
       </div>
       <div className="reveal d1 faq-list">
-        {FAQ_DATA.map((item, i) => (
+        {WHY_DATA.map((item, i) => (
           <div key={i} className="faq-item">
             <button className={`faq-q${open === i ? ' open' : ''}`} onClick={() => setOpen(open === i ? null : i)} aria-expanded={open === i}>
               {item.q}<span className="faq-ch">▼</span>
             </button>
-            <div className={`faq-a${open === i ? ' open' : ''}`}>
-              <div className="faq-a-in">{item.a}</div>
+            <div className={`faq-a${open === i ? ' open' : ''}`} style={{ maxHeight: open === i ? 600 : 0 }}>
+              {item.type === 'bullets'
+                ? <ul className="faq-a-in" style={{ paddingLeft: 0, margin: 0 }}>
+                    {item.body.map((pt, j) => (
+                      <li key={j} style={{ listStyle: 'none', display: 'flex', gap: 8, marginBottom: 6, fontSize: 13, color: 'var(--lp-text2)', lineHeight: 1.7 }}>
+                        <span style={{ color: 'var(--lp-teal)', marginTop: 5, flexShrink: 0, fontSize: 6 }}>●</span>{pt}
+                      </li>
+                    ))}
+                  </ul>
+                : <div className="faq-a-in">{item.body}</div>
+              }
             </div>
           </div>
         ))}
@@ -3167,11 +2718,11 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
 
       <div className="sec-divider" />
 
-      <FAQSection />
+      <WhyCareerAiHubSection />
 
       <div className="sec-divider" />
 
-      <TrustSection onPrivacy={() => setPrivacyOpen(true)} onTerms={() => setTosOpen(true)} />
+      <DataProtectedSection onPrivacy={() => setPrivacyOpen(true)} onTerms={() => setTosOpen(true)} />
 
       <div className="sec-divider" />
 
