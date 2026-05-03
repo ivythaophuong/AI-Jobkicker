@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { C } from '../../styles/theme';
 import { Card, Btn, Spinner } from '../../components/CommonUI';
 import { callLLM, extractJSON } from '../../lib/ai';
+import { GetReadyTabStrip } from '../Landing/LandingPage';
+import '../../styles/featurePage.css';
 
 function buildMemoryContext(mem, form) {
   if (!mem) return "";
@@ -24,7 +26,7 @@ function buildMemoryContext(mem, form) {
   return lines.length ? "\n\nUSER HISTORY CONTEXT:\n" + lines.join("\n") : "";
 }
 
-export default function MemoryDashboard({ memory, form, updateMemory }) {
+export default function MemoryDashboard({ memory, form, updateMemory, setActiveModule, onStudyPlan }) {
   if (!memory) return <div style={{textAlign:"center",padding:40}}><Spinner label="Assembling AI memory bank..."/></div>;
 
   const [aiSummary, setAiSummary]   = useState(null);
@@ -71,11 +73,13 @@ Return ONLY raw JSON:
   const firstScore  = memory.scanHistory?.length > 1 ? memory.scanHistory[0].score : null;
 
   return (
-    <div style={{display:"flex",flexDirection:"column",gap:16}}>
+    <div className="fp-wrap" style={{display:"flex",flexDirection:"column",gap:0}}>
+      <GetReadyTabStrip activeModuleId="memory" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />
+      <div style={{display:"flex",flexDirection:"column",gap:16,padding:24}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div>
-          <div style={{color:C.text, fontWeight:900, fontSize:24, fontFamily:"var(--font-display)"}}>🧬 AI Memory Dashboard</div>
-          <div style={{color:C.muted,fontSize:13,marginTop:4,fontFamily:"var(--font-body)"}}>Your personalized career intelligence — built from {totalActivity} activity events across all sessions.</div>
+          <div style={{color:C.text, fontWeight:900, fontSize:24}}>🧬 AI Memory Dashboard</div>
+          <div style={{color:C.muted,fontSize:13,marginTop:4}}>Your personalized career intelligence — built from {totalActivity} activity events across all sessions.</div>
         </div>
         <div style={{display:"flex",gap:8}}>
           <Btn onClick={getPersonalizedPlan} disabled={loadingSummary||totalActivity<2} color={C.purple} style={{width:"auto",padding:"8px 16px",fontSize:12}}>
@@ -87,7 +91,7 @@ Return ONLY raw JSON:
       {cleared && <Card glow={C.gold}><div style={{color:C.gold,fontSize:13}}>✓ Memory cleared. Fresh start!</div></Card>}
 
       {/* Activity Stats Grid */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
+      <div className="fp-grid-4" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
         {statCards.map(s=>(
           <Card key={s.label} glow={s.color} style={{padding:"14px 16px",textAlign:"center"}}>
             <div style={{fontSize:20,marginBottom:6}}>{s.icon}</div>
@@ -183,7 +187,7 @@ Return ONLY raw JSON:
           </div>
           <Card glow={C.accent}>
             <div style={{color:C.accent,fontWeight:700,fontSize:13,marginBottom:12}}>📅 Your Personalized Weekly Plan</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8}}>
+            <div className="fp-grid-5" style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8}}>
               {aiSummary.weeklyPlan?.map((d,i)=>(
                 <div key={i} style={{background:C.surface,borderRadius:8,padding:"10px 8px",textAlign:"center"}}>
                   <div style={{color:C.accent,fontWeight:800,fontSize:11,marginBottom:6}}>{d.day}</div>
@@ -209,6 +213,7 @@ Return ONLY raw JSON:
           🗑 Clear All Memory
         </button>
       </Card>
+      </div>
     </div>
   );
 }

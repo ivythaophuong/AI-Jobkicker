@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import './landing.css';
 import { OrbitMark } from '../../components/OrbitMark';
 import { l1Html, l1HtmlHeight, l2Html, l2HtmlHeight, l3Html, l3HtmlHeight, l4Html, l4HtmlHeight } from './demoHtml';
@@ -431,7 +432,157 @@ export const LogoMark = ({ size = 28 }) => (
 
 // ── NAV ───────────────────────────────────────────────────────────────────────
 
-function NavBar({ onSignIn, onJoin, scrolled, lightMode, onToggleLightMode }) {
+// Maps moduleId → FEAT_DATA tab index for the feature demo modal
+export const NAV_FEAT_MAP = {
+  jobs: 0, scan: 1, ats: 2, jd: 3, star: 4, simulate: 5,
+  salary: 6, cover: 7, radar: 8, score: 9, market: 10, memory: 11,
+};
+
+export const NAV_CATEGORIES = [
+  {
+    icon: '🔍', label: 'Job Search', tag: 'Free',
+    tools: [
+      { icon: '🔎', label: 'Job Search',   sub: 'Browse & track open roles',      moduleId: 'jobs'   },
+      { icon: '🌏', label: 'Market Intel',  sub: 'Salary & hiring demand data',    moduleId: 'market' },
+    ],
+  },
+  {
+    icon: '🎯', label: 'Get Seen',
+    tools: [
+      { icon: '⚡', label: 'Resume Scan',   sub: 'ATS score & issue flags',        moduleId: 'scan'  },
+      { icon: '✨', label: 'ATS Builder',   sub: 'Rebuild resume for keywords',    moduleId: 'ats'   },
+      { icon: '🔍', label: 'JD Analyzer',   sub: 'Decode any job description',     moduleId: 'jd'    },
+      { icon: '📄', label: 'Cover Letter',  sub: 'AI-written, role-tailored',      moduleId: 'cover' },
+    ],
+  },
+  {
+    icon: '✅', label: 'Get Ready', tag: 'Pro',
+    tools: [
+      { icon: '📡', label: 'Weakness Radar',  sub: 'Find gaps before they do',       moduleId: 'radar'  },
+      { icon: '🏆', label: 'Readiness Score', sub: 'How ready are you, really',      moduleId: 'score'  },
+      { icon: '⭐', label: 'STAR Builder',    sub: 'Structure your stories',         moduleId: 'star'   },
+      { icon: '🧬', label: 'AI Memory',       sub: 'Your career intelligence layer', moduleId: 'memory' },
+    ],
+  },
+  {
+    icon: '🏆', label: 'Get the Offer',
+    tools: [
+      { icon: '🧠', label: 'HM Simulator', sub: 'Mock hiring manager interview', moduleId: 'simulate' },
+    ],
+  },
+  {
+    icon: '💰', label: 'Get Paid',
+    tools: [
+      { icon: '💰', label: 'Salary Coach', sub: 'Negotiate what you deserve', moduleId: 'salary' },
+    ],
+  },
+];
+
+// 3-column megamenu arrangement
+const MEGA_COLS = [
+  [NAV_CATEGORIES[0], NAV_CATEGORIES[3]], // Job Search + Get the Offer
+  [NAV_CATEGORIES[1], NAV_CATEGORIES[4]], // Get Seen + Get Paid
+  [NAV_CATEGORIES[2]],                    // Get Ready
+];
+
+export function NavFeatMenu({ onFeatOpen }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [open]);
+
+  return (
+    <div className="lp-ncd" ref={ref}>
+      <button
+        className={`lp-nl lp-ncd-trigger${open ? ' open' : ''}`}
+        onClick={() => setOpen(o => !o)}
+      >
+        Features
+        <span className="lp-ncd-caret" />
+      </button>
+      {open && (
+        <div className="lp-feat-mega">
+          {MEGA_COLS.map((col, ci) => (
+            <div key={ci} className="lp-feat-mega-col">
+              {col.map((cat, gi) => (
+                <div key={gi} className={`lp-feat-mega-group${gi > 0 ? ' lp-feat-mega-group-sep' : ''}`}>
+                  <div className="lp-feat-mega-head">
+                    <span>{cat.icon}</span>
+                    <span>{cat.label}</span>
+                    {cat.tag && <span className={`lp-ncd-tag ${cat.tag === 'Free' ? 'free' : 'pro'}`}>{cat.tag}</span>}
+                  </div>
+                  {cat.tools.map((t, ti) => (
+                    <button
+                      key={ti}
+                      className="lp-ncd-item"
+                      onClick={() => { onFeatOpen(t.moduleId); setOpen(false); }}
+                    >
+                      <span className="lp-ncd-item-icon">{t.icon}</span>
+                      <div>
+                        <div className="lp-ncd-item-label">{t.label}</div>
+                        {t.sub && <div className="lp-ncd-item-sub">{t.sub}</div>}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function NavCategoryDropdown({ cat, onNavigate }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div className="lp-ncd" ref={ref}>
+      <button
+        className={`lp-nl lp-ncd-trigger${open ? ' open' : ''}`}
+        onClick={() => setOpen(o => !o)}
+      >
+        {cat.label}
+        {cat.tag && <span className={`lp-ncd-tag ${cat.tag === 'Free' ? 'free' : 'pro'}`}>{cat.tag}</span>}
+        <span className="lp-ncd-caret" />
+      </button>
+      {open && (
+        <div className="lp-ncd-panel">
+          <div className="lp-ncd-panel-head">{cat.icon} {cat.label}</div>
+          {cat.tools.map((t, i) => (
+            <button
+              key={i}
+              className="lp-ncd-item"
+              onClick={() => { onNavigate(t.moduleId); setOpen(false); }}
+            >
+              <span className="lp-ncd-item-icon">{t.icon}</span>
+              <div>
+                <div className="lp-ncd-item-label">{t.label}</div>
+                {t.sub && <div className="lp-ncd-item-sub">{t.sub}</div>}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NavBar({ onSignIn, onJoin, scrolled, lightMode, onToggleLightMode, onFeatOpen }) {
   const ss = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   return (
     <nav className={`lp-nav${scrolled ? ' scrolled' : ''}`}>
@@ -440,9 +591,8 @@ function NavBar({ onSignIn, onJoin, scrolled, lightMode, onToggleLightMode }) {
         <span className="lp-wordmark">career<span className="lp-wordmark-ai">ai</span>hub</span>
       </button>
       <div className="lp-nav-center">
-        <button className="lp-nl" onClick={() => ss('feat-sec')}>Features</button>
+        <NavFeatMenu onFeatOpen={onFeatOpen} />
         <button className="lp-nl" onClick={() => ss('price-sec')}>Pricing</button>
-        <button className="lp-nl" onClick={() => ss('compare-sec')}>Compare</button>
         <button className="lp-nl" onClick={() => ss('faq-sec')}>FAQ</button>
       </div>
       <div className="lp-nav-r">
@@ -456,19 +606,94 @@ function NavBar({ onSignIn, onJoin, scrolled, lightMode, onToggleLightMode }) {
 
 export function GuestNav({ onSignIn, onJoin, onHome }) {
   return (
-    <nav className="lp-nav">
-      <button className="lp-nav-logo" onClick={onHome}><LogoMark /><span className="lp-wordmark">career<span className="lp-wordmark-ai">ai</span>hub</span></button>
-      <div className="lp-nav-center">
-        <button className="lp-nl" onClick={onHome}>Features</button>
-        <button className="lp-nl" onClick={onHome}>Pricing</button>
-        <button className="lp-nl" onClick={onHome}>Compare</button>
-        <button className="lp-nl" onClick={onHome}>FAQ</button>
-      </div>
+    <nav className="lp-nav scrolled">
+      <button className="lp-nav-logo" onClick={onHome}>
+        <LogoMark />
+        <span className="lp-wordmark">career<span className="lp-wordmark-ai">ai</span>hub</span>
+      </button>
       <div className="lp-nav-r">
         <button className="lp-btn-si" onClick={onSignIn}>Sign In</button>
         <button className="lp-btn-join" onClick={onJoin}>✦ Join Free</button>
       </div>
     </nav>
+  );
+}
+
+// ── APP HUB NAV (same pill style as HubNav, with tool dropdowns) ──────────────
+
+function AppHubPill({ cat, activeModule, onNavigate }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef(null);
+  const panelRef = useRef(null);
+  const isActive = cat.tools.some(t => t.moduleId === activeModule);
+
+  const handleOpen = () => {
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 8, left: r.left + r.width / 2 });
+    }
+    setOpen(o => !o);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const h = (e) => {
+      if (btnRef.current && btnRef.current.contains(e.target)) return;
+      if (panelRef.current && panelRef.current.contains(e.target)) return;
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [open]);
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        className={`lp-hub-pill${isActive ? ' on' : ''}${cat.tag === 'Pro' ? ' ready' : ''}`}
+        onClick={handleOpen}
+      >
+        <span style={{ fontSize: 15 }}>{cat.icon}</span>
+        <span className="lp-hub-pill-label">{cat.label}</span>
+        {cat.tag === 'Free' && <span className="lp-hub-pill-sub">Always free</span>}
+        {cat.tag === 'Pro' && <span className="lp-hub-pill-badge">Pro</span>}
+      </button>
+      {open && typeof document !== 'undefined' && ReactDOM.createPortal(
+        <div
+          ref={panelRef}
+          className="lp-ncd-panel"
+          style={{ position: 'fixed', top: pos.top, left: pos.left, transform: 'translateX(-50%)', minWidth: 220, zIndex: 9999 }}
+        >
+          <div className="lp-ncd-panel-head">{cat.icon} {cat.label}</div>
+          {cat.tools.map((t, i) => (
+            <button
+              key={i}
+              className="lp-ncd-item"
+              style={ t.moduleId === activeModule ? { background: 'rgba(0,212,255,.1)' } : {} }
+              onClick={() => { onNavigate(t.moduleId); setOpen(false); }}
+            >
+              <span className="lp-ncd-item-icon">{t.icon}</span>
+              <div>
+                <div className="lp-ncd-item-label">{t.label}</div>
+                {t.sub && <div className="lp-ncd-item-sub">{t.sub}</div>}
+              </div>
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
+    </>
+  );
+}
+
+export function AppHubNav({ activeModule, onNavigate }) {
+  return (
+    <div className="lp-hub-nav">
+      {NAV_CATEGORIES.map((cat, i) => (
+        <AppHubPill key={i} cat={cat} activeModule={activeModule} onNavigate={onNavigate} />
+      ))}
+    </div>
   );
 }
 
@@ -535,38 +760,90 @@ const ALL_TOOLS_LIST = [
   { icon: '🧬', label: 'AI Memory', moduleId: 'memory' },
 ];
 
+function LandingHubPill({ cat, activeIdx, myIdx, setActive, onFeatModal, onGetReady, onModuleSelect }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef(null);
+  const panelRef = useRef(null);
+  const isReady = cat.tag === 'Pro';
+  const isFree  = cat.tag === 'Free';
+
+  const handleClick = () => {
+    if (isReady) { setActive(myIdx); onGetReady?.(); return; }
+    if (isFree)  { setActive(myIdx); onModuleSelect?.('jobs'); return; }
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 8, left: r.left + r.width / 2 });
+    }
+    setOpen(o => !o);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const h = (e) => {
+      if (btnRef.current?.contains(e.target)) return;
+      if (panelRef.current?.contains(e.target)) return;
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [open]);
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        className={`lp-hub-pill${activeIdx === myIdx ? ' on' : ''}${isReady ? ' ready' : ''}`}
+        onClick={handleClick}
+      >
+        <span style={{ fontSize: 15 }}>{cat.icon}</span>
+        <span className="lp-hub-pill-label">{cat.label}</span>
+        {isFree  && <span className="lp-hub-pill-sub">Always free</span>}
+        {isReady && <span className="lp-hub-pill-badge">Pro</span>}
+      </button>
+      {open && ReactDOM.createPortal(
+        <div
+          ref={panelRef}
+          className="lp-ncd-panel"
+          style={{ position:'fixed', top:pos.top, left:pos.left, transform:'translateX(-50%)', minWidth:220, zIndex:9999 }}
+        >
+          <div className="lp-ncd-panel-head">{cat.icon} {cat.label}</div>
+          {cat.tools.map((t, i) => (
+            <button
+              key={i}
+              className="lp-ncd-item"
+              onClick={() => { onModuleSelect?.(t.moduleId); setOpen(false); setActive(myIdx); }}
+            >
+              <span className="lp-ncd-item-icon">{t.icon}</span>
+              <div>
+                <div className="lp-ncd-item-label">{t.label}</div>
+                {t.sub && <div className="lp-ncd-item-sub">{t.sub}</div>}
+              </div>
+            </button>
+          ))}
+        </div>,
+        document.body
+      )}
+    </>
+  );
+}
+
 export function HubNav({ onModuleSelect, onTrackerOpen, onGetReady, onFeatModal }) {
   const [active, setActive] = useState(0);
-  const ss = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  const pills = [
-    { icon: '🔍', label: 'Job Search', sub: 'Always free', badge: null, pulse: false, ready: false,
-      onClick: () => { setActive(0); onModuleSelect?.('jobs'); } },
-    { icon: '🎯', label: 'Get Seen', sub: null, badge: null, pulse: true, ready: false,
-      onClick: () => { setActive(1); onFeatModal?.(1); } },
-    { icon: '✅', label: 'Get Ready', sub: null, badge: 'Pro', pulse: false, ready: true,
-      onClick: () => { setActive(2); onGetReady?.(); } },
-    { icon: '🏆', label: 'Get the Offer', sub: null, badge: null, pulse: true, ready: false,
-      onClick: () => { setActive(3); onFeatModal?.(5); } },
-    { icon: '💰', label: 'Get Paid', sub: null, badge: null, pulse: true, ready: false,
-      onClick: () => { setActive(4); onFeatModal?.(6); } },
-  ];
 
   return (
     <div className="lp-hub-nav">
-      {pills.map((p, i) => (
-        <button
+      {NAV_CATEGORIES.map((cat, i) => (
+        <LandingHubPill
           key={i}
-          className={`lp-hub-pill${active === i ? ' on' : ''}${p.ready ? ' ready' : ''}`}
-          onClick={p.onClick}
-          style={{ position: 'relative' }}
-        >
-          <span style={{ fontSize: 15 }}>{p.icon}</span>
-          <span className="lp-hub-pill-label">{p.label}</span>
-          {p.sub && <span className="lp-hub-pill-sub">{p.sub}</span>}
-          {p.badge && <span className="lp-hub-pill-badge">{p.badge}</span>}
-          {p.pulse && <span className="lp-hub-pulse-dot" />}
-        </button>
+          cat={cat}
+          myIdx={i}
+          activeIdx={active}
+          setActive={setActive}
+          onFeatModal={onFeatModal}
+          onGetReady={onGetReady}
+          onModuleSelect={onModuleSelect}
+        />
       ))}
     </div>
   );
@@ -1304,6 +1581,7 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
   }, []);
 
   return (
+    <>
     <header className="hero">
       <div className="hero-top">
         {/* LEFT */}
@@ -1331,12 +1609,6 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
                 <div className="hf-stat-l">faster job search<br />with AI memory</div>
               </div>
             </div>
-            <div className="stats-card" ref={statsRef} style={{ marginTop:14 }}>
-              <div className="stats-card-hd">📊 Why job seekers use CareerAiHub</div>
-              <div className="stats-grid">
-                {STATS.map((s, i) => <StatBox key={i} stat={s} started={statsStarted} />)}
-              </div>
-            </div>
           </div>
         </div>
 
@@ -1347,6 +1619,26 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
       {/* BOTTOM — Full-width animated ATS demo */}
       <AtsDemoSection onJoin={onJoin} />
     </header>
+
+    {/* WHY SEEKERS BAND — full-width strip below hero */}
+    <div className="why-band" ref={statsRef}>
+      <div className="why-band-label">📊 Why job seekers use CareerAiHub</div>
+      <div className="why-band-divider" />
+      {STATS.map((s, i) => (
+        <React.Fragment key={i}>
+          <div className="why-band-stat">
+            <span className={`why-band-n ${s.cls}`}>
+              {statsStarted
+                ? `${s.prefix || ''}${s.value}${s.suffix}`
+                : `${s.prefix || ''}0${s.suffix}`}
+            </span>
+            <span className="why-band-l">{s.label}</span>
+          </div>
+          {i < STATS.length - 1 && <div className="why-band-divider" />}
+        </React.Fragment>
+      ))}
+    </div>
+    </>
   );
 }
 
@@ -1924,31 +2216,6 @@ function HowItWorksSection({ onJoin, onSampleReport }) {
 // ── PRICING ───────────────────────────────────────────────────────────────────
 
 function PricingSection({ onJoin, onGetReady }) {
-  const features = [
-    { label: 'Job search', free: '✓', premium: '✓', pro: '✓', rec: '—' },
-    { label: 'Market intelligence', free: '✓', premium: '✓', pro: '✓', rec: '—' },
-    { label: 'Resume ATS scan', free: '1 scan', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
-    { label: 'ATS Builder + editor', free: '—', premium: '✓', pro: '✓', rec: '—' },
-    { label: 'JD Analyzer', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
-    { label: 'STAR Answer Builder', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
-    { label: 'HM Simulator', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
-    { label: 'Mock Interview Coach', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
-    { label: 'Salary Coach + negotiation', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
-    { label: 'Cover Letter Generator', free: '1 use', premium: '✓ Unlimited', pro: '✓ Unlimited', rec: '—' },
-    { label: 'AI Memory (full)', free: '—', premium: '✓', pro: '✓', rec: '—' },
-    { label: 'Get Ready plan', free: '—', premium: '—', pro: '✓', rec: '—' },
-    { label: 'Readiness Certificate', free: '—', premium: '—', pro: '✓', rec: '—' },
-    { label: 'Verified candidate pipeline', free: '—', premium: '—', pro: '—', rec: '✓' },
-    { label: 'AI match shortlisting', free: '—', premium: '—', pro: '—', rec: '✓' },
-    { label: 'TrustChat + recruiter dashboard', free: '—', premium: '—', pro: '—', rec: '✓' },
-  ];
-
-  const cellColor = (v) => {
-    if (v === '—') return { color: 'var(--lp-text3)' };
-    if (v.startsWith('✓')) return { color: 'var(--lp-teal)', fontWeight: 600 };
-    return { color: 'var(--lp-amber)', fontSize: 11 };
-  };
-
   return (
     <section className="section alt" id="price-sec">
       <div className="reveal">
@@ -1957,55 +2224,57 @@ function PricingSection({ onJoin, onGetReady }) {
         <p className="ss">No card required to start. Free tier gives you enough to feel the value — then upgrade to unlock every tool, unlimited.</p>
       </div>
 
-      <div className="reveal d1" style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, tableLayout: 'fixed' }}>
-          <colgroup>
-            <col style={{ width: '34%' }} />
-            <col style={{ width: '16.5%' }} />
-            <col style={{ width: '16.5%' }} />
-            <col style={{ width: '16.5%' }} />
-            <col style={{ width: '16.5%' }} />
-          </colgroup>
-          <thead>
-            <tr>
-              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--lp-text3)', background: 'rgba(255,255,255,.02)', borderBottom: '1px solid var(--lp-bdr)' }}>Feature</th>
-              {[
-                { name: 'Free', price: '$0/mo', note: 'No card needed', cta: 'Start free', fn: onJoin, hot: false },
-                { name: 'Premium', price: '$19/mo', note: '$180/year · 20% off', cta: '7-day trial', fn: onJoin, hot: false },
-                { name: 'Pro · Get Ready', price: '$24.99/mo', note: '$239/year · 20% off', cta: 'Open Get Ready ✦', fn: onGetReady, hot: true },
-                { name: 'Recruiter', price: null, note: 'Enterprise pricing', cta: 'Know more →', fn: onJoin, hot: false },
-              ].map((col, i) => (
-                <th key={i} style={{ padding: '12px 10px', textAlign: 'center', background: col.hot ? 'rgba(0,212,255,.04)' : 'rgba(255,255,255,.02)', borderBottom: `2px solid ${col.hot ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`, position: 'relative' }}>
-                  {col.hot && <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', fontSize: 9, fontWeight: 800, padding: '2px 10px', borderRadius: 20, background: 'var(--lp-teal)', color: '#000', whiteSpace: 'nowrap' }}>MOST POPULAR</div>}
-                  <div style={{ fontSize: 12, fontWeight: 800, color: col.hot ? 'var(--lp-teal)' : 'var(--lp-text)', marginBottom: 4 }}>{col.name}</div>
-                  {col.price
-                    ? <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--lp-text)', fontFamily: 'var(--lp-ffd)', lineHeight: 1 }}>{col.price}</div>
-                    : <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text2)', fontStyle: 'italic' }}>Talk to us</div>
-                  }
-                  <div style={{ fontSize: 10, color: 'var(--lp-text3)', margin: '4px 0 10px' }}>{col.note}</div>
-                  <button onClick={col.fn} style={{ width: '100%', padding: '8px 6px', borderRadius: 8, border: col.hot ? 'none' : '1px solid var(--lp-bdr)', background: col.hot ? 'var(--lp-grad-primary)' : 'rgba(255,255,255,.04)', color: col.hot ? '#000' : 'var(--lp-text)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--lp-ff)' }}>
-                    {col.cta}
-                  </button>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {features.map((f, i) => (
-              <tr key={i} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,.01)' }}>
-                <td style={{ padding: '10px 16px', color: 'var(--lp-text2)', borderBottom: '1px solid rgba(255,255,255,.04)', fontSize: 12 }}>{f.label}</td>
-                {['free', 'premium', 'pro', 'rec'].map((k, ci) => (
-                  <td key={k} style={{ padding: '10px 10px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,.04)', background: ci === 2 ? 'rgba(0,212,255,.02)' : 'transparent', ...cellColor(f[k]) }}>{f[k]}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="price-grid reveal d1">
+        <article className="pcard">
+          <h3 className="pc-name">Free</h3>
+          <div className="pc-price">$0<span>/month</span></div>
+          <div className="pc-note">No credit card · always free</div>
+          <ul className="pc-feats">
+            <li className="pcf"><span className="ck">✓</span>1 resume ATS scan</li>
+            <li className="pcf"><span className="ck">✓</span>1–2 free uses per module</li>
+            <li className="pcf"><span className="ck">✓</span>Job search — always free</li>
+            <li className="pcf"><span className="ck">✓</span>Market intelligence — always free</li>
+          </ul>
+          <button className="pbtn" onClick={onJoin}>Start free — no card →</button>
+        </article>
+
+        <article className="pcard hot">
+          <h3 className="pc-name">Premium · Pro</h3>
+          <div className="pc-price">$22.99<span>/month</span></div>
+          <div className="pc-note">$219/year · saves 20% · interview-ready in 9 days</div>
+          <ul className="pc-feats">
+            <li className="pcf"><span className="ck">✓</span>Unlimited resume scans + full editor</li>
+            <li className="pcf"><span className="ck">✓</span>Unlimited Mock Interviews + HM Simulator</li>
+            <li className="pcf"><span className="ck">✓</span>Unlimited Salary Coaching + negotiation</li>
+            <li className="pcf"><span className="ck">✓</span>Full AI memory across all 10 modules</li>
+            <li className="pcf"><span className="ck">✓</span>Unlimited JD analyzer + STAR builder</li>
+            <li className="pcf"><span className="ck">✓</span>Unlimited Cover Letter generation</li>
+            <li className="pcf"><span className="ck">✓</span><strong style={{ color: 'var(--lp-teal)' }}>Get Ready plan</strong> — AI-built from your scores + weak spots</li>
+            <li className="pcf"><span className="ck">✓</span>Adaptive plan re-scored every 7 days as you improve</li>
+            <li className="pcf"><span className="ck">✓</span><strong style={{ color: 'var(--lp-teal)' }}>Readiness Certificate</strong> — shareable with employers at 80+</li>
+          </ul>
+          <button className="pbtn pri" onClick={onGetReady}>Open Get Ready ✦</button>
+          <div style={{ textAlign: 'center', marginTop: 8, fontSize: 10, color: 'var(--lp-text3)' }}>7-day free trial · cancel anytime</div>
+        </article>
+
+        <article className="pcard">
+          <h3 className="pc-name">Recruiter</h3>
+          <div className="pc-price">SGD 299<span>/mo</span></div>
+          <div className="pc-note">Enterprise from SGD 1,500/mo</div>
+          <ul className="pc-feats">
+            <li className="pcf"><span className="ck">✓</span>Verified candidate pipeline</li>
+            <li className="pcf"><span className="ck">✓</span>AI match shortlisting</li>
+            <li className="pcf"><span className="ck">✓</span>TrustChat + credential sidebar</li>
+            <li className="pcf"><span className="ck">✓</span>Recruiter Dashboard + analytics</li>
+            <li className="pcf"><span className="ck">✓</span>10–20× ROI vs headhunter fees</li>
+          </ul>
+          <button className="pbtn" onClick={onJoin}>Request pilot →</button>
+        </article>
       </div>
 
       <div className="reveal d2" style={{ marginTop: 22, background: 'linear-gradient(135deg,rgba(0,212,255,.06) 0%,rgba(176,38,255,.05) 100%)', border: '1px solid var(--lp-teal-b)', borderRadius: 'var(--lp-rl)', padding: '22px 28px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 240 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--lp-teal)', marginBottom: 6 }}>New in Pro — Get Ready</div>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--lp-teal)', marginBottom: 6 }}>Included in Premium · Pro — Get Ready</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 6, lineHeight: 1.3 }}>Interview-ready in 9 days.<br />AI builds your plan from your exact weaknesses.</div>
           <div style={{ fontSize: 12, color: 'var(--lp-text2)', lineHeight: 1.7 }}>After your mock interview, the AI scores you across 5 dimensions. It then creates a session-by-session study plan targeting your weakest areas first — and re-scores your plan every 7 days as you improve. When you hit 80+ on all dimensions, you earn a shareable Readiness Certificate.</div>
         </div>
@@ -2336,25 +2605,60 @@ function CoverLetterModal({ onClose }) {
   );
 }
 
+// ── GET READY TAB DEFINITIONS ─────────────────────────────────────────────────
+
+const GR_TABS_DEF = [
+  { k: 'dashboard', label: 'Dashboard',       icon: '📊' },
+  { k: 'modules',   label: 'Study Modules',   icon: '📚' },
+  { k: 'radar',     label: 'Weakness Radar',  icon: '📡', moduleId: 'radar',  fi: 8  },
+  { k: 'star',      label: 'STAR Builder',    icon: '⭐', moduleId: 'star',   fi: 4  },
+  { k: 'score',     label: 'Readiness Score', icon: '🏆', moduleId: 'score',  fi: 9  },
+  { k: 'memory',    label: 'AI Memory',       icon: '🧬', moduleId: 'memory', fi: 11 },
+];
+
+// ── GET READY TAB STRIP (used inside each Get Ready feature in the app) ───────
+
+export function GetReadyTabStrip({ activeModuleId, onNavigate, onStudyPlan }) {
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 20px', background:'rgba(0,212,255,.04)', borderBottom:'1px solid rgba(0,212,255,.1)', fontFamily:'var(--lp-ff)', overflowX:'auto', flexWrap:'nowrap', scrollbarWidth:'none' }}>
+      <span style={{ fontSize:9, fontWeight:800, color:'var(--lp-teal)', textTransform:'uppercase', letterSpacing:'.12em', flexShrink:0, marginRight:6, whiteSpace:'nowrap' }}>✦ GET READY</span>
+      <div style={{ width:1, height:16, background:'rgba(0,212,255,.15)', flexShrink:0, marginRight:2 }} />
+      {GR_TABS_DEF.map(t => {
+        const isActive = t.moduleId && t.moduleId === activeModuleId;
+        return (
+          <button
+            key={t.k}
+            style={{ padding:'4px 12px', borderRadius:6, fontSize:12, fontWeight:600, color: isActive ? 'var(--lp-teal)' : 'var(--lp-text2)', background: isActive ? 'var(--lp-teal-dim)' : 'transparent', border:`1px solid ${isActive ? 'var(--lp-teal-b)' : 'transparent'}`, cursor:'pointer', transition:'all .15s', fontFamily:'var(--lp-ff)', whiteSpace:'nowrap', flexShrink:0 }}
+            onClick={() => t.moduleId ? onNavigate(t.moduleId) : onStudyPlan(t.k)}
+          >
+            {t.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── STUDY PLAN MODAL ─────────────────────────────────────────────────────────
 
-function StudyPlanModal({ onClose }) {
-  const [tab, setTab] = useState('dashboard');
-  const TABS = [['dashboard', 'Dashboard'], ['modules', 'Study modules'], ['readiness', 'Readiness score']];
+export function StudyPlanModal({ onClose, initialTab = 'dashboard', onModuleSelect }) {
+  const [tab, setTab] = useState(initialTab);
   return (
     <div className="lp-modal-overlay" onClick={onClose}>
-      <div className="lp-sp-modal" onClick={e => e.stopPropagation()}>
+      <div className="lp-sp-modal" style={{ maxWidth: 780 }} onClick={e => e.stopPropagation()}>
         <div className="lp-modal-hd">
           <div className="lp-modal-title">
-            ✦ Get Ready
-            <span className="lp-sp-modal-badge">Interview Readiness · Minh Tran</span>
+            ✅ Get Ready
+            <span className="lp-sp-modal-badge">Interview Readiness · Pro</span>
           </div>
           <button className="lp-modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="lp-modal-body">
-          <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
-            {TABS.map(([k, label]) => (
-              <button key={k} className={`lp-sp-tab${tab === k ? ' on' : ''}`} onClick={() => setTab(k)}>{label}</button>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
+            {GR_TABS_DEF.map(t => (
+              <button key={t.k} className={`lp-sp-tab${tab === t.k ? ' on' : ''}`} onClick={() => setTab(t.k)}>
+                {t.label}
+              </button>
             ))}
           </div>
 
@@ -2430,40 +2734,41 @@ function StudyPlanModal({ onClose }) {
             </div>
           )}
 
-          {tab === 'readiness' && (
-            <div>
-              <div className="lp-sp-section-lbl">Readiness breakdown — Senior Product Manager · Singapore</div>
-              <div style={{marginBottom:18}}>
-                {[
-                  {label:'Concrete examples',pct:38,color:'#FF4D6A'},
-                  {label:'STAR structure',pct:44,color:'#FFD233'},
-                  {label:'Clarity',pct:72,color:'#00E5A0'},
-                  {label:'Role knowledge',pct:84,color:'#00E5A0'},
-                  {label:'Answer relevance',pct:68,color:'#00D4FF'},
-                ].map((r,i)=>(
-                  <div key={i} className="lp-sp-rb-row">
-                    <div className="lp-sp-rb-lbl">{r.label}</div>
-                    <div className="lp-sp-rb-bg"><div className="lp-sp-rb-fill" style={{width:r.pct+'%',background:r.color}}/></div>
-                    <div className="lp-sp-rb-pct" style={{color:r.color}}>{r.pct}%</div>
+          {['radar','star','score','memory'].includes(tab) && (() => {
+            const tDef = GR_TABS_DEF.find(t => t.k === tab);
+            const f = FEAT_DATA[tDef.fi];
+            return (
+              <div>
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--lp-teal)', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 6 }}>{f.ey}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--lp-text)', marginBottom: 8, letterSpacing: '-.3px' }}>{f.title}</div>
+                  <p style={{ fontSize: 13, color: 'var(--lp-text2)', lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
+                </div>
+                <div className="lp" style={{ background: 'transparent', minHeight: 'unset', overflow: 'visible' }}>
+                  <div style={{ background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 'var(--lp-r)', padding: 16, marginBottom: 16 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--lp-text3)', textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: 10 }}>{f.previewHd}</div>
+                    <div dangerouslySetInnerHTML={{ __html: f.preview }} />
                   </div>
-                ))}
+                </div>
+                <ul style={{ margin: '0 0 20px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {f.bullets.map((b, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--lp-text2)', lineHeight: 1.55 }}>
+                      <span style={{ color: 'var(--lp-teal)', flexShrink: 0, marginTop: 1 }}>✓</span>{b}
+                    </li>
+                  ))}
+                </ul>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  {onModuleSelect ? (
+                    <button className="lp-sp-start-btn" onClick={() => { onModuleSelect(tab); onClose(); }}>
+                      Open {f.label} →
+                    </button>
+                  ) : (
+                    <button className="lp-sp-upgrade-btn">Upgrade to Pro — $24.99/mo ✦</button>
+                  )}
+                </div>
               </div>
-              <div className="lp-sp-coach" style={{marginBottom:20}}>
-                <div className="lp-sp-coach-av">AI</div>
-                <div className="lp-sp-coach-text"><strong>Overall readiness: 61/100.</strong> You need 80+ on all 5 dimensions to unlock your Readiness Certificate. Your two critical gaps — concrete examples (38) and STAR structure (44) — are both fixable with focused practice. At 1 session per day, you reach 80+ in approximately <strong>9 days.</strong></div>
-              </div>
-              <div className="lp-sp-gate">
-                <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'var(--lp-text3)',marginBottom:8}}>Readiness certificate unlocks at</div>
-                <div className="lp-sp-gate-num">80 / 100</div>
-                <div className="lp-sp-gate-lbl">across all 5 dimensions</div>
-                <div className="lp-sp-gate-sub">Shareable with employers · proves genuine interview preparation</div>
-              </div>
-              <div className="lp-sp-upgrade-strip">
-                <div className="lp-sp-upgrade-text"><strong>Pro plan includes</strong> — plan re-scored every 7 days, readiness certificate at 80+, and salary negotiation modules that unlock as you progress.</div>
-                <button className="lp-sp-upgrade-btn" onClick={onClose}>Unlock Get Ready — $24.99/mo ✦</button>
-              </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
     </div>
@@ -2693,7 +2998,15 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
         <div className="lp-amb-orb a1" /><div className="lp-amb-orb a2" /><div className="lp-amb-orb a3" />
       </div>
 
-      <NavBar onSignIn={onSignIn} onJoin={onJoin} scrolled={navScrolled} lightMode={lightMode} onToggleLightMode={() => setLightMode(lm => !lm)} />
+      <NavBar
+        onSignIn={onSignIn} onJoin={onJoin} scrolled={navScrolled}
+        lightMode={lightMode} onToggleLightMode={() => setLightMode(lm => !lm)}
+        onFeatOpen={(moduleId) => {
+          const tab = NAV_FEAT_MAP[moduleId] ?? 0;
+          setFeatModalTab(tab);
+          setFeatModalOpen(true);
+        }}
+      />
       <HubNav onModuleSelect={onModuleSelect} onTrackerOpen={() => setTrackerOpen(true)} onGetReady={() => setStudyPlanOpen(true)} onFeatModal={(tab) => { setFeatModalTab(tab ?? 0); setFeatModalOpen(true); }} />
 
       <HeroSection onJoin={onJoin} onModuleSelect={onModuleSelect} onTrackerOpen={() => setTrackerOpen(true)} onSnack={showSnack} onAgenticCta={() => setCoverLetterOpen(true)} />

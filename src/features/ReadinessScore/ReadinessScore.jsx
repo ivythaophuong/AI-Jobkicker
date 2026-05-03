@@ -2,18 +2,23 @@ import React from 'react';
 import { C } from '../../styles/theme';
 import { Card, Badge, Spinner } from '../../components/CommonUI';
 import { AnimatedScore } from '../../components/OriginalFeatures';
+import { GetReadyTabStrip } from '../Landing/LandingPage';
+import '../../styles/featurePage.css';
 
-export default function ReadinessScore({ scanResult, memory }) {
+export default function ReadinessScore({ scanResult, memory, setActiveModule, onStudyPlan }) {
   const latestHistory = memory?.scanHistory?.[0];
   const effectiveResult = scanResult || latestHistory?.result;
-  
+
   if (!effectiveResult) {
     return (
-      <div style={{ textAlign: "center", padding: 60 }}>
-        <div style={{ fontSize: 60, marginBottom: 20 }}>📊</div>
-        <div style={{ color: C.text, fontWeight: 900, fontSize: 18, marginBottom: 8 }}>Readiness Calculation Offline</div>
-        <div style={{ color: C.muted, fontSize: 13, marginBottom: 20 }}>Scan your resume to calculate your market readiness score.</div>
-        <button onClick={() => { setActiveModule("scan"); showToast("Please run a scan to calculate Readiness", "info"); }} style={{ background: C.accent, color: "#000", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 800, cursor: "pointer" }}>Run Deep Scan Now</button>
+      <div className="fp-wrap" style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        <GetReadyTabStrip activeModuleId="score" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />
+        <div style={{ textAlign: "center", padding: 60 }}>
+          <div style={{ fontSize: 60, marginBottom: 20 }}>📊</div>
+          <div style={{ color: C.text, fontWeight: 900, fontSize: 18, marginBottom: 8 }}>Readiness Calculation Offline</div>
+          <div style={{ color: C.muted, fontSize: 13, marginBottom: 20 }}>Scan your resume to calculate your market readiness score.</div>
+          <button onClick={() => setActiveModule?.("scan")} style={{ background: C.accent, color: "#000", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 800, cursor: "pointer" }}>Run Deep Scan Now</button>
+        </div>
       </div>
     );
   }
@@ -23,7 +28,9 @@ export default function ReadinessScore({ scanResult, memory }) {
   const color = score >= 85 ? C.green : score >= 65 ? C.gold : C.red;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      <GetReadyTabStrip activeModuleId="score" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 24 }}>
       <div>
         <div style={{ color: C.text, fontWeight: 900, fontSize: 24 }}>Market Readiness Score</div>
         <div style={{ color: C.muted, fontSize: 13, marginTop: 4 }}>Aggregated probability of clearing initial ATS and recruiter filters.</div>
@@ -70,6 +77,7 @@ export default function ReadinessScore({ scanResult, memory }) {
           </div>
         ))}
       </Card>
+      </div>
     </div>
   );
 }

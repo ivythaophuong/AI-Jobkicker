@@ -2,19 +2,24 @@ import React from 'react';
 import { C } from '../../styles/theme';
 import { Card, Badge, Spinner } from '../../components/CommonUI';
 import { GlowBar } from '../../components/OriginalFeatures';
+import { GetReadyTabStrip } from '../Landing/LandingPage';
+import '../../styles/featurePage.css';
 
-export default function WeaknessRadar({ scanResult, memory }) {
+export default function WeaknessRadar({ scanResult, memory, setActiveModule, onStudyPlan }) {
   const clamp = v => Math.max(10, Math.min(99, Math.round(v)));
   const latestHistory = memory?.scanHistory?.[0];
   const effectiveResult = scanResult || latestHistory?.result;
   
   if (!effectiveResult) {
     return (
-      <div style={{ textAlign: "center", padding: 60 }}>
-        <div style={{ fontSize: 60, marginBottom: 20 }}>📡</div>
-        <div style={{ color: C.text, fontWeight: 900, fontSize: 18, marginBottom: 8 }}>Radar is offline</div>
-        <div style={{ color: C.muted, fontSize: 13, marginBottom: 20 }}>Scan your resume first to map your skills and detect weaknesses.</div>
-        <button onClick={() => { setActiveModule("scan"); showToast("Please run a scan to activate Radar", "info"); }} style={{ background: C.red, color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 800, cursor: "pointer" }}>Run Deep Scan</button>
+      <div className="fp-wrap" style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        <GetReadyTabStrip activeModuleId="radar" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />
+        <div style={{ textAlign: "center", padding: 60 }}>
+          <div style={{ fontSize: 60, marginBottom: 20 }}>📡</div>
+          <div style={{ color: C.text, fontWeight: 900, fontSize: 18, marginBottom: 8 }}>Radar is offline</div>
+          <div style={{ color: C.muted, fontSize: 13, marginBottom: 20 }}>Scan your resume first to map your skills and detect weaknesses.</div>
+          <button onClick={() => setActiveModule?.("scan")} style={{ background: C.red, color: "#fff", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 800, cursor: "pointer" }}>Run Deep Scan</button>
+        </div>
       </div>
     );
   }
@@ -36,7 +41,9 @@ export default function WeaknessRadar({ scanResult, memory }) {
   const colored = wk.map(w => ({ ...w, color: w.s < 40 ? C.red : w.s < 70 ? C.gold : C.green }));
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      <GetReadyTabStrip activeModuleId="radar" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 24 }}>
       <div>
         <div style={{ color: C.text, fontWeight: 900, fontSize: 24 }}>Weakness Radar</div>
         <div style={{ color: C.muted, fontSize: 13, marginTop: 4 }}>Visual competency mapping derived from your resume structure.</div>
@@ -70,6 +77,7 @@ export default function WeaknessRadar({ scanResult, memory }) {
           </div>
         ))}
       </Card>
+      </div>
     </div>
   );
 }

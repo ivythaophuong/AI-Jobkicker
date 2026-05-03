@@ -36,6 +36,7 @@ async function _callGemini(messages, maxTokens, pdfBase64) {
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message || 'Gemini call failed');
+  if (!data.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error('Unexpected Gemini response format');
   return data.candidates[0].content.parts[0].text;
 }
 
@@ -51,6 +52,7 @@ async function _callAnthropic(messages, maxTokens) {
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message || 'Anthropic call failed');
+  if (!data.content?.[0]?.text) throw new Error('Unexpected Anthropic response format');
   return data.content[0].text;
 }
 
@@ -65,6 +67,7 @@ async function _callOpenAI(messages, maxTokens) {
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message || 'OpenAI call failed');
+  if (!data.choices?.[0]?.message?.content) throw new Error('Unexpected OpenAI response format');
   return data.choices[0].message.content;
 }
 

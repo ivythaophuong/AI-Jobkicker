@@ -41,7 +41,7 @@ function RejectionCoach({ rejection, form }) {
 }
 
 // ── Main Component ───────────────────────────────────────────────────────────
-export default function JobSearch({ form, memory, updateMemory, onProTrigger, user, setAuthModal }) {
+export default function JobSearch({ form, memory, updateMemory, onProTrigger, user, setAuthModal, showToast }) {
   const [activeTab, setActiveTab] = useState("search");
   const [title, setTitle] = useState(form.role || "");
   const [location, setLocation] = useState(form.market || "");

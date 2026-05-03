@@ -1,0 +1,46 @@
+/* ── APP MODULE THEME ─────────────────────────────────────────────────────────
+   Applied to all feature pages via .app-module-area wrapper in App.jsx.
+   Uses the same --lp-* CSS variables as landing.css (defined on :root).
+   ResumeScan and ATSBuilder have their own CSS files and are unaffected.
+*/
+
+.app-module-area {
+  background: var(--lp-bg);
+  color: var(--lp-text);
+  font-family: var(--lp-ff, 'DM Sans', system-ui, sans-serif);
+  min-height: calc(100vh - 120px);
+  padding: 28px 32px;
+  /* CSS variables consumed by Card component */
+  --card-bg: var(--lp-bg2);
+  --card-bdr: rgba(0, 212, 255, 0.09);
+  --card-hover-bdr: rgba(0, 212, 255, 0.2);
+}
+
+/* Section titles inside features */
+.app-module-area .feat-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--lp-text);
+  letter-spacing: -.4px;
+  font-family: var(--lp-ff);
+}
+
+.app-module-area .feat-sub {
+  font-size: 13px;
+  color: var(--lp-text2);
+  margin-top: 4px;
+}
+
+/* Labels / eyebrow text */
+.app-module-area .feat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--lp-text3);
+}
+
+/* Subtle card hover glow */
+.app-module-area .ui-card:hover {
+  border-color: var(--card-hover-bdr) !important;
+}

@@ -19,8 +19,9 @@ import MemoryDashboard from './features/MemoryDashboard/MemoryDashboard';
 import ATSBuilder from './features/ATSBuilder/ATSBuilder';
 import PrivacyPolicy from './features/Legal/PrivacyPolicy';
 import TermsOfService from './features/Legal/TermsOfService';
-import LandingPage, { GuestNav, ModulePills, PILLS, LogoMark } from './features/Landing/LandingPage';
+import LandingPage, { GuestNav, AppHubNav, LogoMark, StudyPlanModal, GetReadyTabStrip } from './features/Landing/LandingPage';
 import { AppLoader, OrbitSpinner } from './components/OrbitMark';
+import './styles/appTheme.css';
 
 // ── Original Overlay Components ──────────────────────────────────────────────
 import { Ticker, UserMenu, AuthGate } from './components/OriginalUIOverlays';
@@ -39,6 +40,8 @@ function App() {
   const [toast, setToast] = useState(null);
 
   const [showLanding, setShowLanding] = useState(true);
+  const [grModalOpen, setGrModalOpen] = useState(false);
+  const [grModalTab, setGrModalTab] = useState('dashboard');
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
   const { memory, updateMemory, isSyncing } = useMemory(user, isRestoring, setIsRestoring, setRestoreError);
@@ -116,11 +119,12 @@ function App() {
   }, []);
 
   const renderActiveModule = () => {
-    const props = { 
-      resumeText, setResumeText, scanResult, setScanResult, 
-      form, memory, updateMemory, 
+    const props = {
+      resumeText, setResumeText, scanResult, setScanResult,
+      form, memory, updateMemory,
       onProTrigger: setProModal,
-      user, setAuthModal, showToast, setActiveModule
+      user, setAuthModal, showToast, setActiveModule,
+      onStudyPlan: (tab) => { setGrModalTab(tab); setGrModalOpen(true); },
     };
     
     switch (activeModule) {
@@ -255,31 +259,47 @@ function App() {
 
     if (isRestoring) return <AppLoader label="Restoring your session…" />;
 
+    const NATIVE_FULL_MODULES = new Set(['ats', 'scan']);
+    const isNativeFull = NATIVE_FULL_MODULES.has(activeModule);
+
     return (
       <>
         {/* Content Wrapper */}
-        <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 16px", animation: "fadeIn 0.4s ease" }}>
-          <div key={activeModule}>
+        {isNativeFull ? (
+          <div key={activeModule} style={{ animation: "fadeIn 0.4s ease" }}>
             {renderActiveModule()}
           </div>
-        </div>
+        ) : (
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 24px 0", animation: "fadeIn 0.4s ease" }}>
+            <div key={activeModule}>
+              {renderActiveModule()}
+            </div>
+          </div>
+        )}
       </>
     );
   };
 
   return (
-    <div data-theme={darkMode ? "dark" : "light"} style={{ minHeight: "100vh", background: darkMode ? C.bg : "#F8FAFC", fontFamily: "var(--font-body)", color: darkMode ? C.text : "#0F172A" }}>
+    <div data-theme={darkMode ? "dark" : "light"} style={{ minHeight: "100vh", background: 'var(--lp-bg)', fontFamily: "var(--lp-ff, 'DM Sans', system-ui, sans-serif)", color: 'var(--lp-text)', '--card-bg': 'var(--lp-bg2)', '--card-bdr': 'rgba(0,212,255,0.09)' }}>
       
       {/* Modals */}
-      {authModal && <AuthModal 
-        initialMode={authModal} 
-        onSuccess={login} 
-        onClose={() => setAuthModal(null)} 
+      {authModal && <AuthModal
+        initialMode={authModal}
+        onSuccess={login}
+        onClose={() => setAuthModal(null)}
         onViewLegal={(m) => { setActiveModule(m); setAuthModal(null); }}
       />}
       {cmdOpen && <CommandPalette modules={MODULES} setActiveModule={setActiveModule} setAuthModal={setAuthModal} user={user} onClose={() => setCmdOpen(false)} />}
+      {grModalOpen && (
+        <StudyPlanModal
+          onClose={() => setGrModalOpen(false)}
+          initialTab={grModalTab}
+          onModuleSelect={(moduleId) => { setActiveModule(moduleId); setGrModalOpen(false); }}
+        />
+      )}
       
-      {/* Guest nav — landing page style, shown when browsing modules without an account */}
+      {/* Guest nav — shown when browsing modules without an account */}
       {!user && !showLanding && (
         <>
           <GuestNav
@@ -287,39 +307,31 @@ function App() {
             onJoin={() => setAuthModal('register')}
             onHome={() => setShowLanding(true)}
           />
-          <ModulePills
-            active={PILLS.findIndex(p => p.moduleId === activeModule)}
-            setActive={(i) => { setActiveModule(PILLS[i].moduleId); }}
-          />
+          <AppHubNav activeModule={activeModule} onNavigate={(id) => setActiveModule(id)} />
         </>
       )}
 
       {/* App header — only shown when logged in */}
-      {user && <>
-        <nav className="lp-nav scrolled">
-          <button className="lp-nav-logo" onClick={() => setActiveModule("jobs")}>
-            <LogoMark size={26} radius={7} />
-            CareerAiHub
-          </button>
-          <div className="lp-nav-r">
-            <button onClick={() => setDarkMode(d => !d)} title="Toggle light/dark mode" style={{ background: "transparent", border: `1px solid var(--lp-bdr2)`, color: "var(--lp-text2)", borderRadius: 6, padding: "4px 8px", fontSize: 13, cursor: "pointer", fontFamily: "inherit", lineHeight: 1 }}>
-              {darkMode ? "☀️" : "🌙"}
+      {user && (
+        <>
+          <nav className="lp-nav scrolled">
+            <button className="lp-nav-logo" onClick={() => setActiveModule("jobs")}>
+              <LogoMark size={26} radius={7} />
+              CareerAiHub
             </button>
-            <button onClick={() => setCmdOpen(true)} title="Command palette (⌘K)" style={{ background: "transparent", border: `1px solid var(--lp-bdr2)`, color: "var(--lp-text2)", borderRadius: 6, padding: "4px 10px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>
-              ⌘K
-            </button>
-            <UserMenu user={user} onLogout={logout} />
-          </div>
-        </nav>
-        <div className="lp-mod-nav">
-          {MODULES.map(m => (
-            <button key={m.id} onClick={() => setActiveModule(m.id)} className={`lp-mpill${activeModule === m.id ? " on" : ""}`}>
-              <span>{m.icon}</span>
-              <span>{m.label}</span>
-            </button>
-          ))}
-        </div>
-      </>}
+            <div className="lp-nav-r">
+              <button onClick={() => setDarkMode(d => !d)} title="Toggle light/dark mode" style={{ background: "transparent", border: `1px solid var(--lp-bdr2)`, color: "var(--lp-text2)", borderRadius: 6, padding: "4px 8px", fontSize: 13, cursor: "pointer", fontFamily: "inherit", lineHeight: 1 }}>
+                {darkMode ? "☀️" : "🌙"}
+              </button>
+              <button onClick={() => setCmdOpen(true)} title="Command palette (⌘K)" style={{ background: "transparent", border: `1px solid var(--lp-bdr2)`, color: "var(--lp-text2)", borderRadius: 6, padding: "4px 10px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>
+                ⌘K
+              </button>
+              <UserMenu user={user} onLogout={logout} />
+            </div>
+          </nav>
+          <AppHubNav activeModule={activeModule} onNavigate={(id) => setActiveModule(id)} />
+        </>
+      )}
 
       {/* Main Content Area */}
       {renderMainContent()}

@@ -3,10 +3,11 @@ import { C } from '../styles/theme';
 
 export const Card = ({ children, glow, style, animate, onClick }) => (
   <div
+    className="ui-card"
     onClick={onClick}
     style={{
-      background: `linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0) 100%), ${C.surface}`,
-      border: `1px solid ${glow || "rgba(255,255,255,0.1)"}`,
+      background: `linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0) 100%), var(--card-bg, ${C.surface})`,
+      border: `1px solid ${glow || 'var(--card-bdr, rgba(255,255,255,0.1))'}`,
       borderRadius: 12,
       padding: "16px 18px",
       boxShadow: glow ? `0 0 28px ${glow}22` : "none",
