@@ -1,7 +1,5 @@
 // Pure utility functions extracted for testability
 
-export const FREE_DONE_LIMIT = 2;
-
 export const SEVERITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
 
 export const CATEGORIES = {
@@ -60,20 +58,13 @@ Return ONLY the improved resume as clean plain text. Keep the same format as the
 }
 
 // Pure card-movement reducer — no React state, used for testing
-export function moveCardPure(state, card, from, to, isFree) {
+export function moveCardPure(state, card, from, to) {
   const { gapCards, editCards, doneCards } = state;
-
-  if (to === 'done' && isFree && doneCards.length >= FREE_DONE_LIMIT) {
-    return { ...state, blocked: true };
-  }
-
   const remove = (arr) => arr.filter(c => c.id !== card.id);
   const newGaps = from === 'gaps' ? remove(gapCards) : gapCards;
   const newEdit = from === 'edit' ? remove(editCards) : editCards;
   const newDone = from === 'done' ? remove(doneCards) : doneCards;
-
   return {
-    blocked: false,
     gapCards:  to === 'gaps' ? [...newGaps, card] : newGaps,
     editCards: to === 'edit' ? [...newEdit, card] : newEdit,
     doneCards: to === 'done' ? [...newDone, card] : newDone,

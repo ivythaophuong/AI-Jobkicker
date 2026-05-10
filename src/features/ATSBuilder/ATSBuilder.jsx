@@ -3,7 +3,7 @@ import mammoth from 'mammoth';
 import { callLLM, extractJSON } from '../../lib/ai.jsx';
 import { OrbitSpinner } from '../../components/OrbitMark';
 import {
-  FREE_DONE_LIMIT, SEVERITY_ORDER, CATEGORIES,
+  SEVERITY_ORDER, CATEGORIES,
   genId, arrayBufferToBase64, computeLineDiff, sortGapsBySeverity, buildRebuildPrompt,
 } from './atsBuilderUtils.js';
 import './atsBuilder.css';
@@ -418,26 +418,6 @@ function AddGapModal({ onClose, onAdd }) {
   );
 }
 
-// ── Upgrade Modal ─────────────────────────────────────────────────────────────
-function UpgradeModal({ onClose, onUpgrade }) {
-  return (
-    <div className="atb-overlay" onClick={onClose}>
-      <div className="atb-modal" onClick={e => e.stopPropagation()}>
-        <div className="atb-modal-icon">⚡</div>
-        <div className="atb-modal-title">Unlock more edits</div>
-        <div className="atb-modal-desc">
-          Free tier allows up to {FREE_DONE_LIMIT} edits per build.
-          Upgrade to Premium to apply unlimited gaps and rebuild as many times as you need.
-        </div>
-        <div className="atb-modal-btns">
-          <button className="atb-cbtn" onClick={onClose}>Maybe later</button>
-          <button className="atb-upload-btn" onClick={onUpgrade}>Upgrade to Premium →</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Results View ───────────────────────────────────────────────────────────────
 function ResultsView({ oldText, newText, oldScore, newScore, oldParams, newParams, addedKeywords, pdfUrl, onEditMore, onRebuildFromThis }) {
   const diff      = computeLineDiff(oldText || '', newText || '');
@@ -634,15 +614,10 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
   const dragRef = useRef(null); // { card, fromCol }
 
   // Modals
-  const [showUpgrade, setShowUpgrade] = useState(false);
   const [showAddGap, setShowAddGap] = useState(false);
 
   // Build result
   const [buildResult, setBuildResult] = useState(null);
-
-  const isFree = !user;
-  const doneCardsRef = useRef(doneCards);
-  useEffect(() => { doneCardsRef.current = doneCards; }, [doneCards]);
 
   // Auto-scan on mount if a saved resume exists in memory
   useEffect(() => {
@@ -754,10 +729,6 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
 
   // ── Card movement ─────────────────────────────────────────────────────────────
   const moveCard = useCallback((card, from, to) => {
-    if (to === 'done' && isFree && doneCardsRef.current.length >= FREE_DONE_LIMIT) {
-      setShowUpgrade(true);
-      return;
-    }
     const remove = (arr) => arr.filter(c => c.id !== card.id);
     if (from === 'gaps')  setGapCards(remove);
     if (from === 'edit')  setEditCards(remove);
@@ -765,7 +736,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
     if (to === 'gaps')    setGapCards(p => [...p, card]);
     if (to === 'edit')    setEditCards(p => [...p, card]);
     if (to === 'done')    setDoneCards(p => [...p, card]);
-  }, [isFree]);
+  }, []);
 
   const updateCard = useCallback((id, updates) => {
     const upd = arr => arr.map(c => c.id === id ? { ...c, ...updates } : c);
@@ -922,7 +893,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
 
                 {/* Done */}
                 <KanbanColumn
-                  label={isFree ? `Done (${doneCards.length}/${FREE_DONE_LIMIT})` : 'Done'}
+                  label="Done"
                   color="var(--lp-teal)"
                   count={doneCards.length}
                   onDrop={() => handleDrop('done')}
@@ -949,13 +920,6 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
           pdfUrl={pdfUrl}
           onEditMore={handleEditMore}
           onRebuildFromThis={handleRebuildFromThis}
-        />
-      )}
-
-      {showUpgrade && (
-        <UpgradeModal
-          onClose={() => setShowUpgrade(false)}
-          onUpgrade={() => { setShowUpgrade(false); onProTrigger?.(); }}
         />
       )}
 
