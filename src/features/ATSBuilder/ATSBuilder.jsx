@@ -8,6 +8,282 @@ import {
 } from './atsBuilderUtils.js';
 import './atsBuilder.css';
 
+// ── ATS Scanner Demo ──────────────────────────────────────────────────────────
+
+const ATS_ENGINES = [
+  { label:'Keyword match',   before:'12% — missing OKR, SQL',  after:'89% match',            pts:22, dims:{ d0:'91%', b0:91 }, insight:'ATS systems tokenise your resume against the JD word-for-word. "Responsible for team tasks" scores 0 for a JD listing "OKR-driven roadmap". We injected 6 exact-match keywords.' },
+  { label:'Bullet impact',   before:'No numbers anywhere',       after:'3 bullets quantified', pts:15, dims:{ d2:'85%', b2:85 }, insight:'Bullets without numbers are skipped in 7-second recruiter scans. "Led OKR roadmap → +28% retention" triggers both ATS keyword match AND the recruiter eye-scan.' },
+  { label:'Section headers', before:'Non-standard labels',       after:'ATS-readable headers', pts:8,  dims:{ d1:'88%', b1:88 }, insight:"Many parsers look for exact strings: \"Experience\", \"Skills\", \"Education\". A header like \"What I've done\" causes the parser to skip the section — your best content disappears." },
+  { label:'Action verbs',    before:'Helped, worked, assisted',  after:'Led, Built, Drove',    pts:7,  dims:{},                 insight:'Weak openers signal a supporting role to ATS seniority models. Strong verbs also match JD language — "led" matches "leadership experience required".' },
+  { label:'Role seniority',  before:'Junior-level framing',      after:'Senior PM aligned',    pts:5,  dims:{ d3:'94%', b3:94 }, insight:'ATS cross-checks your years, seniority language, and impact scope against the role level. We align your framing without inventing anything.' },
+  { label:'File & format',   before:'Tables + parse errors',     after:'Clean single-column',  pts:4,  dims:{},                 insight:'PDF tables and multi-column layouts scramble text order in ATS parsers. Single-column plain text is the safest format across all systems.' },
+];
+
+function AtsScannerDemo() {
+  const [phase, setPhase] = useState('pre');
+  const [scanPct, setScanPct] = useState(0);
+  const [stepsLit, setStepsLit] = useState([false,false,false,false,false]);
+  const [lineStates, setLineStates] = useState([0,0,0,0,0]);
+  const [scanScore, setScanScore] = useState(0);
+  const [afterVisible, setAfterVisible] = useState(false);
+  const [cardTitle, setCardTitle] = useState('AI Scanning…');
+  const [badgeColor, setBadgeColor] = useState('#00D4FF');
+  const [fixStep, setFixStep] = useState(0);
+  const [fixApplied, setFixApplied] = useState(new Array(6).fill(false));
+  const [afterScore, setAfterScore] = useState(38);
+  const [dimVals, setDimVals] = useState({ d0:'—', d1:'—', d2:'—', d3:'—' });
+  const [dimBars, setDimBars] = useState({ b0:0, b1:0, b2:0, b3:0 });
+  const [afterTitle, setAfterTitle] = useState('Waiting for scan…');
+  const [afterSub, setAfterSub] = useState('Results will appear here');
+  const [showDelta, setShowDelta] = useState(false);
+  const [showKw, setShowKw] = useState(false);
+  const [showNote, setShowNote] = useState(false);
+  const [finalBanner, setFinalBanner] = useState(false);
+  const [insight, setInsight] = useState('');
+  const timers = useRef([]);
+  const ivRef = useRef(null);
+
+  const clearAll = () => {
+    timers.current.forEach(clearTimeout); timers.current = [];
+    if (ivRef.current) { clearInterval(ivRef.current); ivRef.current = null; }
+  };
+  const addT = (fn, d) => { timers.current.push(setTimeout(fn, d)); };
+
+  const completeScan = useCallback(() => {
+    setAfterVisible(true);
+    setAfterTitle('Scan complete — apply fixes');
+    setAfterSub('Press "Apply next fix" to see AI improve each issue');
+    addT(() => { setPhase('fixmode'); setCardTitle('ATS engine — 6 checks'); setBadgeColor('#B026FF'); }, 600);
+  }, []);
+
+  const startScan = useCallback(() => {
+    setPhase('scanning');
+    const order = [0,2,4,1,3];
+    order.forEach((li,i) => {
+      addT(() => setLineStates(s => { const n=[...s]; n[li]=1; return n; }), i*80);
+      addT(() => setLineStates(s => { const n=[...s]; n[li]=2; return n; }), i*80+480);
+    });
+    [20,42,65,82,100].forEach((p,i) => addT(() => setScanPct(p), i*340));
+    [0,350,700,1050,1400].forEach((d,i) => addT(() => setStepsLit(s => { const n=[...s]; n[i]=true; return n; }), d));
+    addT(() => {
+      let cur = 0;
+      ivRef.current = setInterval(() => {
+        cur = Math.min(cur+3, 38);
+        setScanScore(cur);
+        if (cur >= 38) { clearInterval(ivRef.current); ivRef.current=null; completeScan(); }
+      }, 28);
+    }, 500);
+  }, [completeScan]);
+
+  const replay = useCallback(() => {
+    clearAll();
+    setPhase('pre'); setScanPct(0); setStepsLit([false,false,false,false,false]);
+    setLineStates([0,0,0,0,0]); setScanScore(0); setAfterVisible(false);
+    setCardTitle('AI Scanning…'); setBadgeColor('#00D4FF');
+    setFixStep(0); setFixApplied(new Array(6).fill(false)); setAfterScore(38);
+    setDimVals({ d0:'—', d1:'—', d2:'—', d3:'—' }); setDimBars({ b0:0, b1:0, b2:0, b3:0 });
+    setAfterTitle('Waiting for scan…'); setAfterSub('Results will appear here');
+    setShowDelta(false); setShowKw(false); setShowNote(false); setFinalBanner(false); setInsight('');
+    addT(startScan, 600);
+  }, [startScan]);
+
+  useEffect(() => { addT(startScan, 1200); return clearAll; }, [startScan]);
+
+  const applyFix = () => {
+    if (fixStep >= ATS_ENGINES.length) return;
+    const e = ATS_ENGINES[fixStep];
+    setFixApplied(s => { const n=[...s]; n[fixStep]=true; return n; });
+    const ns = afterScore + e.pts;
+    setAfterScore(ns); setInsight(e.insight);
+    if ('d0' in e.dims) setDimVals(s => ({ ...s, d0:e.dims.d0 }));
+    if ('d1' in e.dims) setDimVals(s => ({ ...s, d1:e.dims.d1 }));
+    if ('d2' in e.dims) setDimVals(s => ({ ...s, d2:e.dims.d2 }));
+    if ('d3' in e.dims) setDimVals(s => ({ ...s, d3:e.dims.d3 }));
+    if ('b0' in e.dims) setDimBars(s => ({ ...s, b0:e.dims.b0 }));
+    if ('b1' in e.dims) setDimBars(s => ({ ...s, b1:e.dims.b1 }));
+    if ('b2' in e.dims) setDimBars(s => ({ ...s, b2:e.dims.b2 }));
+    if ('b3' in e.dims) setDimBars(s => ({ ...s, b3:e.dims.b3 }));
+    if (ns >= 80) { setAfterTitle('Strong ATS match ✓'); setAfterSub('Passes filter for Senior PM roles in Singapore.'); setShowDelta(true); }
+    else { setAfterTitle('Improving… keep going'); setAfterSub(`${ns}% — ${91-ns} pts left to reach 91%`); }
+    if (ns >= 60) setShowKw(true);
+    if (ns >= 85) setShowNote(true);
+    const nxt = fixStep + 1;
+    setFixStep(nxt);
+    if (nxt >= ATS_ENGINES.length) { setPhase('done'); setFinalBanner(true); setAfterScore(91); }
+  };
+
+  const lw = [false,true,false,true,false];
+  const lineColor = i => lineStates[i]===1 ? 'rgba(0,212,255,.15)' : lineStates[i]===2 ? (lw[i] ? 'rgba(255,210,51,.1)' : 'rgba(0,229,160,.14)') : 'rgba(255,255,255,.07)';
+  const lineBdr = i => lineStates[i]===1 ? '2px solid #00D4FF' : lineStates[i]===2 ? (lw[i] ? '2px solid rgba(255,210,51,.5)' : '2px solid #00E5A0') : '';
+  const stepLabels = ['Reading structure','Extracting keywords','Matching PM roles','Scoring 5 dimensions','Generating fix recommendations'];
+  const dimColors = ['#00D4FF','#00E5A0','#B026FF','#FFD233'];
+  const dimKeys = ['d0','d1','d2','d3'];
+  const barKeys = ['b0','b1','b2','b3'];
+  const dimLabels = ['Keywords','Formatting','Impact','Role fit'];
+  const C = { glass:'rgba(13,20,40,.9)', bdr:'rgba(255,255,255,.06)', bdr2:'rgba(255,255,255,.12)', text2:'var(--lp-text2)', text3:'var(--lp-text3)' };
+
+  return (
+    <div style={{ marginTop: 32, padding: '0 24px 24px' }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12, flexWrap:'wrap', gap:8 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--lp-teal)', animation:'lp-pulse 2s infinite', display:'inline-block', flexShrink:0 }} />
+          <span style={{ fontSize:11, fontWeight:700, color:'var(--lp-teal)', textTransform:'uppercase', letterSpacing:'.08em' }}>ATS Scanner — from invisible to interview-ready</span>
+        </div>
+        <button onClick={replay} style={{ padding:'4px 10px', borderRadius:6, background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,255,255,.1)', color:'var(--lp-text2)', fontSize:11, cursor:'pointer', fontFamily:'var(--lp-ff)' }}>↺ Replay</button>
+      </div>
+
+      <div style={{ background:'rgba(13,20,40,.7)', border:'1px solid rgba(0,212,255,.2)', borderRadius:16, overflow:'hidden', padding:24, backdropFilter:'blur(20px)', boxShadow:'0 0 60px rgba(0,212,255,.08),0 24px 64px rgba(0,0,0,.5)' }}>
+        <div style={{ textAlign:'center', marginBottom:20 }}>
+          <div style={{ fontSize:18, fontWeight:800, color:'var(--lp-text)', letterSpacing:'-.3px', marginBottom:6 }}>Watch the ATS system scan your resume and how AI fixes it</div>
+          <div style={{ fontSize:12, color:'var(--lp-text3)' }}>Before → Scanning → After · auto-plays on load</div>
+        </div>
+
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1.15fr 1fr', gap:14, alignItems:'start', marginBottom:20 }}>
+
+          {/* Card 1: Before */}
+          <div style={{ background:C.glass, border:'1px solid rgba(255,77,106,.22)', borderRadius:12, overflow:'hidden' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 14px', background:'rgba(255,77,106,.05)', borderBottom:`1px solid ${C.bdr}` }}>
+              <span style={{ width:8, height:8, borderRadius:'50%', background:'#FF4D6A', boxShadow:'0 0 8px rgba(255,77,106,.8)', flexShrink:0 }} />
+              <span style={{ fontSize:11, fontWeight:700, color:C.text2, flex:1 }}>Original Resume</span>
+              <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:5, background:'rgba(255,77,106,.1)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.2)' }}>Before</span>
+            </div>
+            <div style={{ padding:14 }}>
+              <div style={{ fontSize:11, fontWeight:800, color:'var(--lp-text)', marginBottom:2 }}>Minh Tran</div>
+              <div style={{ fontSize:9, color:C.text3, marginBottom:8 }}>minh@email.com · Singapore · +65 9123 4567</div>
+              <div style={{ fontSize:8, fontWeight:700, color:'#4A5A7A', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:4 }}>Experience</div>
+              <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,.08)', marginBottom:4 }} />
+              <div style={{ height:6, borderRadius:3, background:'rgba(255,77,106,.22)', borderLeft:'2px solid #FF4D6A', marginBottom:4, width:'90%' }} />
+              <div style={{ fontSize:9, color:'#FF4D6A', fontStyle:'italic', padding:'4px 6px', background:'rgba(255,77,106,.06)', borderRadius:4, marginBottom:4, lineHeight:1.4 }}>"Helped drive product roadmap, worked with teams on deliverables…"</div>
+              <div style={{ height:6, borderRadius:3, background:'rgba(255,77,106,.18)', borderLeft:'2px solid #FF4D6A', marginBottom:4, width:'85%' }} />
+              <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,.08)', marginBottom:4, width:'70%' }} />
+              <div style={{ fontSize:8, fontWeight:700, color:'#4A5A7A', textTransform:'uppercase', letterSpacing:'.08em', marginTop:6, marginBottom:4 }}>Skills</div>
+              <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,.08)', marginBottom:4 }} />
+              <div style={{ height:6, borderRadius:3, background:'rgba(255,210,51,.12)', borderLeft:'2px solid rgba(255,210,51,.5)', marginBottom:4, width:'80%' }} />
+              <div style={{ marginTop:10, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'5px 10px', borderRadius:20, background:'rgba(255,77,106,.1)', border:'1px solid rgba(255,77,106,.25)' }}>
+                  <span style={{ fontSize:18, fontWeight:800, color:'#FF4D6A', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>38</span>
+                  <span style={{ fontSize:9, color:'#FF4D6A', fontWeight:600 }}>ATS score</span>
+                </div>
+                <div style={{ fontSize:9, color:'#FF4D6A', textAlign:'right', lineHeight:1.5 }}>Filtered before<br />recruiter sees it</div>
+              </div>
+              <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginTop:8 }}>
+                {['Missing: OKR','Missing: SQL','Vague bullets','No metrics'].map(t => (
+                  <span key={t} style={{ fontSize:8, fontWeight:600, padding:'2px 6px', borderRadius:4, background:'rgba(255,77,106,.08)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.18)' }}>{t}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Scanning / ATS Engine */}
+          <div style={{ background:C.glass, border:`1.5px solid ${phase==='scanning'?'rgba(0,212,255,.35)':badgeColor==='#B026FF'?'rgba(176,38,255,.35)':'rgba(0,229,160,.35)'}`, borderRadius:12, overflow:'hidden', boxShadow:`0 0 40px ${phase==='scanning'?'rgba(0,212,255,.12)':'rgba(176,38,255,.08)'}` }}>
+            <div style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 14px', background:'rgba(0,212,255,.06)', borderBottom:`1px solid rgba(0,212,255,.1)` }}>
+              <span style={{ width:8, height:8, borderRadius:'50%', background:phase==='done'?'#00E5A0':badgeColor, flexShrink:0, boxShadow:`0 0 8px ${badgeColor}80`, animation:phase==='scanning'?'lp-pulse 2s infinite':'' }} />
+              <span style={{ fontSize:11, fontWeight:700, color:C.text2, flex:1 }}>{cardTitle}</span>
+              <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:5, background:`${badgeColor}18`, color:badgeColor, border:`1px solid ${badgeColor}40` }}>
+                {phase==='pre'||phase==='scanning'?'Running':phase==='fixmode'?'Fix mode':'Done'}
+              </span>
+            </div>
+            <div style={{ padding:14 }}>
+              {phase === 'scanning' || phase === 'pre' ? (
+                <div>
+                  {[0,1,2,3,4].map(i => (
+                    <div key={i} style={{ height:6, borderRadius:3, background:lineColor(i), borderLeft:lineBdr(i), marginBottom:4, width:i===1?'88%':i===2?'95%':i===3?'80%':i===4?'92%':'100%', overflow:'hidden', position:'relative' }}>
+                      {lineStates[i]===1 && <div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg,transparent,rgba(0,212,255,.5),transparent)', animation:'lp-sweepLine 1s ease-in-out infinite' }} />}
+                    </div>
+                  ))}
+                  <div style={{ height:4, borderRadius:2, background:'rgba(255,255,255,.06)', overflow:'hidden', marginBottom:4 }}>
+                    <div style={{ height:4, borderRadius:2, background:'linear-gradient(90deg,#00D4FF,#B026FF)', width:`${scanPct}%`, transition:'width .35s ease' }} />
+                  </div>
+                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:9, color:'#4A5A7A', marginBottom:10 }}>
+                    <span>Scanning progress</span><span style={{ color:'#00D4FF', fontWeight:700, fontFamily:'monospace' }}>{scanPct}%</span>
+                  </div>
+                  <div style={{ textAlign:'center', padding:10, background:'rgba(0,212,255,.05)', borderRadius:8, border:'1px solid rgba(0,212,255,.12)' }}>
+                    <div style={{ fontSize:32, fontWeight:800, color:'#00D4FF', fontFamily:'var(--lp-ffm)', letterSpacing:'-1.5px', lineHeight:1 }}>{scanPct>0?scanScore+'%':'—'}</div>
+                    <div style={{ fontSize:9, color:C.text3, marginTop:3 }}>ATS score building…</div>
+                  </div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:5, marginTop:10 }}>
+                    {stepLabels.map((lbl,i) => (
+                      <div key={i} style={{ display:'flex', alignItems:'center', gap:6, fontSize:10, color:stepsLit[i]?'#00E5A0':C.text3, transition:'color .3s' }}>
+                        <span style={{ width:14, height:14, borderRadius:'50%', border:`1.5px solid currentColor`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:7, flexShrink:0, fontFamily:'monospace' }}>{i+1}</span>
+                        {lbl}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ fontSize:9, fontWeight:700, color:C.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:8 }}>ATS engine — 6 checks</div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+                    {ATS_ENGINES.map((e,i) => (
+                      <div key={i} style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 8px', borderRadius:7, border:`1px solid ${fixApplied[i]?'rgba(0,229,160,.28)':C.bdr}`, background:fixApplied[i]?'rgba(0,229,160,.07)':'rgba(255,255,255,.02)', transition:'all .4s' }}>
+                        <span style={{ width:12, height:12, borderRadius:'50%', border:`1.5px solid ${fixApplied[i]?'#00E5A0':'rgba(255,255,255,.2)'}`, flexShrink:0, display:'inline-block', background:fixApplied[i]?'#00E5A0':'transparent', transition:'all .3s' }} />
+                        <span style={{ flex:1, fontSize:11, color:C.text2 }}>{e.label}</span>
+                        <span style={{ fontSize:10, color:fixApplied[i]?'#00E5A0':'#FF4D6A', whiteSpace:'nowrap' }}>{fixApplied[i]?`${e.after} +${e.pts}pts`:e.before}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display:'flex', gap:6, marginTop:10 }}>
+                    <button onClick={applyFix} disabled={phase==='done'} style={{ flex:1, padding:'7px 10px', borderRadius:8, background:'linear-gradient(135deg,#00D4FF,#B026FF)', color:'#fff', fontSize:11, fontWeight:700, border:'none', cursor:phase==='done'?'default':'pointer', fontFamily:'var(--lp-ff)', opacity:phase==='done'?.4:1, transition:'opacity .2s' }}>
+                      {phase==='done'?'All fixes applied ✓':`⚡ Apply fix ${fixStep+1} of ${ATS_ENGINES.length} →`}
+                    </button>
+                    <button onClick={replay} style={{ padding:'7px 10px', borderRadius:8, background:'rgba(255,255,255,.05)', color:C.text2, fontSize:11, fontWeight:600, border:`1px solid ${C.bdr}`, cursor:'pointer', fontFamily:'var(--lp-ff)' }}>↺</button>
+                  </div>
+                  {insight && <div style={{ marginTop:9, fontSize:10, color:C.text2, lineHeight:1.6, padding:'8px 10px', background:'rgba(0,212,255,.04)', borderLeft:'2px solid #00D4FF', borderRadius:'0 6px 6px 0', transition:'opacity .3s' }}>{insight}</div>}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Card 3: After */}
+          <div style={{ background:C.glass, border:'1px solid rgba(0,229,160,.25)', borderRadius:12, overflow:'hidden', opacity:afterVisible?1:.35, transition:'opacity .6s', boxShadow:'0 0 24px rgba(0,229,160,.08)' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 14px', background:'rgba(0,229,160,.05)', borderBottom:`1px solid ${C.bdr}` }}>
+              <span style={{ width:8, height:8, borderRadius:'50%', background:'#00E5A0', boxShadow:'0 0 8px rgba(0,229,160,.9)', flexShrink:0 }} />
+              <span style={{ fontSize:11, fontWeight:700, color:C.text2, flex:1 }}>After CareerAiHub</span>
+              <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:5, background:'rgba(0,229,160,.1)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.25)' }}>Result</span>
+            </div>
+            <div style={{ padding:14 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+                <div style={{ width:56, height:56, borderRadius:'50%', border:'2px solid #00E5A0', background:'rgba(0,229,160,.08)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, boxShadow:'0 0 20px rgba(0,229,160,.25)', flexDirection:'column' }}>
+                  <span style={{ fontSize:16, fontWeight:800, color:'#00E5A0', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>{afterScore<40?'—':afterScore+'%'}</span>
+                  <span style={{ fontSize:7, color:'#00E5A0', opacity:.7 }}>ATS score</span>
+                </div>
+                <div>
+                  <div style={{ fontSize:11, fontWeight:700, color:'var(--lp-text)', lineHeight:1.3 }}>{afterTitle}</div>
+                  <div style={{ fontSize:10, color:C.text3, lineHeight:1.4, marginTop:2 }}>{afterSub}</div>
+                </div>
+              </div>
+              <div style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'3px 9px', borderRadius:10, background:'rgba(0,229,160,.1)', border:'1px solid rgba(0,229,160,.25)', fontSize:10, fontWeight:700, color:'#00E5A0', marginBottom:8, opacity:showDelta?1:0, transition:'opacity .5s' }}>↑ +53 points · from 38% to 91%</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:5, marginBottom:8 }}>
+                {dimLabels.map((lbl,i) => (
+                  <div key={i} style={{ padding:'6px 8px', borderRadius:6, background:'rgba(255,255,255,.03)', border:`1px solid ${C.bdr}` }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:3 }}>
+                      <div style={{ fontSize:8, color:C.text3, fontWeight:600 }}>{lbl}</div>
+                      <div style={{ fontSize:11, fontWeight:800, color:dimColors[i], fontFamily:'var(--lp-ffm)' }}>{dimVals[dimKeys[i]]}</div>
+                    </div>
+                    <div style={{ height:3, borderRadius:2, background:'rgba(255,255,255,.06)' }}>
+                      <div style={{ height:3, borderRadius:2, background:dimColors[i], width:`${dimBars[barKeys[i]]}%`, transition:'width 1s ease' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display:'flex', gap:3, flexWrap:'wrap', marginBottom:8, opacity:showKw?1:0, transition:'opacity .5s' }}>
+                {['product strategy','OKR framework','roadmap','SQL'].map(k => <span key={k} style={{ fontSize:8, fontWeight:600, padding:'2px 6px', borderRadius:4, background:'rgba(0,229,160,.1)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.2)' }}>{k}</span>)}
+                <span style={{ fontSize:8, fontWeight:600, padding:'2px 6px', borderRadius:4, background:'rgba(255,77,106,.09)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.18)' }}>go-to-market</span>
+              </div>
+              {showNote && <div style={{ fontSize:10, color:C.text2, lineHeight:1.6, padding:'8px 10px', background:'rgba(0,212,255,.04)', borderLeft:'2px solid #00D4FF', borderRadius:'0 6px 6px 0', opacity:showNote?1:0, transition:'opacity .5s' }}><strong style={{ color:'#00D4FF' }}>AI:</strong> 4 keywords added, 3 bullets quantified. Passes 94% of Senior PM roles in Singapore.</div>}
+              {finalBanner && <div style={{ marginTop:8, padding:'8px 10px', borderRadius:8, background:'rgba(0,229,160,.07)', border:'1px solid rgba(0,229,160,.28)' }}>
+                <div style={{ fontSize:11, fontWeight:700, color:'#00E5A0' }}>Interview-ready — all 6 fixes applied</div>
+                <div style={{ fontSize:10, color:'#00E5A0', opacity:.75, marginTop:2 }}>Passes 94% of Senior PM roles in SG</div>
+              </div>}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Constants ──────────────────────────────────────────────────────────────────
 const PARAM_LABELS = {
   keywords:        'Keywords',
@@ -120,6 +396,8 @@ function UploadPhase({ onFile, hasScanResume, onUseScanResume, error, onClearErr
           </button>
         </div>
       )}
+
+      <AtsScannerDemo />
     </div>
   );
 }

@@ -1282,299 +1282,6 @@ function SearchCard({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgenticC
   );
 }
 
-// ── ATS ANIMATED DEMO ────────────────────────────────────────────────────────
-
-const ATS_ENGINES = [
-  { label:'Keyword match',    before:'12% — missing OKR, SQL',   after:'89% match',             pts:22, dims:{ d0:'91%', b0:91 }, insight:'ATS systems tokenise your resume against the JD word-for-word. "Responsible for team tasks" scores 0 for a JD listing "OKR-driven roadmap". We injected 6 exact-match keywords.' },
-  { label:'Bullet impact',    before:'No numbers anywhere',        after:'3 bullets quantified',  pts:15, dims:{ d2:'85%', b2:85 }, insight:'Bullets without numbers are skipped in 7-second recruiter scans. "Led OKR roadmap → +28% retention" triggers both ATS keyword match AND the recruiter eye-scan.' },
-  { label:'Section headers',  before:'Non-standard labels',        after:'ATS-readable headers',  pts:8,  dims:{ d1:'88%', b1:88 }, insight:"Many parsers look for exact strings: \"Experience\", \"Skills\", \"Education\". A header like \"What I've done\" causes the parser to skip the section — your best content disappears." },
-  { label:'Action verbs',     before:'Helped, worked, assisted',   after:'Led, Built, Drove',     pts:7,  dims:{},                  insight:'Weak openers signal a supporting role to ATS seniority models. Strong verbs also match JD language — "led" matches "leadership experience required".' },
-  { label:'Role seniority',   before:'Junior-level framing',       after:'Senior PM aligned',     pts:5,  dims:{ d3:'94%', b3:94 }, insight:'ATS cross-checks your years, seniority language, and impact scope against the role level. We align your framing without inventing anything.' },
-  { label:'File & format',    before:'Tables + parse errors',      after:'Clean single-column',   pts:4,  dims:{},                  insight:'PDF tables and multi-column layouts scramble text order in ATS parsers. Single-column plain text is the safest format across all systems.' },
-];
-
-function AtsDemoSection({ onJoin }) {
-  const [phase, setPhase] = useState('pre');
-  const [scanPct, setScanPct] = useState(0);
-  const [stepsLit, setStepsLit] = useState([false,false,false,false,false]);
-  const [lineStates, setLineStates] = useState([0,0,0,0,0]);
-  const [scanScore, setScanScore] = useState(0);
-  const [afterVisible, setAfterVisible] = useState(false);
-  const [cardTitle, setCardTitle] = useState('AI Scanning…');
-  const [badgeColor, setBadgeColor] = useState('#00D4FF');
-  const [fixStep, setFixStep] = useState(0);
-  const [fixApplied, setFixApplied] = useState(new Array(6).fill(false));
-  const [afterScore, setAfterScore] = useState(38);
-  const [dimVals, setDimVals] = useState({ d0:'—', d1:'—', d2:'—', d3:'—' });
-  const [dimBars, setDimBars] = useState({ b0:0, b1:0, b2:0, b3:0 });
-  const [afterTitle, setAfterTitle] = useState('Waiting for scan…');
-  const [afterSub, setAfterSub] = useState('Results will appear here');
-  const [showDelta, setShowDelta] = useState(false);
-  const [showKw, setShowKw] = useState(false);
-  const [showNote, setShowNote] = useState(false);
-  const [finalBanner, setFinalBanner] = useState(false);
-  const [insight, setInsight] = useState('');
-  const timers = useRef([]);
-  const ivRef = useRef(null);
-
-  const clearAll = () => {
-    timers.current.forEach(clearTimeout); timers.current = [];
-    if (ivRef.current) { clearInterval(ivRef.current); ivRef.current = null; }
-  };
-  const addT = (fn, d) => { timers.current.push(setTimeout(fn, d)); };
-
-  const completeScan = useCallback(() => {
-    setAfterVisible(true);
-    setAfterTitle('Scan complete — apply fixes');
-    setAfterSub('Press "Apply next fix" to see AI improve each issue');
-    addT(() => {
-      setPhase('fixmode');
-      setCardTitle('ATS engine — 6 checks');
-      setBadgeColor('#B026FF');
-    }, 600);
-  }, []);
-
-  const startScan = useCallback(() => {
-    setPhase('scanning');
-    const order = [0,2,4,1,3];
-    order.forEach((li,i) => {
-      addT(() => setLineStates(s => { const n=[...s]; n[li]=1; return n; }), i*80);
-      addT(() => setLineStates(s => { const n=[...s]; n[li]=2; return n; }), i*80+480);
-    });
-    [20,42,65,82,100].forEach((p,i) => addT(() => setScanPct(p), i*340));
-    [0,350,700,1050,1400].forEach((d,i) => addT(() => setStepsLit(s => { const n=[...s]; n[i]=true; return n; }), d));
-    addT(() => {
-      let cur = 0;
-      ivRef.current = setInterval(() => {
-        cur = Math.min(cur+3, 38);
-        setScanScore(cur);
-        if (cur >= 38) { clearInterval(ivRef.current); ivRef.current=null; completeScan(); }
-      }, 28);
-    }, 500);
-  }, [completeScan]);
-
-  const replay = useCallback(() => {
-    clearAll();
-    setPhase('pre'); setScanPct(0); setStepsLit([false,false,false,false,false]);
-    setLineStates([0,0,0,0,0]); setScanScore(0); setAfterVisible(false);
-    setCardTitle('AI Scanning…'); setBadgeColor('#00D4FF');
-    setFixStep(0); setFixApplied(new Array(6).fill(false)); setAfterScore(38);
-    setDimVals({ d0:'—', d1:'—', d2:'—', d3:'—' }); setDimBars({ b0:0, b1:0, b2:0, b3:0 });
-    setAfterTitle('Waiting for scan…'); setAfterSub('Results will appear here');
-    setShowDelta(false); setShowKw(false); setShowNote(false); setFinalBanner(false); setInsight('');
-    addT(startScan, 600);
-  }, [startScan]);
-
-  useEffect(() => { addT(startScan, 1200); return clearAll; }, [startScan]);
-
-  const applyFix = () => {
-    if (fixStep >= ATS_ENGINES.length) return;
-    const e = ATS_ENGINES[fixStep];
-    setFixApplied(s => { const n=[...s]; n[fixStep]=true; return n; });
-    const ns = afterScore + e.pts;
-    setAfterScore(ns); setInsight(e.insight);
-    if ('d0' in e.dims) setDimVals(s => ({ ...s, d0:e.dims.d0 }));
-    if ('d1' in e.dims) setDimVals(s => ({ ...s, d1:e.dims.d1 }));
-    if ('d2' in e.dims) setDimVals(s => ({ ...s, d2:e.dims.d2 }));
-    if ('d3' in e.dims) setDimVals(s => ({ ...s, d3:e.dims.d3 }));
-    if ('b0' in e.dims) setDimBars(s => ({ ...s, b0:e.dims.b0 }));
-    if ('b1' in e.dims) setDimBars(s => ({ ...s, b1:e.dims.b1 }));
-    if ('b2' in e.dims) setDimBars(s => ({ ...s, b2:e.dims.b2 }));
-    if ('b3' in e.dims) setDimBars(s => ({ ...s, b3:e.dims.b3 }));
-    if (ns >= 80) { setAfterTitle('Strong ATS match ✓'); setAfterSub('Passes filter for Senior PM roles in Singapore.'); setShowDelta(true); }
-    else { setAfterTitle('Improving… keep going'); setAfterSub(`${ns}% — ${91-ns} pts left to reach 91%`); }
-    if (ns >= 60) setShowKw(true);
-    if (ns >= 85) setShowNote(true);
-    const nxt = fixStep + 1;
-    setFixStep(nxt);
-    if (nxt >= ATS_ENGINES.length) { setPhase('done'); setFinalBanner(true); setAfterScore(91); }
-  };
-
-  const lw = [false,true,false,true,false];
-  const lineColor = i => lineStates[i]===1 ? 'rgba(0,212,255,.15)' : lineStates[i]===2 ? (lw[i] ? 'rgba(255,210,51,.1)' : 'rgba(0,229,160,.14)') : 'rgba(255,255,255,.07)';
-  const lineBdr = i => lineStates[i]===1 ? '2px solid #00D4FF' : lineStates[i]===2 ? (lw[i] ? '2px solid rgba(255,210,51,.5)' : '2px solid #00E5A0') : '';
-  const stepLabels = ['Reading structure','Extracting keywords','Matching PM roles','Scoring 5 dimensions','Generating fix recommendations'];
-  const dimColors = ['#00D4FF','#00E5A0','#B026FF','#FFD233'];
-  const dimKeys = ['d0','d1','d2','d3'];
-  const barKeys = ['b0','b1','b2','b3'];
-  const dimLabels = ['Keywords','Formatting','Impact','Role fit'];
-
-  const C = { glass:'rgba(13,20,40,.9)', bdr:'rgba(255,255,255,.06)', bdr2:'rgba(255,255,255,.12)', text2:'var(--lp-text2)', text3:'var(--lp-text3)' };
-
-  return (
-    <div id="ats-demo" className="hero-bottom reveal" style={{ gridTemplateColumns:'1fr', paddingBottom:56 }}>
-      <div>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12, flexWrap:'wrap', gap:8 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--lp-teal)', animation:'lp-pulse 2s infinite', display:'inline-block', flexShrink:0 }} />
-            <span style={{ fontSize:11, fontWeight:700, color:'var(--lp-teal)', textTransform:'uppercase', letterSpacing:'.08em' }}>ATS Scanner — from invisible to interview-ready</span>
-          </div>
-          <button onClick={replay} style={{ padding:'4px 10px', borderRadius:6, background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,255,255,.1)', color:'var(--lp-text2)', fontSize:11, cursor:'pointer', fontFamily:'var(--lp-ff)' }}>↺ Replay</button>
-        </div>
-
-        <div style={{ background:'rgba(13,20,40,.7)', border:'1px solid rgba(0,212,255,.2)', borderRadius:16, overflow:'hidden', padding:24, backdropFilter:'blur(20px)', boxShadow:'0 0 60px rgba(0,212,255,.08),0 24px 64px rgba(0,0,0,.5)' }}>
-          <div style={{ textAlign:'center', marginBottom:20 }}>
-            <div style={{ fontSize:18, fontWeight:800, color:'var(--lp-text)', letterSpacing:'-.3px', marginBottom:6 }}>Watch the ATS system scan your resume and how AI completes it</div>
-            <div style={{ fontSize:12, color:'var(--lp-text3)' }}>Before → Scanning → After · auto-plays on load</div>
-          </div>
-
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1.15fr 1fr', gap:14, alignItems:'start', marginBottom:20 }}>
-
-            {/* Card 1: Before */}
-            <div style={{ background:C.glass, border:'1px solid rgba(255,77,106,.22)', borderRadius:12, overflow:'hidden' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 14px', background:'rgba(255,77,106,.05)', borderBottom:`1px solid ${C.bdr}` }}>
-                <span style={{ width:8, height:8, borderRadius:'50%', background:'#FF4D6A', boxShadow:'0 0 8px rgba(255,77,106,.8)', flexShrink:0 }} />
-                <span style={{ fontSize:11, fontWeight:700, color:C.text2, flex:1 }}>Original Resume</span>
-                <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:5, background:'rgba(255,77,106,.1)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.2)' }}>Before</span>
-              </div>
-              <div style={{ padding:14 }}>
-                <div style={{ fontSize:11, fontWeight:800, color:'var(--lp-text)', marginBottom:2 }}>Minh Tran</div>
-                <div style={{ fontSize:9, color:C.text3, marginBottom:8 }}>minh@email.com · Singapore · +65 9123 4567</div>
-                <div style={{ fontSize:8, fontWeight:700, color:'#4A5A7A', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:4 }}>Experience</div>
-                <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,.08)', marginBottom:4 }} />
-                <div style={{ height:6, borderRadius:3, background:'rgba(255,77,106,.22)', borderLeft:'2px solid #FF4D6A', marginBottom:4, width:'90%' }} />
-                <div style={{ fontSize:9, color:'#FF4D6A', fontStyle:'italic', padding:'4px 6px', background:'rgba(255,77,106,.06)', borderRadius:4, marginBottom:4, lineHeight:1.4 }}>"Helped drive product roadmap, worked with teams on deliverables…"</div>
-                <div style={{ height:6, borderRadius:3, background:'rgba(255,77,106,.18)', borderLeft:'2px solid #FF4D6A', marginBottom:4, width:'85%' }} />
-                <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,.08)', marginBottom:4, width:'70%' }} />
-                <div style={{ fontSize:8, fontWeight:700, color:'#4A5A7A', textTransform:'uppercase', letterSpacing:'.08em', marginTop:6, marginBottom:4 }}>Skills</div>
-                <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,.08)', marginBottom:4 }} />
-                <div style={{ height:6, borderRadius:3, background:'rgba(255,210,51,.12)', borderLeft:'2px solid rgba(255,210,51,.5)', marginBottom:4, width:'80%' }} />
-                <div style={{ marginTop:10, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-                  <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'5px 10px', borderRadius:20, background:'rgba(255,77,106,.1)', border:'1px solid rgba(255,77,106,.25)' }}>
-                    <span style={{ fontSize:18, fontWeight:800, color:'#FF4D6A', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>38</span>
-                    <span style={{ fontSize:9, color:'#FF4D6A', fontWeight:600 }}>ATS score</span>
-                  </div>
-                  <div style={{ fontSize:9, color:'#FF4D6A', textAlign:'right', lineHeight:1.5 }}>Filtered before<br />recruiter sees it</div>
-                </div>
-                <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginTop:8 }}>
-                  {['Missing: OKR','Missing: SQL','Vague bullets','No metrics'].map(t => (
-                    <span key={t} style={{ fontSize:8, fontWeight:600, padding:'2px 6px', borderRadius:4, background:'rgba(255,77,106,.08)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.18)' }}>{t}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2: Scanning / ATS Engine */}
-            <div style={{ background:C.glass, border:`1.5px solid ${phase==='scanning'?'rgba(0,212,255,.35)':badgeColor==='#B026FF'?'rgba(176,38,255,.35)':'rgba(0,229,160,.35)'}`, borderRadius:12, overflow:'hidden', boxShadow:`0 0 40px ${phase==='scanning'?'rgba(0,212,255,.12)':'rgba(176,38,255,.08)'}` }}>
-              <div style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 14px', background:'rgba(0,212,255,.06)', borderBottom:`1px solid rgba(0,212,255,.1)` }}>
-                <span style={{ width:8, height:8, borderRadius:'50%', background:phase==='done'?'#00E5A0':badgeColor, flexShrink:0, boxShadow:`0 0 8px ${badgeColor}80`, animation:phase==='scanning'?'lp-pulse 2s infinite':'' }} />
-                <span style={{ fontSize:11, fontWeight:700, color:C.text2, flex:1 }}>{cardTitle}</span>
-                <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:5, background:`${badgeColor}18`, color:badgeColor, border:`1px solid ${badgeColor}40` }}>
-                  {phase==='pre'||phase==='scanning'?'Running':phase==='fixmode'?'Fix mode':'Done'}
-                </span>
-              </div>
-              <div style={{ padding:14 }}>
-                {phase === 'scanning' || phase === 'pre' ? (
-                  <div>
-                    {[0,1,2,3,4].map(i => (
-                      <div key={i} style={{ height:6, borderRadius:3, background:lineColor(i), borderLeft:lineBdr(i), marginBottom:4, width:i===1?'88%':i===2?'95%':i===3?'80%':i===4?'92%':'100%', overflow:'hidden', position:'relative' }}>
-                        {lineStates[i]===1 && <div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg,transparent,rgba(0,212,255,.5),transparent)', animation:'lp-sweepLine 1s ease-in-out infinite' }} />}
-                      </div>
-                    ))}
-                    <div style={{ height:4, borderRadius:2, background:'rgba(255,255,255,.06)', overflow:'hidden', marginBottom:4 }}>
-                      <div style={{ height:4, borderRadius:2, background:'linear-gradient(90deg,#00D4FF,#B026FF)', width:`${scanPct}%`, transition:'width .35s ease' }} />
-                    </div>
-                    <div style={{ display:'flex', justifyContent:'space-between', fontSize:9, color:'#4A5A7A', marginBottom:10 }}>
-                      <span>Scanning progress</span><span style={{ color:'#00D4FF', fontWeight:700, fontFamily:'monospace' }}>{scanPct}%</span>
-                    </div>
-                    <div style={{ textAlign:'center', padding:10, background:'rgba(0,212,255,.05)', borderRadius:8, border:'1px solid rgba(0,212,255,.12)' }}>
-                      <div style={{ fontSize:32, fontWeight:800, color:'#00D4FF', fontFamily:'var(--lp-ffm)', letterSpacing:'-1.5px', lineHeight:1 }}>{scanPct>0?scanScore+'%':'—'}</div>
-                      <div style={{ fontSize:9, color:C.text3, marginTop:3 }}>ATS score building…</div>
-                    </div>
-                    <div style={{ display:'flex', flexDirection:'column', gap:5, marginTop:10 }}>
-                      {stepLabels.map((lbl,i) => (
-                        <div key={i} style={{ display:'flex', alignItems:'center', gap:6, fontSize:10, color:stepsLit[i]?'#00E5A0':C.text3, transition:'color .3s' }}>
-                          <span style={{ width:14, height:14, borderRadius:'50%', border:`1.5px solid currentColor`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:7, flexShrink:0, fontFamily:'monospace' }}>{i+1}</span>
-                          {lbl}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div style={{ fontSize:9, fontWeight:700, color:C.text3, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:8 }}>ATS engine — 6 checks</div>
-                    <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
-                      {ATS_ENGINES.map((e,i) => (
-                        <div key={i} style={{ display:'flex', alignItems:'center', gap:6, padding:'6px 8px', borderRadius:7, border:`1px solid ${fixApplied[i]?'rgba(0,229,160,.28)':C.bdr}`, background:fixApplied[i]?'rgba(0,229,160,.07)':'rgba(255,255,255,.02)', transition:'all .4s' }}>
-                          <span style={{ width:12, height:12, borderRadius:'50%', border:`1.5px solid ${fixApplied[i]?'#00E5A0':'rgba(255,255,255,.2)'}`, flexShrink:0, display:'inline-block', background:fixApplied[i]?'#00E5A0':'transparent', transition:'all .3s' }} />
-                          <span style={{ flex:1, fontSize:11, color:C.text2 }}>{e.label}</span>
-                          <span style={{ fontSize:10, color:fixApplied[i]?'#00E5A0':'#FF4D6A', whiteSpace:'nowrap' }}>{fixApplied[i]?`${e.after} +${e.pts}pts`:e.before}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{ display:'flex', gap:6, marginTop:10 }}>
-                      <button onClick={applyFix} disabled={phase==='done'} style={{ flex:1, padding:'7px 10px', borderRadius:8, background:'linear-gradient(135deg,#00D4FF,#B026FF)', color:'#fff', fontSize:11, fontWeight:700, border:'none', cursor:phase==='done'?'default':'pointer', fontFamily:'var(--lp-ff)', opacity:phase==='done'?.4:1, transition:'opacity .2s' }}>
-                        {phase==='done'?'All fixes applied ✓':`⚡ Apply fix ${fixStep+1} of ${ATS_ENGINES.length} →`}
-                      </button>
-                      <button onClick={replay} style={{ padding:'7px 10px', borderRadius:8, background:'rgba(255,255,255,.05)', color:C.text2, fontSize:11, fontWeight:600, border:`1px solid ${C.bdr}`, cursor:'pointer', fontFamily:'var(--lp-ff)' }}>↺</button>
-                    </div>
-                    {insight && <div style={{ marginTop:9, fontSize:10, color:C.text2, lineHeight:1.6, padding:'8px 10px', background:'rgba(0,212,255,.04)', borderLeft:'2px solid #00D4FF', borderRadius:'0 6px 6px 0', transition:'opacity .3s' }}>{insight}</div>}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Card 3: After */}
-            <div style={{ background:C.glass, border:'1px solid rgba(0,229,160,.25)', borderRadius:12, overflow:'hidden', opacity:afterVisible?1:.35, transition:'opacity .6s', boxShadow:'0 0 24px rgba(0,229,160,.08)' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 14px', background:'rgba(0,229,160,.05)', borderBottom:`1px solid ${C.bdr}` }}>
-                <span style={{ width:8, height:8, borderRadius:'50%', background:'#00E5A0', boxShadow:'0 0 8px rgba(0,229,160,.9)', flexShrink:0 }} />
-                <span style={{ fontSize:11, fontWeight:700, color:C.text2, flex:1 }}>After CareerAiHub</span>
-                <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:5, background:'rgba(0,229,160,.1)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.25)' }}>Result</span>
-              </div>
-              <div style={{ padding:14 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-                  <div style={{ width:56, height:56, borderRadius:'50%', border:'2px solid #00E5A0', background:'rgba(0,229,160,.08)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, boxShadow:'0 0 20px rgba(0,229,160,.25)', flexDirection:'column' }}>
-                    <span style={{ fontSize:16, fontWeight:800, color:'#00E5A0', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>{afterScore<40?'—':afterScore+'%'}</span>
-                    <span style={{ fontSize:7, color:'#00E5A0', opacity:.7 }}>ATS score</span>
-                  </div>
-                  <div>
-                    <div style={{ fontSize:11, fontWeight:700, color:'var(--lp-text)', lineHeight:1.3 }}>{afterTitle}</div>
-                    <div style={{ fontSize:10, color:C.text3, lineHeight:1.4, marginTop:2 }}>{afterSub}</div>
-                  </div>
-                </div>
-                <div style={{ display:'inline-flex', alignItems:'center', gap:4, padding:'3px 9px', borderRadius:10, background:'rgba(0,229,160,.1)', border:'1px solid rgba(0,229,160,.25)', fontSize:10, fontWeight:700, color:'#00E5A0', marginBottom:8, opacity:showDelta?1:0, transition:'opacity .5s' }}>↑ +53 points · from 38% to 91%</div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:5, marginBottom:8 }}>
-                  {dimLabels.map((lbl,i) => (
-                    <div key={i} style={{ padding:'6px 8px', borderRadius:6, background:'rgba(255,255,255,.03)', border:`1px solid ${C.bdr}` }}>
-                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:3 }}>
-                        <div style={{ fontSize:8, color:C.text3, fontWeight:600 }}>{lbl}</div>
-                        <div style={{ fontSize:11, fontWeight:800, color:dimColors[i], fontFamily:'var(--lp-ffm)' }}>{dimVals[dimKeys[i]]}</div>
-                      </div>
-                      <div style={{ height:3, borderRadius:2, background:'rgba(255,255,255,.06)' }}>
-                        <div style={{ height:3, borderRadius:2, background:dimColors[i], width:`${dimBars[barKeys[i]]}%`, transition:'width 1s ease' }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ display:'flex', gap:3, flexWrap:'wrap', marginBottom:8, opacity:showKw?1:0, transition:'opacity .5s' }}>
-                  {['product strategy','OKR framework','roadmap','SQL'].map(k => <span key={k} style={{ fontSize:8, fontWeight:600, padding:'2px 6px', borderRadius:4, background:'rgba(0,229,160,.1)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.2)' }}>{k}</span>)}
-                  <span style={{ fontSize:8, fontWeight:600, padding:'2px 6px', borderRadius:4, background:'rgba(255,77,106,.09)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.18)' }}>go-to-market</span>
-                </div>
-                {showNote && <div style={{ fontSize:10, color:C.text2, lineHeight:1.6, padding:'8px 10px', background:'rgba(0,212,255,.04)', borderLeft:'2px solid #00D4FF', borderRadius:'0 6px 6px 0', opacity:showNote?1:0, transition:'opacity .5s' }}><strong style={{ color:'#00D4FF' }}>AI:</strong> 4 keywords added, 3 bullets quantified. Passes 94% of Senior PM roles in Singapore.</div>}
-                {finalBanner && <div style={{ marginTop:8, padding:'8px 10px', borderRadius:8, background:'rgba(0,229,160,.07)', border:'1px solid rgba(0,229,160,.28)' }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:'#00E5A0' }}>Interview-ready — all 6 fixes applied</div>
-                  <div style={{ fontSize:10, color:'#00E5A0', opacity:.75, marginTop:2 }}>Passes 94% of Senior PM roles in SG</div>
-                </div>}
-              </div>
-            </div>
-
-          </div>
-
-          {/* CTA */}
-          <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10, paddingTop:20, borderTop:'1px solid rgba(255,255,255,.07)' }}>
-            <button onClick={onJoin} style={{ display:'inline-flex', alignItems:'center', gap:10, padding:'15px 40px', borderRadius:30, background:'linear-gradient(135deg,#00D4FF,#B026FF)', color:'#fff', fontSize:15, fontWeight:700, border:'none', cursor:'pointer', fontFamily:'var(--lp-ff)', boxShadow:'0 0 36px rgba(0,212,255,.4),0 8px 28px rgba(0,0,0,.3)', letterSpacing:'.01em' }}>
-              <span style={{ fontSize:17 }}>⚡</span>
-              Scan my resume with AI — free
-              <span style={{ fontSize:14, opacity:.85 }}>→</span>
-            </button>
-            <div style={{ fontSize:11, color:'var(--lp-text3)' }}>No account needed · ATS results in 20 seconds · 1 free scan included</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── HERO ──────────────────────────────────────────────────────────────────────
 
 function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgenticCta }) {
@@ -1599,7 +1306,6 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
           <p className="hero-sub">One AI memory learns your profile once — and powers every module from ATS scoring to salary negotiation.</p>
           <div className="hero-btns">
             <button className="btn-p" onClick={onJoin}>✦ Start free — no card needed</button>
-            <button className="btn-o" onClick={() => document.getElementById('ats-demo')?.scrollIntoView({ behavior: 'smooth' })}>See ATS demo ↓</button>
           </div>
           <div className="cta-microcopy">Free to start · No credit card required · ATS results in 20 seconds</div>
           <div className="hero-fill">
@@ -1624,8 +1330,6 @@ function HeroSection({ onJoin, onModuleSelect, onTrackerOpen, onSnack, onAgentic
         <SearchCard onJoin={onJoin} onModuleSelect={onModuleSelect} onTrackerOpen={onTrackerOpen} onSnack={onSnack} onAgenticCta={onAgenticCta} />
       </div>
 
-      {/* BOTTOM — Full-width animated ATS demo */}
-      <AtsDemoSection onJoin={onJoin} />
     </header>
 
     {/* WHY SEEKERS BAND — full-width strip below hero */}
@@ -1769,368 +1473,669 @@ const JOURNEY_STAGES = [
   },
 ];
 
-// ── JOURNEY DECK CARDS ────────────────────────────────────────────────────────
+// ── JOURNEY DECK CARD COMPONENTS ─────────────────────────────────────────────
+
+function JnyCard({ step, title, statusCls, statusTxt, children }) {
+  const sc = statusCls === 'done' ? 'jny-st-done' : statusCls === 'live' ? 'jny-st-live' : 'jny-st-run';
+  return (
+    <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
+      <div className="jny-dcard-top">
+        <div className="jny-dct-dots"><div className="jny-dct-dot"/><div className="jny-dct-dot"/><div className="jny-dct-dot"/></div>
+        <span className="jny-dct-step">{step}</span>
+        <span className={`jny-dct-status ${sc}`}>{statusTxt}</span>
+      </div>
+      <div className="jny-dcard-body">
+        <div className="jny-dcard-title">{title}</div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Stage 0: Get Seen (teal)
+function S0Card1({ color: c, active }) {
+  const [upW, setUpW] = useState(0);
+  const [upDone, setUpDone] = useState(false);
+  const [score, setScore] = useState(38);
+  const [scoreCol, setScoreCol] = useState('#ef4444');
+  const [tagVis, setTagVis] = useState(false);
+  const [b0, setB0] = useState({ cls:'', txt:'Helped drive product roadmap with teams' });
+  const [b1, setB1] = useState({ cls:'', txt:'Was involved in major decisions' });
+  const [b2, setB2] = useState({ cls:'', txt:'Worked with stakeholders on delivery' });
+  const [kw, setKw] = useState([0,0,0,0,0,0]);
+  useEffect(() => {
+    if (!active) {
+      setUpW(0); setUpDone(false); setScore(38); setScoreCol('#ef4444'); setTagVis(false);
+      setB0({ cls:'', txt:'Helped drive product roadmap with teams' });
+      setB1({ cls:'', txt:'Was involved in major decisions' });
+      setB2({ cls:'', txt:'Worked with stakeholders on delivery' });
+      setKw([0,0,0,0,0,0]); return;
+    }
+    const ids = [];
+    const s = (ms, fn) => ids.push(setTimeout(fn, ms));
+    const anim = (from, to, col) => {
+      let cur = from;
+      const iv = setInterval(() => { cur=Math.min(cur+1,to); setScore(cur); setScoreCol(col); if(cur>=to)clearInterval(iv); }, 28);
+      ids.push(iv);
+    };
+    s(200, () => setUpW(100));
+    s(900, () => setUpDone(true));
+    s(1300, () => setB0(b=>({...b,cls:'bad'})));
+    s(1680, () => { setB0({cls:'good',txt:'Led OKR-driven roadmap → cut time-to-market 30%'}); anim(38,58,'#f0a832'); });
+    s(2530, () => setB1(b=>({...b,cls:'bad'})));
+    s(2910, () => { setB1({cls:'good',txt:'Drove 3-team alignment — zero escalations Q3'}); anim(58,72,'#8b82f0'); });
+    s(3760, () => setB2(b=>({...b,cls:'bad'})));
+    s(4140, () => { setB2({cls:'good',txt:'Delivered $2.4M feature on schedule, 12 stakeholders'}); anim(72,90,c); });
+    s(4600, () => setTagVis(true));
+    [4700,4810,4920,5030,5140,5250].forEach((ms,i)=>s(ms,()=>setKw(v=>{const n=[...v];n[i]=1;return n;})));
+    return () => ids.forEach(clearTimeout);
+  }, [active]);
+  return (
+    <JnyCard step="Step 01" title="Upload → ATS scan → 38 to 91 in 90s" statusCls="run" statusTxt="⚡ Scanning">
+      <div style={{display:'flex',alignItems:'center',gap:9,background:'rgba(30,201,138,.03)',border:'1px solid rgba(30,201,138,.12)',borderRadius:7,padding:'7px 10px'}}>
+        <span style={{fontSize:14}}>📄</span>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontFamily:'monospace',fontSize:8,color:'rgba(255,255,255,.3)',marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>resume_ivy_chen_seniorAI.pdf</div>
+          <div style={{height:2,background:'rgba(255,255,255,.08)',borderRadius:2,overflow:'hidden'}}>
+            <div style={{height:2,width:`${upW}%`,background:c,borderRadius:2,transition:'width .6s steps(14,end)'}}/>
+          </div>
+        </div>
+        <div style={{fontSize:8,color:upDone?c:'rgba(255,255,255,.3)',fontFamily:'monospace',whiteSpace:'nowrap',transition:'color .3s'}}>{upDone?'✓ Memory seeded':'uploading…'}</div>
+      </div>
+      <div style={{display:'flex',alignItems:'center',gap:8}}>
+        <div>
+          <div style={{fontSize:7,fontFamily:'monospace',color:'rgba(255,255,255,.25)',letterSpacing:1,textTransform:'uppercase',marginBottom:2}}>ATS Score</div>
+          <div style={{display:'flex',alignItems:'baseline',gap:3}}>
+            <span style={{fontFamily:'monospace',fontSize:24,fontWeight:700,color:scoreCol,lineHeight:1,transition:'color .4s'}}>{score}</span>
+            <span style={{fontSize:9,color:'rgba(255,255,255,.25)',fontFamily:'monospace'}}>/100</span>
+          </div>
+        </div>
+        <div style={{flex:1,padding:'0 6px'}}>
+          <div style={{height:5,background:'rgba(255,255,255,.06)',borderRadius:3,overflow:'hidden'}}>
+            <div style={{height:'100%',borderRadius:3,background:scoreCol,width:`${score}%`,transition:'width .7s cubic-bezier(.22,1,.36,1),background .5s'}}/>
+          </div>
+        </div>
+        <div style={{fontSize:7.5,fontFamily:'monospace',padding:'1px 6px',borderRadius:10,background:'rgba(30,201,138,.1)',color:c,border:'1px solid rgba(30,201,138,.22)',opacity:tagVis?1:0,transition:'opacity .3s',whiteSpace:'nowrap'}}>+52 pts</div>
+      </div>
+      {[b0,b1,b2].map((b,i)=>(
+        <div key={i} className={`jny-ats-bullet${b.cls?' '+b.cls:''}`}>{b.txt}</div>
+      ))}
+      <div style={{display:'flex',flexWrap:'wrap',gap:3,marginTop:2}}>
+        {[{t:'Agile',k:'exist'},{t:'Roadmap',k:'exist'},{t:'OKR-driven',k:'new'},{t:'cross-functional',k:'new'},{t:'P&L ownership',k:'new'},{t:'stakeholder mgmt',k:'new'}].map((kv,i)=>(
+          <span key={i} className={`jny-ats-kw ${kv.k}${kw[i]?' vis':''}`}>{kv.t}</span>
+        ))}
+      </div>
+    </JnyCard>
+  );
+}
+
+function S0Card2({ color: c, active }) {
+  const [bars, setBars] = useState([0,0,0,0]);
+  const [vals, setVals] = useState([false,false,false,false]);
+  const [pills, setPills] = useState([0,0,0,0,0]);
+  const bCols = [c,'#8b82f0','#f0a832','#8b82f0'];
+  const bLabels = ['Keywords','Seniority','Impact','Format'];
+  const bPcts = [94,88,91,88];
+  useEffect(() => {
+    if (!active) { setBars([0,0,0,0]); setVals([false,false,false,false]); setPills([0,0,0,0,0]); return; }
+    const ids=[];
+    const s=(ms,fn)=>ids.push(setTimeout(fn,ms));
+    bPcts.forEach((t,i)=>{
+      s(i*150,()=>setBars(b=>{const n=[...b];n[i]=t;return n;}));
+      s(620+i*150,()=>setVals(v=>{const n=[...v];n[i]=true;return n;}));
+    });
+    [0,1,2,3,4].forEach(i=>s(900+i*130,()=>setPills(p=>{const n=[...p];n[i]=1;return n;})));
+    return()=>ids.forEach(clearTimeout);
+  }, [active]);
+  return (
+    <JnyCard step="Step 02" title="JD Match · 94% — gap analysis" statusCls="run" statusTxt="⚡ 94%">
+      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Senior AI Engineer · Vertex AI Labs</div>
+      <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:7}}>
+        {bLabels.map((l,i)=>(
+          <div key={i} className="jny-mbar-row">
+            <span className="jny-mbar-label">{l}</span>
+            <div className="jny-mbar-track"><div className="jny-mbar-fill" style={{width:`${bars[i]}%`,background:bCols[i]}}/></div>
+            <span className="jny-mbar-val" style={{color:bCols[i]}}>{vals[i]?bPcts[i]+'%':'—'}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5}}>
+        <span style={{fontSize:8,fontFamily:'monospace',color:'rgba(255,255,255,.3)',textTransform:'uppercase',letterSpacing:.5}}>Keyword gaps</span>
+        <span style={{fontSize:8,fontFamily:'monospace',color:'rgba(255,255,255,.3)'}}>→ injected by AI</span>
+      </div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+        {[{t:'✗ "LLM fine-tuning"',k:'gap'},{t:'✗ "MLOps pipeline"',k:'gap'},{t:'✓ AWS SageMaker',k:'match'},{t:'✓ Python / PyTorch',k:'match'},{t:'✓ cross-functional',k:'match'}].map((p,i)=>(
+          <span key={i} className={`jny-kpill ${p.k}${pills[i]?' vis':''}`}>{p.t}</span>
+        ))}
+      </div>
+    </JnyCard>
+  );
+}
+
+function S0Card3({ color: c, active }) {
+  const [text, setText] = useState('');
+  const [pills, setPills] = useState([0,0,0,0]);
+  const ivRef = useRef(null);
+  const full = "Dear Vertex AI Labs — I'm applying for the Senior AI Engineer role. Having built LLM pipelines delivering 40% inference cost reduction and led MLOps rollouts across 3 markets, I align closely with your requirements. My NUS background and AWS credentials are verified on my CareerAiHub profile.";
+  useEffect(() => {
+    clearInterval(ivRef.current);
+    if (!active) { setText(''); setPills([0,0,0,0]); return; }
+    let i=0;
+    ivRef.current=setInterval(()=>{
+      if(i<=full.length){ setText(full.slice(0,i)); i++; }
+      else { clearInterval(ivRef.current); [0,1,2,3].forEach(j=>setTimeout(()=>setPills(p=>{const n=[...p];n[j]=1;return n;}),j*150)); }
+    },18);
+    return()=>clearInterval(ivRef.current);
+  }, [active]);
+  return (
+    <JnyCard step="Step 03" title="AI cover letter · memory-personalised" statusCls="done" statusTxt="✓ Ready">
+      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Auto-seeded from resume + JD match</div>
+      <div style={{fontSize:9.5,lineHeight:1.68,color:'rgba(255,255,255,.5)',fontStyle:'italic',minHeight:80,flex:1}}>{text}</div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:4,marginTop:4}}>
+        {['Role-matched','Memory-seeded','PDF ready','30 seconds'].map((t,i)=>(
+          <span key={i} className={`jny-kpill match${pills[i]?' vis':''}`}>{t}</span>
+        ))}
+      </div>
+    </JnyCard>
+  );
+}
+
+// Stage 1: Get Ready (purple)
+function S1Card1({ color: c, active }) {
+  const [vals, setVals] = useState([0,0,0,0]);
+  const [bars, setBars] = useState([0,0,0,0]);
+  const [aiVis, setAiVis] = useState(false);
+  const [aiText, setAiText] = useState('');
+  const ivRef = useRef(null);
+  const sc = [38,44,72,84];
+  const cols = ['#ef4444',c,'#8b82f0','#1ec98a'];
+  const aiMsg = 'Biggest gap: concrete examples 38/100. Plan targets this first. Once you clear 70 we move to STAR. Interview-ready in 9 days.';
+  const dimNames=['Concrete examples','STAR structure','Clarity & delivery','Role knowledge'];
+  useEffect(() => {
+    clearInterval(ivRef.current);
+    if (!active) { setVals([0,0,0,0]); setBars([0,0,0,0]); setAiVis(false); setAiText(''); return; }
+    const ids=[];
+    const s=(ms,fn)=>ids.push(setTimeout(fn,ms));
+    sc.forEach((t,i)=>{
+      s(i*220,()=>{
+        setBars(b=>{const n=[...b];n[i]=t;return n;});
+        let cur=0; const iv=setInterval(()=>{cur=Math.min(cur+1,t);setVals(v=>{const n=[...v];n[i]=cur;return n;});if(cur>=t)clearInterval(iv);},16);ids.push(iv);
+      });
+    });
+    s(1200,()=>setAiVis(true));
+    s(1300,()=>{ let j=0; ivRef.current=setInterval(()=>{if(j<=aiMsg.length){setAiText(aiMsg.slice(0,j));j++;}else clearInterval(ivRef.current);},14); });
+    return()=>ids.forEach(clearTimeout);
+  }, [active]);
+  return (
+    <JnyCard step="Step 01" title="Personalised readiness plan" statusCls="done" statusTxt="✓ Plan ready">
+      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:7}}>Your scores — built from last 2 sessions</div>
+      <div className="jny-dim-grid">
+        {[0,1,2,3].map(i=>(
+          <div key={i} className="jny-dim-cell">
+            <div className="jny-dim-val" style={{color:cols[i]}}>{vals[i]}</div>
+            <div className="jny-dim-name">{dimNames[i]}</div>
+            <div className="jny-dim-bar"><div className="jny-dim-bfill" style={{width:`${bars[i]}%`,background:cols[i]}}/></div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:'flex',gap:7,alignItems:'flex-start',background:'rgba(139,130,240,.07)',border:'1px solid rgba(139,130,240,.18)',borderRadius:7,padding:'7px 9px',opacity:aiVis?1:0,transition:'opacity .5s'}}>
+        <div style={{width:18,height:18,borderRadius:4,background:c,display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,fontWeight:700,color:'#000',flexShrink:0}}>AI</div>
+        <div style={{fontSize:9,color:'rgba(255,255,255,.55)',lineHeight:1.6}}>{aiText}</div>
+      </div>
+    </JnyCard>
+  );
+}
+
+function S1Card2({ color: c, active }) {
+  const [q, setQ] = useState('');
+  const [scores, setScores] = useState([0,0,0,0]);
+  const [fb, setFb] = useState('');
+  const [fbVis, setFbVis] = useState(false);
+  const qIvRef = useRef(null);
+  const fbIvRef = useRef(null);
+  const qTxt = 'Tell me about a time you delivered an AI feature under tight constraints. What was the outcome?';
+  const fbTxt = 'AI feedback: Strong role fit. Missing concrete outcome number — add the % improvement or $ impact.';
+  const sCols=['#ef4444','#f0a832',c,'#1ec98a'];
+  const sLabels=['Examples','STAR','Clarity','Role fit'];
+  const sVals=[62,55,78,80];
+  useEffect(() => {
+    clearInterval(qIvRef.current); clearInterval(fbIvRef.current);
+    if (!active) { setQ(''); setScores([0,0,0,0]); setFb(''); setFbVis(false); return; }
+    const ids=[];
+    const s=(ms,fn)=>ids.push(setTimeout(fn,ms));
+    let i=0; qIvRef.current=setInterval(()=>{if(i<=qTxt.length){setQ(qTxt.slice(0,i));i++;}else clearInterval(qIvRef.current);},16);
+    s(1700,()=>{ sVals.forEach((t,idx)=>{ s(idx*180,()=>{ let cur=0; const iv=setInterval(()=>{cur=Math.min(cur+1,t);setScores(v=>{const n=[...v];n[idx]=cur;return n;});if(cur>=t)clearInterval(iv);},16); ids.push(iv); }); }); });
+    s(2600,()=>setFbVis(true));
+    s(2700,()=>{ let j=0; fbIvRef.current=setInterval(()=>{if(j<=fbTxt.length){setFb(fbTxt.slice(0,j));j++;}else clearInterval(fbIvRef.current);},14); });
+    return()=>ids.forEach(clearTimeout);
+  }, [active]);
+  return (
+    <JnyCard step="Step 02" title="HM Simulator — mock interview" statusCls="live" statusTxt="● Live">
+      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>AI Hiring Manager · Senior AI Engineer</div>
+      <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:7,padding:'8px 10px',fontSize:9.5,color:'rgba(255,255,255,.6)',lineHeight:1.6,marginBottom:6,minHeight:38}}>{q}</div>
+      <div style={{display:'flex',gap:5,marginBottom:7}}>
+        {[0,1,2,3].map(i=>(
+          <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:6,padding:'6px 4px'}}>
+            <div style={{fontFamily:'monospace',fontSize:15,fontWeight:700,color:sCols[i],lineHeight:1}}>{scores[i]||'–'}</div>
+            <div style={{fontSize:7.5,color:'rgba(255,255,255,.3)'}}>{sLabels[i]}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{fontSize:8.5,color:'rgba(255,255,255,.4)',lineHeight:1.55,fontStyle:'italic',minHeight:22,opacity:fbVis?1:0,transition:'opacity .4s'}}>{fb}</div>
+    </JnyCard>
+  );
+}
+
+function S1Card3({ color: c, active }) {
+  const [vis, setVis] = useState([0,0,0]);
+  const stories=[
+    {t:'LLM rollout · cut latency 40%',a:'RESULT ✓',ac:'#1ec98a'},
+    {t:'Cross-team alignment · zero escalations',a:'IMPACT ✓',ac:c},
+    {t:'$2.4M feature delivery — on schedule',a:'QUANTIFIED ✓',ac:'#f0a832'},
+  ];
+  useEffect(() => {
+    if (!active) { setVis([0,0,0]); return; }
+    const ids=[0,1,2].map(i=>setTimeout(()=>setVis(v=>{const n=[...v];n[i]=1;return n;}),300+i*380));
+    return()=>ids.forEach(clearTimeout);
+  }, [active]);
+  return (
+    <JnyCard step="Step 03" title="STAR builder — story bank" statusCls="done" statusTxt="✓ 3 stories">
+      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Story bank · grows with every session</div>
+      <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:7}}>
+        {stories.map((st,i)=>(
+          <div key={i} className={`jny-story${vis[i]?' vis':''}`}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:2}}>
+              <span style={{fontSize:9.5,fontWeight:600,color:'rgba(255,255,255,.8)'}}>{st.t}</span>
+              <span style={{fontFamily:'monospace',fontSize:7.5,color:st.ac,background:st.ac+'18',padding:'1px 6px',borderRadius:10}}>{st.a}</span>
+            </div>
+            <div style={{fontSize:8.5,color:'rgba(255,255,255,.3)'}}>Situation · Task · Action · Result — AI-structured</div>
+          </div>
+        ))}
+      </div>
+      <div style={{fontSize:8.5,color:'rgba(255,255,255,.3)'}}><span style={{fontFamily:'monospace',fontSize:9,color:c,fontWeight:700}}>3</span> stories ready · reused in every interview question</div>
+    </JnyCard>
+  );
+}
+
+function S1Card4({ color: c, active }) {
+  const [bars, setBars] = useState([0,0,0,0]);
+  const [valVis, setValVis] = useState([0,0,0,0]);
+  const [anchorVis, setAnchorVis] = useState(false);
+  const pcts=[40,55,72,100];
+  const bCols=['rgba(139,130,240,.5)','rgba(139,130,240,.65)','rgba(232,92,128,.55)',c];
+  const labels=['P25','Median','P75','Top 10%'];
+  const vals=['SGD 9k','SGD 12k','SGD 16k','SGD 22k'];
+  const vCols=['rgba(255,255,255,.3)','rgba(255,255,255,.5)','#e85c80',c];
+  useEffect(() => {
+    if (!active) { setBars([0,0,0,0]); setValVis([0,0,0,0]); setAnchorVis(false); return; }
+    const ids=[];
+    const s=(ms,fn)=>ids.push(setTimeout(fn,ms));
+    pcts.forEach((p,i)=>{ s(i*180,()=>setBars(b=>{const n=[...b];n[i]=p;return n;})); s(600+i*180,()=>setValVis(v=>{const n=[...v];n[i]=1;return n;})); });
+    s(1500,()=>setAnchorVis(true));
+    return()=>ids.forEach(clearTimeout);
+  }, [active]);
+  return (
+    <JnyCard step="Step 04" title="Salary coach — SGD market benchmarks" statusCls="done" statusTxt="✓ Benchmarked">
+      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Market Intel · Senior AI Engineer · Singapore</div>
+      <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:8}}>
+        {labels.map((l,i)=>(
+          <div key={i} className="jny-mbar-row">
+            <span className="jny-mbar-label" style={{width:42,fontSize:8}}>{l}</span>
+            <div className="jny-mbar-track"><div className="jny-mbar-fill smooth" style={{width:`${bars[i]}%`,background:bCols[i]}}/></div>
+            <span className="jny-mbar-val" style={{color:vCols[i],width:42,opacity:valVis[i]?1:0}}>{vals[i]}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'rgba(240,168,50,.07)',border:'1px solid rgba(240,168,50,.22)',borderRadius:7,padding:'7px 10px',opacity:anchorVis?1:0,transition:'opacity .5s'}}>
+        <div>
+          <div style={{fontSize:7.5,fontFamily:'monospace',color:c,textTransform:'uppercase',letterSpacing:.5,marginBottom:2}}>AI anchor — P75 strategy</div>
+          <div style={{fontSize:10,color:'rgba(255,255,255,.55)'}}>Open at <strong style={{color:'rgba(255,255,255,.9)'}}>SGD 16k</strong> · accept <strong style={{color:'#1ec98a'}}>≥ 14k</strong></div>
+        </div>
+        <div style={{fontFamily:'monospace',fontSize:13,fontWeight:700,color:c}}>+33%</div>
+      </div>
+    </JnyCard>
+  );
+}
+
+// Stage 2: Get the Offer (gold)
+function S2Card1({ color: c, active }) {
+  const [bars, setBars] = useState([0,0,0,0]);
+  const [offerVis, setOfferVis] = useState(false);
+  const [ancNum, setAncNum] = useState(0);
+  const pcts=[40,55,72,100];
+  const bCols=['rgba(99,102,241,.5)','rgba(139,130,240,.6)','rgba(232,92,128,.55)',c];
+  const labels=['P25','Median','P75','Top 10%'];
+  useEffect(() => {
+    if (!active) { setBars([0,0,0,0]); setOfferVis(false); setAncNum(0); return; }
+    const ids=[];
+    const s=(ms,fn)=>ids.push(setTimeout(fn,ms));
+    pcts.forEach((p,i)=>s(i*160,()=>setBars(b=>{const n=[...b];n[i]=p;return n;})));
+    s(800,()=>setOfferVis(true));
+    s(900,()=>{ let cur=0; const iv=setInterval(()=>{ cur=Math.min(cur+200,14000); setAncNum(cur); if(cur>=14000)clearInterval(iv); },16); ids.push(iv); });
+    return()=>ids.forEach(clearTimeout);
+  }, [active]);
+  return (
+    <JnyCard step="Step 01" title="Offer received · market benchmark" statusCls="run" statusTxt="⚡ Analysing">
+      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:7}}>Market Intel · Senior PM · Singapore</div>
+      <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:8}}>
+        {labels.map((l,i)=>(
+          <div key={i} className="jny-mbar-row">
+            <span className="jny-mbar-label" style={{width:40,fontSize:8}}>{l}</span>
+            <div className="jny-mbar-track"><div className="jny-mbar-fill smooth" style={{width:`${bars[i]}%`,background:bCols[i]}}/></div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,opacity:offerVis?1:0,transition:'opacity .5s'}}>
+        <div style={{background:'rgba(239,68,68,.05)',border:'1px solid rgba(239,68,68,.18)',borderRadius:7,padding:'7px 9px'}}>
+          <div style={{fontFamily:'monospace',fontSize:7,color:'rgba(239,68,68,.65)',textTransform:'uppercase',letterSpacing:.5,marginBottom:3}}>Their offer</div>
+          <div style={{fontSize:16,fontWeight:700,color:'#ef4444',fontFamily:'monospace'}}>$10,500</div>
+          <div style={{fontSize:8,color:'rgba(239,68,68,.45)'}}>P28 · below market</div>
+        </div>
+        <div style={{background:'rgba(240,168,50,.07)',border:'1px solid rgba(240,168,50,.25)',borderRadius:7,padding:'7px 9px'}}>
+          <div style={{fontFamily:'monospace',fontSize:7,color:c,textTransform:'uppercase',letterSpacing:.5,marginBottom:3}}>AI anchor</div>
+          <div style={{fontSize:16,fontWeight:700,color:c,fontFamily:'monospace'}}>${ancNum.toLocaleString()}</div>
+          <div style={{fontSize:8,color:'rgba(240,168,50,.5)'}}>P75 · AI-set</div>
+        </div>
+      </div>
+    </JnyCard>
+  );
+}
+
+function S2Card2({ color: c, active }) {
+  const [steps, setSteps] = useState(['','','','']);
+  const stepsData=[
+    {t:'Express gratitude, signal confidence',s:'"I\'m excited — let me share where I\'d need to land."'},
+    {t:'Anchor at P75 with market data',s:'"Based on SG market data, my range is SGD 14–16k."'},
+    {t:'Stay silent for 6 seconds',s:'Silence after anchoring wins more than any word.'},
+    {t:'Close with a bridge',s:'"I can start immediately if we\'re aligned on that."'},
+  ];
+  useEffect(() => {
+    if (!active) { setSteps(['','','','']); return; }
+    const ids=[];
+    const s=(ms,fn)=>ids.push(setTimeout(fn,ms));
+    s(0,()=>setSteps(['act','','','']));
+    s(1000,()=>setSteps(['done','act','','']));
+    s(2000,()=>setSteps(['done','done','act','']));
+    s(2900,()=>setSteps(['done','done','done','act']));
+    s(3700,()=>setSteps(['done','done','done','done']));
+    return()=>ids.forEach(clearTimeout);
+  }, [active]);
+  return (
+    <JnyCard step="Step 02" title="4-step negotiation script" statusCls="run" statusTxt="⚡ Active">
+      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Word-for-word · ready to say or send</div>
+      <div className="jny-neg-steps">
+        {stepsData.map((st,i)=>(
+          <div key={i} className={`jny-nstep${steps[i]?' '+steps[i]:''}`}>
+            <div className="jny-nstep-num">{i+1}</div>
+            <div>
+              <div className="jny-nstep-text">{st.t}</div>
+              <div className="jny-nstep-sub">{st.s}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </JnyCard>
+  );
+}
+
+function S2Card3({ color: c, active }) {
+  const [fade, setFade] = useState(false);
+  const [label, setLabel] = useState('AI counter');
+  const [uplift, setUplift] = useState(false);
+  const [pills, setPills] = useState([0,0,0]);
+  useEffect(() => {
+    if (!active) { setFade(false); setLabel('AI counter'); setUplift(false); setPills([0,0,0]); return; }
+    const ids=[];
+    const s=(ms,fn)=>ids.push(setTimeout(fn,ms));
+    s(900,()=>setFade(true));
+    s(1250,()=>setLabel('✓ Accepted'));
+    s(1630,()=>setUplift(true));
+    [2230,2380,2530].forEach((ms,i)=>s(ms,()=>setPills(p=>{const n=[...p];n[i]=1;return n;})));
+    return()=>ids.forEach(clearTimeout);
+  }, [active]);
+  return (
+    <JnyCard step="Step 03" title="Deal closed · +SGD 3,500/mo" statusCls="done" statusTxt="✓ +33% uplift">
+      <div className="jny-offer-compare">
+        <div className={`jny-ob jny-ob-their${fade?' fade':''}`}>
+          <div className="jny-ob-label" style={{color:'rgba(239,68,68,.65)'}}>Their offer</div>
+          <div className="jny-ob-amount" style={{color:'#ef4444'}}>$10,500</div>
+          <div className="jny-ob-sub" style={{color:'rgba(239,68,68,.45)'}}>P28 · below market</div>
+        </div>
+        <div className="jny-ob jny-ob-ours">
+          <div className="jny-ob-label" style={{color:c}}>{label}</div>
+          <div className="jny-ob-amount" style={{color:c}}>$14,000</div>
+          <div className="jny-ob-sub" style={{color:'rgba(240,168,50,.5)'}}>P75 strategy</div>
+        </div>
+      </div>
+      <div className={`jny-uplift-banner${uplift?' vis':''}`}>
+        <span style={{fontSize:10.5,fontWeight:600,color:'#1ec98a'}}>✓ Deal closed · offer accepted</span>
+        <span style={{fontFamily:'monospace',fontSize:10.5,color:'#1ec98a',fontWeight:700}}>+SGD 3,500/mo</span>
+      </div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:4,marginTop:7}}>
+        {['Salary Coach','Market Intel','Negotiation Script'].map((t,i)=>(
+          <span key={i} className={`jny-kpill match${pills[i]?' vis':''}`}>{t}</span>
+        ))}
+      </div>
+    </JnyCard>
+  );
+}
+
+// Stage 3: Get Found (pink)
+function S3Card1({ color: c, active }) {
+  const [chks, setChks] = useState([0,0,0,0]);
+  const [bdgs, setBdgs] = useState([0,0,0,0]);
+  const [cosVis, setCosVis] = useState(false);
+  const [cosVal, setCosVal] = useState(0);
+  const creds=['Singpass ID · Ivy Chen','NUS CS · OpenCerts','AWS Solutions Architect · Credly','7 yr AI Engineering · verified'];
+  useEffect(() => {
+    if (!active) { setChks([0,0,0,0]); setBdgs([0,0,0,0]); setCosVis(false); setCosVal(0); return; }
+    const ids=[];
+    const s=(ms,fn)=>ids.push(setTimeout(fn,ms));
+    [0,1,2,3].forEach(i=>{ s(460+i*460,()=>{ setChks(v=>{const n=[...v];n[i]=1;return n;}); s(150,()=>setBdgs(v=>{const n=[...v];n[i]=1;return n;})); }); });
+    s(2200,()=>{ setCosVis(true); let n=0; const iv=setInterval(()=>{n=Math.min(n+2,88);setCosVal(n);if(n>=88)clearInterval(iv);},28); ids.push(iv); });
+    return()=>ids.forEach(clearTimeout);
+  }, [active]);
+  return (
+    <JnyCard step="Step 01" title="Credential verify · blockchain-backed" statusCls="done" statusTxt="✓ All verified">
+      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:7}}>Singpass · OpenCerts · Credly · Work history</div>
+      <div className="jny-cred-list" style={{marginBottom:7}}>
+        {creds.map((cr,i)=>(
+          <div key={i} className="jny-cred-row">
+            <div className={`jny-cred-chk${chks[i]?' ver':''}`}>{chks[i]?'✓':''}</div>
+            <span className="jny-cred-name">{cr}</span>
+            <span className={`jny-cred-badge${bdgs[i]?' vis':''}`}>✓ Blockchain</span>
+          </div>
+        ))}
+      </div>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'rgba(232,92,128,.06)',border:'1px solid rgba(232,92,128,.18)',borderRadius:7,padding:'7px 10px',opacity:cosVis?1:0,transition:'opacity .5s'}}>
+        <span style={{fontSize:9,color:'rgba(255,255,255,.5)'}}>Career OS Score</span>
+        <span style={{fontFamily:'monospace',fontSize:16,fontWeight:700,color:c}}>{cosVal} / 100</span>
+        <span style={{fontSize:8,padding:'2px 7px',background:'rgba(232,92,128,.09)',color:c,border:'1px solid rgba(232,92,128,.22)',borderRadius:20,fontFamily:'monospace'}}>Top 8%</span>
+      </div>
+    </JnyCard>
+  );
+}
+
+function S3Card2({ color: c, active }) {
+  const [scanTxt, setScanTxt] = useState('Scanning 0…');
+  const [scanDone, setScanDone] = useState(false);
+  const [ringPct, setRingPct] = useState(0);
+  const [confVis, setConfVis] = useState(false);
+  const [fBars, setFBars] = useState([0,0,0,0]);
+  const [creds, setCreds] = useState([0,0,0,0]);
+  const funnels=[{l:'Total pool',v:'2,714',bg:'#3d3875'},{l:'Skills match',v:'142',bg:'#5a54a8'},{l:'Verified creds',v:'31',bg:'#7F77DD'},{l:'95%+ match',v:'1',bg:c}];
+  useEffect(() => {
+    if (!active) { setScanTxt('Scanning 0…'); setScanDone(false); setRingPct(0); setConfVis(false); setFBars([0,0,0,0]); setCreds([0,0,0,0]); return; }
+    const ids=[];
+    let cn=0; const civ=setInterval(()=>{ cn=Math.min(cn+68,2714); setScanTxt('Scanning '+cn.toLocaleString()+'…'); if(cn>=2714){clearInterval(civ);setScanTxt('2,714 scanned ✓');setScanDone(true);} },40); ids.push(civ);
+    let sc=0; const siv=setInterval(()=>{ sc=Math.min(sc+1.3,95); setRingPct(Math.round(sc)); if(sc>=95){clearInterval(siv);setConfVis(true);} },20); ids.push(siv);
+    [100,50,20,5].forEach((tgt,i)=>ids.push(setTimeout(()=>setFBars(b=>{const n=[...b];n[i]=tgt;return n;}),i*280)));
+    [0,1,2,3].forEach(i=>ids.push(setTimeout(()=>setCreds(v=>{const n=[...v];n[i]=1;return n;}),1200+i*200)));
+    return()=>ids.forEach(clearTimeout);
+  }, [active]);
+  const deg=Math.round(ringPct/100*360);
+  return (
+    <JnyCard step="Step 02" title="TrustMatch engine · 2,714 scanned" statusCls="run" statusTxt="● Scanning">
+      <div className="jny-mp-dark">
+        <div className="jny-mp-hrow">
+          <span className="jny-mp-badge">AI Match Engine</span>
+          <span className={`jny-mp-scan${scanDone?' done':''}`}>{scanTxt}</span>
+        </div>
+        <div className="jny-mp-mrow">
+          <div>
+            <div className="jny-sring" style={{background:`conic-gradient(${c} 0deg,${c} ${deg}deg,rgba(26,21,48,.9) ${deg}deg)`}}>
+              <div className="jny-sring-inner">
+                <div className="jny-sring-num">{ringPct}%</div>
+                <div className="jny-sring-lbl">MATCH</div>
+              </div>
+            </div>
+            <div className={`jny-mp-confirm${confVis?' vis':''}`} style={{color:c}}>✓ 95% MATCH</div>
+          </div>
+          <div className="jny-funnels">
+            {funnels.map((f,i)=>(
+              <div key={i} className="jny-fn-row">
+                <span className="jny-fn-lbl">{f.l}</span>
+                <div className="jny-fn-track"><div className="jny-fn-fill" style={{width:`${fBars[i]}%`,background:f.bg}}/></div>
+                <span className="jny-fn-val" style={{color:i===3?c:undefined}}>{f.v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="jny-mp-creds">
+          {['Singpass','NUS CS','AWS SAA','7yr AI'].map((cr,i)=>(
+            <span key={i} className={`jny-mp-cred${creds[i]?' vis':''}`}><span style={{color:'#7F77DD'}}>✓</span> {cr}</span>
+          ))}
+        </div>
+      </div>
+    </JnyCard>
+  );
+}
+
+function S3Card3({ color: c, active }) {
+  const [msg, setMsg] = useState('');
+  const [timerW, setTimerW] = useState(100);
+  const [secs, setSecs] = useState(240);
+  const msgIvRef = useRef(null);
+  const timerIvRef = useRef(null);
+  const fullMsg='Hi Ivy — I can see your ✓NUS · ✓AWS · ✓Singpass credentials and your 95% match score. Impressive AI engineering background. Are you open to a 20-min call this Friday?';
+  useEffect(() => {
+    clearInterval(msgIvRef.current); clearInterval(timerIvRef.current);
+    if (!active) { setMsg(''); setTimerW(100); setSecs(240); return; }
+    let i=0;
+    msgIvRef.current=setInterval(()=>{
+      if(i<=fullMsg.length){ setMsg(fullMsg.slice(0,i)); i++; }
+      else {
+        clearInterval(msgIvRef.current);
+        timerIvRef.current=setInterval(()=>{
+          setSecs(s=>{ const ns=Math.max(0,s-4); if(ns<=0)clearInterval(timerIvRef.current); return ns; });
+          setTimerW(w=>Math.max(0,w-4/240*100));
+        },65);
+      }
+    },19);
+    return()=>{ clearInterval(msgIvRef.current); clearInterval(timerIvRef.current); };
+  }, [active]);
+  const m=Math.floor(secs/60), s2=secs%60;
+  return (
+    <JnyCard step="Step 03" title="TrustChat recruiter ping · 3:42" statusCls="live" statusTxt="● Live">
+      <div style={{background:'rgba(232,92,128,.06)',border:'1px solid rgba(232,92,128,.2)',borderRadius:9,padding:'10px 12px'}}>
+        <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:6}}>
+          <div style={{width:22,height:22,borderRadius:'50%',background:'rgba(232,92,128,.15)',border:'1px solid rgba(232,92,128,.28)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,flexShrink:0}}>👤</div>
+          <div>
+            <div style={{fontSize:10,fontWeight:600,color:'rgba(255,255,255,.85)'}}>Sarah L. · Head of Talent · Vertex AI Labs</div>
+            <div style={{fontSize:9,color:'rgba(255,255,255,.3)'}}>Senior AI Engineer · 95% match</div>
+          </div>
+        </div>
+        <div style={{fontSize:10,lineHeight:1.58,color:'rgba(255,255,255,.6)',marginBottom:6,minHeight:48}}>{msg}</div>
+        <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:6}}>
+          {['✓ NUS CS','✓ AWS SAA','✓ Singpass'].map(t=>(
+            <span key={t} style={{fontSize:8,padding:'1px 6px',borderRadius:10,background:'rgba(30,201,138,.08)',color:'#1ec98a',border:'1px solid rgba(30,201,138,.18)',fontFamily:'monospace'}}>{t}</span>
+          ))}
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:5,fontFamily:'monospace',fontSize:8.5,color:c}}>
+          <span>Response window</span>
+          <div className="jny-rtbar"><div style={{height:'100%',borderRadius:2,background:c,width:`${timerW}%`,transition:'width 4s linear'}}/></div>
+          <span>{m}:{s2<10?'0':''}{s2}</span>
+        </div>
+      </div>
+    </JnyCard>
+  );
+}
+
+function S3Card4({ color: c, active }) {
+  const [tscore, setTscore] = useState(0);
+  const [rows, setRows] = useState([0,0,0]);
+  const [badges, setBadges] = useState([0,0,0,0]);
+  const matches=[{co:'Vertex AI Labs',pct:'95%',col:'#1ec98a'},{co:'Grab',pct:'88%',col:c},{co:'Sea Group',pct:'81%',col:'#e85c80'}];
+  const bdgTxt=['🔐 Identity & credentials blockchain-verified','🎯 95% match · TrustChat opened in 3:42','📅 Intro call scheduled — Friday 10am','🧠 AI memory profile active · all 4 stages'];
+  useEffect(() => {
+    if (!active) { setTscore(0); setRows([0,0,0]); setBadges([0,0,0,0]); return; }
+    const ids=[];
+    let n=0; const iv=setInterval(()=>{n=Math.min(n+2,88);setTscore(n);if(n>=88)clearInterval(iv);},22); ids.push(iv);
+    [400,700,1000].forEach((ms,i)=>ids.push(setTimeout(()=>setRows(v=>{const nv=[...v];nv[i]=1;return nv;}),ms)));
+    [0,1,2,3].forEach(i=>ids.push(setTimeout(()=>setBadges(v=>{const nv=[...v];nv[i]=1;return nv;}),1400+i*280)));
+    return()=>ids.forEach(clearTimeout);
+  }, [active]);
+  return (
+    <JnyCard step="Step 04" title="TrustMatch profile · Trust Score 88" statusCls="done" statusTxt="✓ Top 8%">
+      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Candidate view · Ivy Chen</div>
+      <div style={{display:'flex',alignItems:'center',gap:9,marginBottom:8}}>
+        <div style={{width:32,height:32,borderRadius:'50%',background:'rgba(232,92,128,.15)',border:'2px solid rgba(232,92,128,.35)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'rgba(255,255,255,.8)',flexShrink:0}}>IC</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:11,fontWeight:600,color:'rgba(255,255,255,.85)'}}>Ivy Chen · Senior AI Engineer</div>
+          <div style={{fontSize:8.5,color:'rgba(255,255,255,.3)'}}>Trust Score <span style={{fontFamily:'monospace',fontWeight:700,color:c}}>{tscore}</span>/100 · <span style={{color:'#1ec98a'}}>Top 8%</span></div>
+        </div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:7}}>
+        {matches.map((m,i)=>(
+          <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 9px',borderRadius:6,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.06)',opacity:rows[i]?1:0,transform:rows[i]?'none':'translateX(6px)',transition:'opacity .4s,transform .4s'}}>
+            <span style={{fontSize:10,fontWeight:600,color:'rgba(255,255,255,.8)'}}>{m.co}</span>
+            <span style={{fontFamily:'monospace',fontSize:12,fontWeight:700,color:m.col}}>{m.pct}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:3}}>
+        {bdgTxt.map((t,i)=>(
+          <div key={i} className={`jny-tbadge${badges[i]?' vis':''}`}>{t}<span style={{marginLeft:'auto',color:'#1ec98a',fontSize:9.5}}>✓</span></div>
+        ))}
+      </div>
+    </JnyCard>
+  );
+}
 
 function mkStage0Cards(color) {
   return [
-  <div style={{ background:'rgba(13,20,40,.96)', border:'2px dashed rgba(255,255,255,.14)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:16, padding:'32px 22px', boxSizing:'border-box' }}>
-    <div style={{ width:54, height:54, borderRadius:14, background:'#1D9E7520', border:'1px solid #1D9E7544', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>📄</div>
-    <div style={{ textAlign:'center' }}>
-      <div style={{ fontSize:15, fontWeight:800, color:'var(--lp-text)', marginBottom:6 }}>Drop your resume here</div>
-      <div style={{ fontSize:11, color:'rgba(255,255,255,.35)' }}>or click to browse files</div>
-    </div>
-    <div style={{ display:'flex', gap:6 }}>
-      {['PDF','DOCX','TXT'].map(f => <span key={f} style={{ fontSize:9, fontWeight:700, padding:'3px 8px', borderRadius:4, background:'#1D9E7518', color:'#1D9E75', border:'1px solid #1D9E7533' }}>{f}</span>)}
-    </div>
-    <div style={{ padding:'10px 0', borderRadius:8, background:'linear-gradient(135deg,#1D9E75,#12785388)', color:'#fff', fontSize:12, fontWeight:700, width:'100%', textAlign:'center', marginTop:8 }}>Browse Files</div>
-    <div style={{ fontSize:10, color:'rgba(255,255,255,.18)', textAlign:'center', lineHeight:1.5 }}>Scans in under 20 seconds<br/>No data stored without consent</div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(0,212,255,.25)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', gap:12, padding:22, boxSizing:'border-box' }}>
-    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-      <span style={{ width:8, height:8, borderRadius:'50%', background:'#00D4FF', animation:'lp-pulse 1.5s infinite', flexShrink:0 }} />
-      <span style={{ fontSize:12, fontWeight:700, color:'#00D4FF' }}>Scanning your resume…</span>
-    </div>
-    <div>
-      <div style={{ height:5, borderRadius:3, background:'rgba(255,255,255,.06)', overflow:'hidden', marginBottom:4 }}>
-        <div style={{ height:'100%', borderRadius:3, background:'linear-gradient(90deg,#00D4FF,#B026FF)', width:'68%', boxShadow:'0 0 10px #00D4FF88' }} />
-      </div>
-      <div style={{ fontSize:10, color:'rgba(255,255,255,.3)', textAlign:'right' }}>68%</div>
-    </div>
-    <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
-      {[{l:'Reading structure',d:true},{l:'Extracting keywords',d:true},{l:'Matching PM roles',d:true},{l:'Scoring 5 dimensions',d:false},{l:'Generating fix recommendations',d:false}].map((s,i) => (
-        <div key={i} style={{ display:'flex', alignItems:'center', gap:8, fontSize:11, color:s.d?'#00E5A0':'rgba(255,255,255,.28)' }}>
-          <span style={{ width:16, height:16, borderRadius:'50%', border:'1.5px solid currentColor', display:'flex', alignItems:'center', justifyContent:'center', fontSize:8, flexShrink:0 }}>{s.d?'✓':i+1}</span>
-          {s.l}
-        </div>
-      ))}
-    </div>
-    <div style={{ textAlign:'center', padding:'10px 0', background:'rgba(0,212,255,.06)', borderRadius:10, border:'1px solid rgba(0,212,255,.14)', marginTop:'auto' }}>
-      <div style={{ fontSize:28, fontWeight:900, color:'#00D4FF', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>61</div>
-      <div style={{ fontSize:9, color:'rgba(255,255,255,.28)', marginTop:3 }}>ATS score building…</div>
-    </div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(255,77,106,.22)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-    <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:'rgba(255,77,106,.06)', borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
-      <span style={{ width:7, height:7, borderRadius:'50%', background:'#FF4D6A', boxShadow:'0 0 7px rgba(255,77,106,.8)', flexShrink:0 }} />
-      <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>Original Resume</span>
-      <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:'rgba(255,77,106,.12)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.2)' }}>Before</span>
-    </div>
-    <div style={{ padding:14, flex:1 }}>
-      <div style={{ fontSize:12, fontWeight:800, color:'var(--lp-text)', marginBottom:2 }}>Minh Tran</div>
-      <div style={{ fontSize:9, color:'rgba(255,255,255,.28)', marginBottom:10 }}>minh@email.com · Singapore</div>
-      <div style={{ height:5, borderRadius:3, background:'rgba(255,255,255,.07)', marginBottom:5 }} />
-      <div style={{ height:5, borderRadius:3, background:'rgba(255,77,106,.2)', borderLeft:'2px solid #FF4D6A', marginBottom:5 }} />
-      <div style={{ fontSize:9, color:'#FF4D6A', fontStyle:'italic', padding:'5px 8px', background:'rgba(255,77,106,.06)', borderRadius:5, marginBottom:10, lineHeight:1.4 }}>"Helped drive product roadmap, worked with teams on deliverables…"</div>
-      <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginBottom:14 }}>
-        {['Missing: OKR','Missing: SQL','Vague bullets','No metrics'].map(t => <span key={t} style={{ fontSize:8, padding:'2px 6px', borderRadius:4, background:'rgba(255,77,106,.08)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.18)' }}>{t}</span>)}
-      </div>
-      <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'5px 11px', borderRadius:20, background:'rgba(255,77,106,.1)', border:'1px solid rgba(255,77,106,.25)' }}>
-        <span style={{ fontSize:22, fontWeight:900, color:'#FF4D6A', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>38</span>
-        <span style={{ fontSize:9, color:'#FF4D6A', fontWeight:600 }}>ATS score · Filtered</span>
-      </div>
-    </div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(176,38,255,.28)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-    <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:'rgba(176,38,255,.06)', borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
-      <span style={{ width:7, height:7, borderRadius:'50%', background:'#B026FF', flexShrink:0 }} />
-      <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>AI Fix Engine</span>
-      <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:'rgba(176,38,255,.12)', color:'#B026FF', border:'1px solid rgba(176,38,255,.22)' }}>Fixing</span>
-    </div>
-    <div style={{ padding:13, flex:1 }}>
-      <div style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,.28)', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:9 }}>6 issues found &amp; fixed</div>
-      {[{l:'Add missing keywords',a:'52 +14pts',f:true},{l:'Quantify impact bullets',a:'Metric added',f:true},{l:'Fix formatting issues',a:'Clean format',f:true},{l:'Add seniority signals',a:'Signals added',f:true},{l:'Cover letter alignment',a:'Aligned',f:false},{l:'ATS keyword density',a:'89%',f:false}].map((e,i) => (
-        <div key={i} style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 7px', borderRadius:6, border:`1px solid ${e.f?'rgba(0,229,160,.22)':'rgba(255,255,255,.05)'}`, background:e.f?'rgba(0,229,160,.05)':'rgba(255,255,255,.015)', marginBottom:5 }}>
-          <span style={{ width:9, height:9, borderRadius:'50%', border:`1.5px solid ${e.f?'#00E5A0':'rgba(255,255,255,.18)'}`, flexShrink:0, background:e.f?'#00E5A0':'transparent' }} />
-          <span style={{ flex:1, fontSize:10, color:'rgba(255,255,255,.65)' }}>{e.l}</span>
-          <span style={{ fontSize:9, color:e.f?'#00E5A0':'rgba(255,255,255,.25)', whiteSpace:'nowrap' }}>{e.a}</span>
-        </div>
-      ))}
-    </div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(0,229,160,.24)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-    <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:'rgba(0,229,160,.06)', borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
-      <span style={{ width:7, height:7, borderRadius:'50%', background:'#00E5A0', boxShadow:'0 0 7px rgba(0,229,160,.8)', flexShrink:0 }} />
-      <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>Optimized Resume</span>
-      <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:'rgba(0,229,160,.1)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.2)' }}>After ✓</span>
-    </div>
-    <div style={{ padding:14, flex:1 }}>
-      <div style={{ fontSize:12, fontWeight:800, color:'var(--lp-text)', marginBottom:2 }}>Minh Tran</div>
-      <div style={{ fontSize:9, color:'rgba(255,255,255,.28)', marginBottom:10 }}>minh@email.com · Singapore</div>
-      <div style={{ height:5, borderRadius:3, background:'rgba(0,229,160,.18)', borderLeft:'2px solid #00E5A0', marginBottom:5 }} />
-      <div style={{ fontSize:9, color:'#00E5A0', fontStyle:'italic', padding:'5px 8px', background:'rgba(0,229,160,.06)', borderRadius:5, marginBottom:10, lineHeight:1.4 }}>"Led product roadmap → 40% increase in user retention, OKR delivery 94%"</div>
-      <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginBottom:14 }}>
-        {['✓ OKR added','✓ SQL included','✓ Metrics cited','✓ Impact clear'].map(t => <span key={t} style={{ fontSize:8, padding:'2px 6px', borderRadius:4, background:'rgba(0,229,160,.08)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.18)' }}>{t}</span>)}
-      </div>
-      <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'5px 11px', borderRadius:20, background:'rgba(0,229,160,.1)', border:'1px solid rgba(0,229,160,.28)', marginBottom:10 }}>
-        <span style={{ fontSize:22, fontWeight:900, color:'#00E5A0', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>91</span>
-        <span style={{ fontSize:9, color:'#00E5A0', fontWeight:600 }}>ATS score · Top tier</span>
-      </div>
-      <div style={{ padding:'6px 10px', background:'rgba(0,229,160,.07)', borderRadius:7, border:'1px solid rgba(0,229,160,.18)', textAlign:'center' }}>
-        <span style={{ fontSize:11, fontWeight:800, color:'#00E5A0' }}>38 → 91 · +53 pts · Top 12%</span>
-      </div>
-    </div>
-  </div>,
+    { Component: S0Card1, props: { color } },
+    { Component: S0Card2, props: { color } },
+    { Component: S0Card3, props: { color } },
   ];
 }
 
 function mkStage1Cards(color) {
   return [
-  <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
-    <div style={{ fontSize:10, fontWeight:700, color:`${color}`, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Readiness Dashboard</div>
-    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
-      <div style={{ fontSize:11, color:'rgba(255,255,255,.45)' }}>Senior Product Engineer</div>
-      <div style={{ textAlign:'right' }}>
-        <div style={{ fontSize:30, fontWeight:900, color, lineHeight:1 }}>67</div>
-        <div style={{ fontSize:9, color:'rgba(255,255,255,.3)' }}>/ 100</div>
-      </div>
-    </div>
-    {[{l:'STAR Stories',s:38,c:'#e05252',t:'Weakest'},{l:'Behavioral',s:61,c:'#d4941a',t:'Gap'},{l:'Technical',s:82,c:color,t:'Good'},{l:'Communication',s:74,c:'#1D9E75',t:'Good'},{l:'Overall',s:67,c:'rgba(255,255,255,.5)',t:''}].map((d,i) => (
-      <div key={i} style={{ display:'flex', gap:8, alignItems:'center', marginBottom:8 }}>
-        <span style={{ fontSize:9, color:'rgba(255,255,255,.35)', width:90, flexShrink:0 }}>{d.l}</span>
-        <div style={{ flex:1, height:5, background:'rgba(255,255,255,.06)', borderRadius:3, overflow:'hidden' }}>
-          <div style={{ height:'100%', background:d.c, borderRadius:3, width:`${d.s}%` }} />
-        </div>
-        <span style={{ fontSize:10, fontWeight:800, color:d.c, width:22, textAlign:'right', flexShrink:0 }}>{d.s}</span>
-        {d.t && <span style={{ fontSize:9, color:d.c, opacity:.75, flexShrink:0, width:42 }}>{d.t}</span>}
-      </div>
-    ))}
-    <div style={{ marginTop:'auto', padding:'8px 12px', background:`${color}12`, borderRadius:8, border:`1px solid ${color}30` }}>
-      <div style={{ fontSize:10, color, fontWeight:700, marginBottom:2 }}>AI Coach</div>
-      <div style={{ fontSize:11, color:'rgba(255,255,255,.55)', lineHeight:1.5 }}>Focus on STAR stories first. <strong style={{ color }}>9 days to interview-ready.</strong></div>
-    </div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-    <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:`${color}0d`, borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
-      <span style={{ width:7, height:7, borderRadius:'50%', background:color, animation:'lp-pulse 2s infinite', flexShrink:0 }} />
-      <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>AI Mock Interview</span>
-      <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:`${color}20`, color, border:`1px solid ${color}44` }}>Live</span>
-    </div>
-    <div style={{ padding:14, flex:1, display:'flex', flexDirection:'column', gap:10 }}>
-      <div style={{ padding:'10px 12px', background:`${color}12`, borderRadius:'4px 12px 12px 12px', border:`1px solid ${color}30` }}>
-        <div style={{ fontSize:9, color, fontWeight:700, marginBottom:4 }}>AI Hiring Manager</div>
-        <div style={{ fontSize:11, color:'rgba(255,255,255,.7)', lineHeight:1.5 }}>"Tell me about a time you led a project under significant pressure."</div>
-      </div>
-      <div style={{ padding:'10px 12px', background:'rgba(255,255,255,.05)', borderRadius:'12px 4px 12px 12px', border:'1px solid rgba(255,255,255,.08)', marginLeft:20 }}>
-        <div style={{ fontSize:11, color:'rgba(255,255,255,.65)', lineHeight:1.5 }}>"In Q3 2023, I led a payment service migration with a 3-week deadline…"</div>
-      </div>
-      <div style={{ padding:'8px 12px', background:`${color}12`, borderRadius:'4px 12px 12px 12px', border:`1px solid ${color}30` }}>
-        <div style={{ fontSize:9, color, fontWeight:700, marginBottom:3 }}>AI Feedback</div>
-        <div style={{ fontSize:11, color:'rgba(255,255,255,.65)', lineHeight:1.5 }}>Good STAR structure. Add quantified results — "reduced latency by X%".</div>
-      </div>
-      <div style={{ marginTop:'auto', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 12px', background:'rgba(255,255,255,.03)', borderRadius:8, border:'1px solid rgba(255,255,255,.07)' }}>
-        <span style={{ fontSize:11, color:'rgba(255,255,255,.4)', fontWeight:600 }}>Response score</span>
-        <span style={{ fontSize:18, fontWeight:900, color }}>{74}<span style={{ fontSize:9, color:'rgba(255,255,255,.3)', fontWeight:400 }}>/100</span></span>
-      </div>
-    </div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-    <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:`${color}0d`, borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
-      <span style={{ width:7, height:7, borderRadius:'50%', background:color, flexShrink:0 }} />
-      <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>STAR Story Builder</span>
-      <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:'rgba(0,229,160,.15)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.3)' }}>Score 82</span>
-    </div>
-    <div style={{ padding:14, flex:1, display:'flex', flexDirection:'column', gap:9 }}>
-      {[{k:'S',l:'Situation',t:'Payment service needed migration — 3-week deadline, $2M revenue at risk',c:'#1D9E75'},{k:'T',l:'Task',t:'Lead 4-engineer team, own architecture decisions end-to-end',c:color},{k:'A',l:'Action',t:'Phased rollout, feature flags, daily standups, real-time monitoring dashboard',c:'#BA7517'},{k:'R',l:'Result',t:'Zero downtime. Latency ↓40%. Saved $2M quarterly revenue',c:'#e05252'}].map(d => (
-        <div key={d.k} style={{ display:'flex', gap:8 }}>
-          <span style={{ flexShrink:0, fontSize:9, fontWeight:900, color:d.c, background:`${d.c}18`, border:`1px solid ${d.c}40`, borderRadius:4, padding:'2px 6px', height:'fit-content', marginTop:2 }}>{d.k}</span>
-          <div>
-            <div style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,.35)', textTransform:'uppercase', letterSpacing:'.06em', marginBottom:2 }}>{d.l}</div>
-            <div style={{ fontSize:11, color:'rgba(255,255,255,.7)', lineHeight:1.45 }}>{d.t}</div>
-          </div>
-        </div>
-      ))}
-      <div style={{ marginTop:'auto', padding:'6px 12px', background:'rgba(255,210,51,.08)', borderRadius:7, border:'1px solid rgba(255,210,51,.25)', textAlign:'center' }}>
-        <span style={{ fontSize:11, fontWeight:800, color:'#FFD233' }}>"Led payment migration → saved $2M, zero downtime"</span>
-      </div>
-    </div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
-    <div style={{ fontSize:10, fontWeight:700, color, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:4 }}>AI Study Plan</div>
-    <div style={{ fontSize:13, fontWeight:800, color:'var(--lp-text)', marginBottom:16 }}>9 days to interview-ready</div>
-    {[{day:'Day 1–2',task:'STAR story bank (3 stories min)',hrs:'4 hrs',done:true},{day:'Day 3–4',task:'Behavioral coaching — 8 scenarios',hrs:'3 hrs',done:true},{day:'Day 5',task:'Technical depth — system design',hrs:'2 hrs',done:false},{day:'Day 6–7',task:'Mock interview × 3 — full sessions',hrs:'6 hrs',done:false},{day:'Day 8–9',task:'Weakness drill + final rehearsal',hrs:'3 hrs',done:false}].map((s,i) => (
-      <div key={i} style={{ display:'flex', gap:10, alignItems:'flex-start', marginBottom:10, padding:'8px 10px', borderRadius:8, background:s.done?`${color}0d`:'rgba(255,255,255,.02)', border:`1px solid ${s.done?color+'2a':'rgba(255,255,255,.06)'}` }}>
-        <span style={{ fontSize:9, fontWeight:900, color:s.done?color:'rgba(255,255,255,.25)', width:14, marginTop:1 }}>{s.done?'✓':i+1}</span>
-        <div style={{ flex:1 }}>
-          <div style={{ fontSize:9, color:s.done?color:'rgba(255,255,255,.25)', fontWeight:700, marginBottom:2 }}>{s.day}</div>
-          <div style={{ fontSize:11, color:s.done?'rgba(255,255,255,.7)':'rgba(255,255,255,.4)', lineHeight:1.35 }}>{s.task}</div>
-        </div>
-        <span style={{ fontSize:9, color:'rgba(255,255,255,.25)', flexShrink:0 }}>{s.hrs}</span>
-      </div>
-    ))}
-  </div>,
+    { Component: S1Card1, props: { color } },
+    { Component: S1Card2, props: { color } },
+    { Component: S1Card3, props: { color } },
+    { Component: S1Card4, props: { color } },
   ];
 }
 
 function mkStage2Cards(color) {
   return [
-  <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
-    <div style={{ fontSize:10, fontWeight:700, color, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:4 }}>Market Intel</div>
-    <div style={{ fontSize:12, color:'rgba(255,255,255,.45)', marginBottom:18 }}>Senior Software Engineer · Singapore</div>
-    {[{l:'P25',a:'SGD 9K',p:41,c:'rgba(255,255,255,.2)'},{l:'Median',a:'SGD 12K',p:55,c:'rgba(255,255,255,.4)'},{l:'P75',a:'SGD 16K',p:72,c:'rgba(255,255,255,.6)'},{l:'Top 10%',a:'SGD 22K',p:100,c:color}].map((m,i) => (
-      <div key={m.l} style={{ marginBottom:12 }}>
-        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
-          <span style={{ fontSize:10, color:'rgba(255,255,255,.4)', fontWeight:600 }}>{m.l}</span>
-          <span style={{ fontSize:11, fontWeight:800, color:m.c }}>{m.a}</span>
-        </div>
-        <div style={{ height:7, borderRadius:4, background:'rgba(255,255,255,.06)', overflow:'hidden' }}>
-          <div style={{ height:'100%', borderRadius:4, background:m.c, width:`${m.p}%`, boxShadow:i===3?`0 0 10px ${color}88`:'none' }} />
-        </div>
-      </div>
-    ))}
-    <div style={{ marginTop:'auto', padding:'8px 12px', background:`${color}12`, borderRadius:8, border:`1px solid ${color}30`, textAlign:'center' }}>
-      <div style={{ fontSize:11, color, fontWeight:700 }}>Your target: P72 — SGD 14,000</div>
-    </div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(255,77,106,.25)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
-    <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:18 }}>
-      <span style={{ width:8, height:8, borderRadius:'50%', background:'#FF4D6A', flexShrink:0 }} />
-      <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)' }}>Offer Received</span>
-    </div>
-    <div style={{ textAlign:'center', padding:'20px 16px', background:'rgba(255,77,106,.06)', borderRadius:12, border:'1px solid rgba(255,77,106,.2)', marginBottom:16 }}>
-      <div style={{ fontSize:9, color:'rgba(255,255,255,.3)', marginBottom:6 }}>TechCorp Singapore · Senior Engineer</div>
-      <div style={{ fontSize:32, fontWeight:900, color:'rgba(255,180,180,.85)', fontFamily:'var(--lp-ffm)', lineHeight:1, marginBottom:4 }}>SGD 10,500</div>
-      <div style={{ fontSize:10, color:'rgba(255,77,106,.8)', fontWeight:600 }}>per month · P28 · Below median</div>
-    </div>
-    <div style={{ padding:'10px 14px', background:'rgba(255,77,106,.06)', borderRadius:10, border:'1px solid rgba(255,77,106,.18)', marginBottom:12 }}>
-      <div style={{ fontSize:10, color:'rgba(255,255,255,.45)', lineHeight:1.6 }}>This offer is <strong style={{ color:'#FF4D6A' }}>SGD 1,500 below market median</strong> and SGD 5,000 below P75. You have strong leverage — your skills match Top 10%.</div>
-    </div>
-    <div style={{ padding:'10px 0', borderRadius:8, background:`linear-gradient(135deg,${color},${color}99)`, color:'#fff', fontSize:12, fontWeight:700, textAlign:'center', marginTop:'auto' }}>Negotiate with AI →</div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
-    <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:14 }}>
-      <span style={{ width:8, height:8, borderRadius:'50%', background:color, animation:'lp-pulse 2s infinite', flexShrink:0 }} />
-      <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)' }}>AI Negotiation Coach</span>
-    </div>
-    <div style={{ padding:'10px 12px', background:`${color}12`, borderRadius:'4px 12px 12px 12px', border:`1px solid ${color}30`, marginBottom:12 }}>
-      <div style={{ fontSize:9, color, fontWeight:700, marginBottom:4 }}>Strategy</div>
-      <div style={{ fontSize:11, color:'rgba(255,255,255,.65)', lineHeight:1.55 }}>"Thank you for the offer. Based on current Singapore market data (P72 = SGD 14,000), I was expecting SGD 13,500–15,000. Can we revisit the base?"</div>
-    </div>
-    <div style={{ display:'flex', flexDirection:'column', gap:7, marginBottom:14 }}>
-      {['Anchor: SGD 14,000 (P72 data)','Market proof: SGD 12K median cited','Range given: 13,500–15,000','Non-salary asks: equity, remote days'].map((s,i) => (
-        <div key={i} style={{ display:'flex', gap:8, alignItems:'center', fontSize:11, color:'rgba(255,255,255,.55)' }}>
-          <span style={{ fontSize:9, fontWeight:900, color, width:14, flexShrink:0 }}>{i+1}</span>{s}
-        </div>
-      ))}
-    </div>
-    <div style={{ marginTop:'auto', padding:'8px 12px', background:'rgba(0,229,160,.08)', borderRadius:8, border:'1px solid rgba(0,229,160,.25)', textAlign:'center' }}>
-      <span style={{ fontSize:11, fontWeight:800, color:'#00E5A0' }}>Counter sent ✓ — awaiting response</span>
-    </div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(0,229,160,.28)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:24, boxSizing:'border-box', textAlign:'center' }}>
-    <div style={{ fontSize:32, marginBottom:10 }}>🎉</div>
-    <div style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,.45)', marginBottom:6 }}>Offer accepted</div>
-    <div style={{ fontSize:30, fontWeight:900, color:'#00E5A0', fontFamily:'var(--lp-ffm)', lineHeight:1, marginBottom:4 }}>SGD 14,000</div>
-    <div style={{ fontSize:11, color:'rgba(255,255,255,.4)', marginBottom:20 }}>TechCorp Singapore · Senior Engineer</div>
-    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, width:'100%', marginBottom:16 }}>
-      {[{l:'Monthly gain',v:'+SGD 3,500'},{l:'Annual gain',v:'+SGD 42K'},{l:'Market position',v:'P72'},{l:'vs initial offer',v:'+33%'}].map(m => (
-        <div key={m.l} style={{ padding:'10px 8px', background:'rgba(0,229,160,.06)', borderRadius:8, border:'1px solid rgba(0,229,160,.18)' }}>
-          <div style={{ fontSize:9, color:'rgba(255,255,255,.3)', marginBottom:3 }}>{m.l}</div>
-          <div style={{ fontSize:14, fontWeight:900, color:'#00E5A0' }}>{m.v}</div>
-        </div>
-      ))}
-    </div>
-    <div style={{ fontSize:11, color:'rgba(255,255,255,.3)', lineHeight:1.6 }}>AI negotiation secured you<br/><strong style={{ color:'#00E5A0' }}>SGD 42,000 more per year.</strong></div>
-  </div>,
+    { Component: S2Card1, props: { color } },
+    { Component: S2Card2, props: { color } },
+    { Component: S2Card3, props: { color } },
   ];
 }
 
 function mkStage3Cards(color) {
   return [
-  <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
-    <div style={{ fontSize:10, fontWeight:700, color, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Trust Profile</div>
-    <div style={{ display:'flex', justifyContent:'center', marginBottom:14 }}>
-      <svg width={110} height={110}>
-        <circle cx={55} cy={55} r={44} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth={9} />
-        <circle cx={55} cy={55} r={44} fill="none" stroke={color} strokeWidth={9} strokeDasharray={`${2*Math.PI*44*0.84} ${2*Math.PI*44}`} strokeLinecap="round" transform="rotate(-90 55 55)" />
-        <text x={55} y={51} textAnchor="middle" fill={color} fontSize={22} fontWeight={900} fontFamily="var(--lp-ffm)">84</text>
-        <text x={55} y={66} textAnchor="middle" fill="rgba(255,255,255,.4)" fontSize={9} fontFamily="var(--lp-ff)">TRUST SCORE</text>
-      </svg>
-    </div>
-    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6, marginBottom:12 }}>
-      {[{icon:'🎓',l:'NUS CS Degree',s:'Verified'},{icon:'☁️',l:'AWS SA Cert',s:'Active'},{icon:'🪪',l:'Singpass ID',s:'Verified'},{icon:'🏅',l:'Credly ML Cert',s:'Active'}].map((c,i) => (
-        <div key={i} style={{ display:'flex', gap:7, padding:'7px 8px', background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.07)', borderRadius:8 }}>
-          <span style={{ fontSize:14 }}>{c.icon}</span>
-          <div>
-            <div style={{ fontSize:9, color:'rgba(255,255,255,.65)', fontWeight:600, lineHeight:1.2 }}>{c.l}</div>
-            <div style={{ fontSize:8, color, fontWeight:700 }}>{c.s}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-    <div style={{ padding:'7px 12px', background:`${color}10`, borderRadius:8, border:`1px solid ${color}28`, textAlign:'center' }}>
-      <div style={{ fontSize:11, color:'rgba(255,255,255,.55)' }}>ATS <strong style={{ color:'#1D9E75' }}>91</strong> · Interview <strong style={{ color:'#7F77DD' }}>79</strong> · STAR <strong style={{ color:'#BA7517' }}>88</strong></div>
-    </div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
-    <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:16 }}>
-      <span style={{ width:8, height:8, borderRadius:'50%', background:color, animation:'lp-pulse 1.5s infinite', flexShrink:0 }} />
-      <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)' }}>TrustMatch Engine</span>
-    </div>
-    <div style={{ textAlign:'center', marginBottom:16 }}>
-      <div style={{ fontSize:11, color:'rgba(255,255,255,.35)', marginBottom:6 }}>Scanning 2,714 profiles…</div>
-      <div style={{ height:5, borderRadius:3, background:'rgba(255,255,255,.06)', overflow:'hidden', marginBottom:4 }}>
-        <div style={{ height:'100%', borderRadius:3, background:`linear-gradient(90deg,${color},${color}88)`, width:'78%', boxShadow:`0 0 10px ${color}88` }} />
-      </div>
-      <div style={{ fontSize:10, color, fontWeight:700 }}>78% complete</div>
-    </div>
-    <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6, marginBottom:14 }}>
-      {[{l:'Pool',v:'2,714'},{l:'Skills',v:'142'},{l:'Trust',v:'31'},{l:'Rank',v:'#1'}].map((f,i) => (
-        <div key={i} style={{ textAlign:'center', padding:'8px 4px', background:i===3?`${color}18`:'rgba(255,255,255,.03)', border:`1px solid ${i===3?color+'40':'rgba(255,255,255,.07)'}`, borderRadius:8 }}>
-          <div style={{ fontSize:13, fontWeight:900, color:i===3?color:'rgba(255,255,255,.6)', lineHeight:1 }}>{f.v}</div>
-          <div style={{ fontSize:8, color:'rgba(255,255,255,.3)', marginTop:3 }}>{f.l}</div>
-        </div>
-      ))}
-    </div>
-    <div style={{ fontSize:10, color:'rgba(255,255,255,.3)', lineHeight:1.7 }}>
-      Filtering by trust score → skill depth → role fit…
-    </div>
-    <div style={{ marginTop:'auto', padding:'8px 12px', background:`${color}10`, borderRadius:8, border:`1px solid ${color}28`, textAlign:'center' }}>
-      <div style={{ fontSize:11, color, fontWeight:700 }}>Match found — 95% · Top candidate</div>
-    </div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}40`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:22, boxSizing:'border-box', textAlign:'center' }}>
-    <div style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,.3)', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:10 }}>#1 Match</div>
-    <div style={{ fontSize:48, fontWeight:900, color, fontFamily:'var(--lp-ffm)', lineHeight:1, marginBottom:4 }}>95%</div>
-    <div style={{ fontSize:11, color:'rgba(255,255,255,.35)', marginBottom:16 }}>match score</div>
-    <div style={{ width:'100%', padding:'14px 16px', background:'rgba(255,255,255,.04)', borderRadius:12, border:`1px solid ${color}28`, marginBottom:12, textAlign:'left' }}>
-      <div style={{ fontSize:13, fontWeight:800, color:'var(--lp-text)', marginBottom:4 }}>Vertex AI Labs</div>
-      <div style={{ fontSize:11, color:'rgba(255,255,255,.5)', marginBottom:6 }}>Senior AI Engineer · Singapore</div>
-      <div style={{ fontSize:11, fontWeight:700, color }}>SGD 12,000 – 16,000 / month</div>
-    </div>
-    <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent:'center' }}>
-      {['Skills ✓','Trust score ✓','Seniority ✓','Credentials ✓'].map(b => (
-        <span key={b} style={{ fontSize:9, padding:'3px 8px', borderRadius:20, background:`${color}18`, color, border:`1px solid ${color}33` }}>{b}</span>
-      ))}
-    </div>
-  </div>,
-  <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-    <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:`${color}0d`, borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
-      <div style={{ width:7, height:7, borderRadius:'50%', background:color, boxShadow:`0 0 8px ${color}`, flexShrink:0 }} />
-      <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>TrustChat</span>
-      <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:`${color}20`, color, border:`1px solid ${color}44` }}>New message</span>
-    </div>
-    <div style={{ padding:16, flex:1, display:'flex', flexDirection:'column', gap:10 }}>
-      <div style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
-        <div style={{ width:28, height:28, borderRadius:'50%', background:`${color}22`, border:`1px solid ${color}44`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, flexShrink:0 }}>V</div>
-        <div>
-          <div style={{ fontSize:9, color:'rgba(255,255,255,.35)', marginBottom:4 }}>Vertex AI Labs · Recruiter · Now</div>
-          <div style={{ padding:'10px 12px', background:`${color}12`, borderRadius:'4px 12px 12px 12px', border:`1px solid ${color}30` }}>
-            <div style={{ fontSize:11, color:'rgba(255,255,255,.7)', lineHeight:1.6 }}>"Hi! Your profile matched our Senior AI Engineer role perfectly. All your credentials are verified. Are you open to a call this week?"</div>
-          </div>
-        </div>
-      </div>
-      <div style={{ display:'flex', justifyContent:'flex-end' }}>
-        <div style={{ padding:'10px 12px', background:'rgba(255,255,255,.05)', borderRadius:'12px 4px 12px 12px', border:'1px solid rgba(255,255,255,.08)', maxWidth:'80%' }}>
-          <div style={{ fontSize:11, color:'rgba(255,255,255,.65)', lineHeight:1.6 }}>"Yes, happy to connect! Thursday or Friday works."</div>
-        </div>
-      </div>
-      <div style={{ marginTop:'auto', padding:'8px 12px', background:'rgba(0,229,160,.07)', borderRadius:8, border:'1px solid rgba(0,229,160,.22)', textAlign:'center' }}>
-        <div style={{ fontSize:11, color:'#00E5A0', fontWeight:700 }}>SGD 12–16K · 95% match · All credentials verified ✓</div>
-      </div>
-    </div>
-  </div>,
+    { Component: S3Card1, props: { color } },
+    { Component: S3Card2, props: { color } },
+    { Component: S3Card3, props: { color } },
+    { Component: S3Card4, props: { color } },
   ];
 }
+
 
 function JourneyDeck({ cards, color }) {
   const [current, setCurrent] = useState(0);
@@ -2178,9 +2183,10 @@ function JourneyDeck({ cards, color }) {
         className={`jny-deck-stack${fanned ? ' fanned' : ''}`}
         onMouseEnter={() => setFanned(true)}
         onMouseLeave={() => setFanned(false)}>
-        {cards.map((card, i) => {
+        {cards.map((cardDef, i) => {
           const slot = (i - current + N) % N;
           const posProps = fanned ? { 'data-fan': slot } : { 'data-pos': slot };
+          const { Component, props } = cardDef;
           return (
             <div key={i} className="jny-dcard" {...posProps}
               style={{ borderColor: slot === 0 ? color + '55' : undefined }}
@@ -2189,7 +2195,7 @@ function JourneyDeck({ cards, color }) {
                 else if (slot !== 0) { setFanned(false); goTo(i); }
                 else setFanned(false);
               }}>
-              {card}
+              <Component {...props} active={slot === 0} />
             </div>
           );
         })}
@@ -2201,23 +2207,10 @@ function JourneyDeck({ cards, color }) {
 
 
 function TrustChatSection({ onJoin }) {
-  const VERIFY_PILLARS = [
-    { icon: '🎓', color: 'rgba(139,124,246,.15)', title: 'Degree Verification', desc: 'Verified with universities — NUS, NTU, SMU & more' },
-    { icon: '🛡️', color: 'rgba(0,212,255,.1)',   title: 'Certificate Verification', desc: 'Real-time via Credly, AWS, Google & others' },
-    { icon: '💼', color: 'rgba(0,229,160,.1)',   title: 'Employment Verification', desc: 'Verified via official sources including Singpass & APIs' },
-    { icon: '✦',  color: 'rgba(245,179,64,.1)', title: 'AI Readiness Layer', desc: 'ATS score, interview readiness & project validation' },
-  ];
-  const CAND_FEATS = [
-    'Build a verified profile that stands out',
-    'Get matched with roles that fit your skills and goals',
-    'Chat directly with interested recruiters',
-    'Higher trust score = more opportunities',
-  ];
-
   return (
     <section style={{ padding: '72px 24px 80px', background: 'var(--lp-bg)' }}>
       <style>{`
-        @keyframes tsmPulse   { 0%,100%{opacity:1} 50%{opacity:.35} }
+        @keyframes tsmPulse { 0%,100%{opacity:1} 50%{opacity:.35} }
       `}</style>
 
       <div style={{ textAlign: 'center', marginBottom: 40 }}>
@@ -2231,50 +2224,14 @@ function TrustChatSection({ onJoin }) {
 
       <div style={{ maxWidth: 1400, margin: '0 auto', background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 20, overflow: 'hidden' }}>
 
-        {/* ── Row 1: 3-panel demo ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px 1fr', padding: '28px 28px 24px', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+        {/* 3-panel demo */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px 1fr', padding: '28px 28px 24px' }}>
 
-          {/* Candidate panel — job listings */}
+          {/* Left: Your profile — Ben Tan candidate card */}
           <div style={{ paddingRight: 20 }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 12 }}>
-              Candidate · 88 trust score
+              Your profile
             </div>
-            {[
-              { logo: 'VA', logoClr: 'rgba(139,124,246,.2)', logoBdr: 'rgba(139,124,246,.3)', logoTxt: '#a89bf8', co: 'Vertex AI Labs', tag: 'verified employer', role: 'Senior AI Engineer · SGD 12–16k', pct: '95%', tags: ['Remote-first','Visa sponsorship','Equity'], active: true },
-              { logo: 'GR', logoClr: 'rgba(0,229,160,.1)', logoBdr: 'rgba(0,229,160,.2)', logoTxt: '#00e5a0', co: 'Grab', tag: 'verified employer', role: 'ML Research Scientist · SGD 14–18k', pct: '88%', tags: ['Hybrid','L7 senior track','Stock options'], active: false },
-            ].map((job, i) => (
-              <div key={i} style={{ background: job.active ? 'rgba(0,212,255,.04)' : 'rgba(255,255,255,.02)', border: `1px solid ${job.active ? 'rgba(0,212,255,.18)' : 'rgba(255,255,255,.06)'}`, borderRadius: 12, padding: '12px 14px', marginBottom: i === 0 ? 10 : 0 }}>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: job.logoClr, border: `1px solid ${job.logoBdr}`, color: job.logoTxt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{job.logo}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text)' }}>{job.co} <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--lp-teal)', background: 'rgba(0,212,255,.1)', borderRadius: 10, padding: '1px 6px', border: '1px solid rgba(0,212,255,.2)' }}>{job.tag}</span></div>
-                    <div style={{ fontSize: 11, color: 'var(--lp-text2)' }}>{job.role}</div>
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--lp-teal)', fontFamily: 'var(--lp-ffm)', flexShrink: 0 }}>{job.pct}<span style={{ fontSize: 9, fontWeight: 400, color: 'rgba(255,255,255,.35)' }}>fit</span></div>
-                </div>
-                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                  {job.tags.map(t => <span key={t} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 10, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', color: 'rgba(255,255,255,.5)' }}>{t}</span>)}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Center atom bridge */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,.2)' }}>←</span>
-              <OrbitMark size={64} animated duration={6} />
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,.2)' }}>→</span>
-            </div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', textAlign: 'center', lineHeight: 1.55 }}>Verified trust<br/>matches the<br/>right opportunities</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {[...Array(4)].map((_, i) => <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(0,212,255,.4)', animation: `tsmPulse 2s ${i * 0.4}s infinite` }} />)}
-            </div>
-          </div>
-
-          {/* Recruiter panel — candidate card */}
-          <div style={{ paddingLeft: 20 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 12 }}>Find high-confidence candidates</div>
             <div style={{ background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, padding: '14px 14px' }}>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #7F77DD, #D4537E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0 }}>BT</div>
@@ -2320,33 +2277,44 @@ function TrustChatSection({ onJoin }) {
               <div style={{ textAlign: 'right', fontSize: 12, fontWeight: 800, color: 'var(--lp-teal)' }}>91% match</div>
             </div>
           </div>
-        </div>
 
-        {/* ── Row 2: Verification pillars ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
-          {VERIFY_PILLARS.map((p, i) => (
-            <div key={i} style={{ padding: '16px 18px', borderRight: i < 3 ? '1px solid rgba(255,255,255,.06)' : 'none', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>{p.icon}</div>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 2 }}>{p.title}</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', lineHeight: 1.5 }}>{p.desc}</div>
-              </div>
+          {/* Center atom bridge */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,.2)' }}>←</span>
+              <OrbitMark size={64} animated duration={6} />
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,.2)' }}>→</span>
             </div>
-          ))}
-        </div>
-
-        {/* ── Row 3: Candidate value strip ── */}
-        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ padding: '18px 28px', flexShrink: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#a78bfa', whiteSpace: 'nowrap' }}>For Candidates</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', whiteSpace: 'nowrap' }}>Increase your visibility.</div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', textAlign: 'center', lineHeight: 1.55 }}>Verified trust<br/>matches the<br/>right opportunities</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {[...Array(4)].map((_, i) => <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(0,212,255,.4)', animation: `tsmPulse 2s ${i * 0.4}s infinite` }} />)}
+            </div>
           </div>
-          {CAND_FEATS.map((f, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11.5, color: 'rgba(255,255,255,.55)', padding: '18px 18px', borderLeft: '1px solid rgba(255,255,255,.06)' }}>
-              <span style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(167,139,250,.18)', color: '#a78bfa', fontSize: 8, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✓</span>
-              {f}
+
+          {/* Right: Jobs matching your profile */}
+          <div style={{ paddingLeft: 20 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 12 }}>
+              Jobs matching your profile
             </div>
-          ))}
+            {[
+              { logo: 'VA', logoClr: 'rgba(139,124,246,.2)', logoBdr: 'rgba(139,124,246,.3)', logoTxt: '#a89bf8', co: 'Vertex AI Labs', tag: 'verified employer', role: 'Senior AI Engineer · SGD 12–16k', pct: '95%', tags: ['Remote-first','Visa sponsorship','Equity'], active: true },
+              { logo: 'GR', logoClr: 'rgba(0,229,160,.1)', logoBdr: 'rgba(0,229,160,.2)', logoTxt: '#00e5a0', co: 'Grab', tag: 'verified employer', role: 'ML Research Scientist · SGD 14–18k', pct: '88%', tags: ['Hybrid','L7 senior track','Stock options'], active: false },
+            ].map((job, i) => (
+              <div key={i} style={{ background: job.active ? 'rgba(0,212,255,.04)' : 'rgba(255,255,255,.02)', border: `1px solid ${job.active ? 'rgba(0,212,255,.18)' : 'rgba(255,255,255,.06)'}`, borderRadius: 12, padding: '12px 14px', marginBottom: i === 0 ? 10 : 0 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: job.logoClr, border: `1px solid ${job.logoBdr}`, color: job.logoTxt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{job.logo}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text)' }}>{job.co} <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--lp-teal)', background: 'rgba(0,212,255,.1)', borderRadius: 10, padding: '1px 6px', border: '1px solid rgba(0,212,255,.2)' }}>{job.tag}</span></div>
+                    <div style={{ fontSize: 11, color: 'var(--lp-text2)' }}>{job.role}</div>
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--lp-teal)', fontFamily: 'var(--lp-ffm)', flexShrink: 0 }}>{job.pct}<span style={{ fontSize: 9, fontWeight: 400, color: 'rgba(255,255,255,.35)' }}>fit</span></div>
+                </div>
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                  {job.tags.map(t => <span key={t} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 10, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', color: 'rgba(255,255,255,.5)' }}>{t}</span>)}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
       </div>
@@ -2355,7 +2323,7 @@ function TrustChatSection({ onJoin }) {
 }
 
 
-function JourneyStage({ stage, cards, swapped }) {
+function JourneyStage({ stage, cards, swapped, stageIdx, isLast }) {
   const ref = useRef(null);
   const [vis, setVis] = useState(false);
 
@@ -2364,51 +2332,81 @@ function JourneyStage({ stage, cards, swapped }) {
     if (!el) return;
     const obs = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) { setVis(true); obs.disconnect(); }
-    }, { threshold: 0.15 });
+    }, { threshold: 0.12 });
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
 
-  return (
-    <div ref={ref} className={`jny-stage${vis ? ' vis' : ''}${swapped ? ' swapped' : ''}`}>
-      <div className="jny-stage-glow" style={{
-        background: `radial-gradient(ellipse 55% 90% at ${swapped ? '80%' : '20%'} 50%, ${stage.color}12, transparent 70%)`
-      }} />
-      <div className="jny-grid">
-        <div className="jny-copy">
-          <div className="jny-stage-badge" style={{ color: stage.color, background: stage.color + '12', border: `1px solid ${stage.color}30` }}>
-            <span className="jny-badge-dot" style={{ background: stage.color }} />
-            {stage.num} · {stage.label}
-          </div>
-          <h3 className="jny-copy-h3">{stage.problem}</h3>
-          <p className="jny-pain" style={{ borderLeftColor: stage.color + '44' }}>{stage.pain}</p>
-          <div className="jny-feats">
-            {stage.bullets.map((b, j) => (
-              <div key={j} className="jny-feat">
-                <span className="jny-feat-ic" style={{ background: stage.color + '18', color: stage.color }}>✦</span>
-                <span>
-                  {b.includes(' — ')
-                    ? <><strong style={{ color: 'var(--lp-text)', fontWeight: 700 }}>{b.split(' — ')[0]}</strong>{' — '}{b.split(' — ').slice(1).join(' — ')}</>
-                    : b}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="jny-outcome" style={{ background: stage.color + '15', color: stage.color, border: `1px solid ${stage.color}30` }}>
-            {stage.outcome}
-          </div>
-        </div>
-        <div className="jny-deck-side">
-          <JourneyDeck cards={cards} color={stage.color} />
-        </div>
+  const copyPanel = (
+    <div className="jny-tcard" style={{ borderColor: stage.color + '22' }}>
+      <div className="jny-stage-badge" style={{ color: stage.color, background: stage.color + '12', border: `1px solid ${stage.color}30` }}>
+        <span className="jny-badge-dot" style={{ background: stage.color }} />
+        {stage.num} · {stage.label}
       </div>
-      <div className="jny-sep" />
+      <h3 className="jny-copy-h3">{stage.problem}</h3>
+      <p className="jny-pain" style={{ borderLeftColor: stage.color + '44' }}>{stage.pain}</p>
+      <div className="jny-feats">
+        {stage.bullets.map((b, j) => (
+          <div key={j} className="jny-feat">
+            <span className="jny-feat-ic" style={{ background: stage.color + '18', color: stage.color }}>✦</span>
+            <span>
+              {b.includes(' — ')
+                ? <><strong style={{ color: 'var(--lp-text)', fontWeight: 700 }}>{b.split(' — ')[0]}</strong>{' — '}{b.split(' — ').slice(1).join(' — ')}</>
+                : b}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="jny-outcome" style={{ background: stage.color + '15', color: stage.color, border: `1px solid ${stage.color}30` }}>
+        {stage.outcome}
+      </div>
+    </div>
+  );
+
+  const deckPanel = (
+    <div className="jny-deck-side">
+      <JourneyDeck cards={cards} color={stage.color} />
+    </div>
+  );
+
+  const nodeContent = (
+    <div className="jny-tnode-col">
+      <div className="jny-tnode" style={{ borderColor: stage.color + '66', color: stage.color, boxShadow: `0 0 18px ${stage.color}22` }}>
+        {stageIdx + 1}
+      </div>
+      {!isLast && <div className="jny-tconnector" />}
+    </div>
+  );
+
+  return (
+    <div ref={ref} className={`jny-tstage${vis ? ' vis' : ''}`}>
+      {swapped ? deckPanel : copyPanel}
+      {nodeContent}
+      {swapped ? copyPanel : deckPanel}
     </div>
   );
 }
 
 function JourneySection({ onJoin }) {
   const DECK_FACTORIES = [mkStage0Cards, mkStage1Cards, mkStage2Cards, mkStage3Cards];
+  const containerRef = useRef(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = rect.height - vh * 0.5;
+      const pct = Math.max(0, Math.min(100, (-rect.top + vh * 0.25) / total * 100));
+      setProgress(pct);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <section style={{ background: 'var(--lp-bg)', padding: '80px 0 40px' }}>
       <div style={{ textAlign: 'center', padding: '0 24px 56px', maxWidth: 680, margin: '0 auto' }}>
@@ -2419,11 +2417,15 @@ function JourneySection({ onJoin }) {
         </h2>
         <p className="ss">One AI memory powers four stages. Every tool knows who you are.</p>
       </div>
-      {JOURNEY_STAGES.map((stage, i) => (
-        <JourneyStage key={i} stage={stage} cards={DECK_FACTORIES[i](stage.color)} swapped={i % 2 === 1} />
-      ))}
+      <div className="jny-timeline" ref={containerRef}>
+        <div className="jny-spine" />
+        <div className="jny-progress-spine" style={{ height: progress + '%' }} />
+        {JOURNEY_STAGES.map((stage, i) => (
+          <JourneyStage key={i} stage={stage} cards={DECK_FACTORIES[i](stage.color)} swapped={i % 2 === 1} stageIdx={i} isLast={i === JOURNEY_STAGES.length - 1} />
+        ))}
+      </div>
       <div style={{ textAlign: 'center', padding: '40px 24px 20px' }}>
-        <button className="cta-btn" onClick={onJoin}>Start free — no card →</button>
+        <button className="lp-btn-join" onClick={onJoin}>✦ Start free — no card →</button>
       </div>
     </section>
   );
