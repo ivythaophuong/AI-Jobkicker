@@ -4,7 +4,7 @@ import { callLLM, extractJSON } from '../../lib/ai.jsx';
 import { OrbitSpinner } from '../../components/OrbitMark';
 import {
   SEVERITY_ORDER, CATEGORIES,
-  genId, arrayBufferToBase64, computeLineDiff, sortGapsBySeverity, buildRebuildPrompt,
+  genId, arrayBufferToBase64, computeLineDiff, sortGapsBySeverity, buildRebuildPrompt, stripHtmlToText,
 } from './atsBuilderUtils.js';
 import './atsBuilder.css';
 
@@ -419,7 +419,7 @@ function AddGapModal({ onClose, onAdd }) {
 }
 
 // ── Results View ───────────────────────────────────────────────────────────────
-function ResultsView({ oldText, newText, oldScore, newScore, oldParams, newParams, addedKeywords, pdfUrl, onEditMore, onRebuildFromThis }) {
+function ResultsView({ oldText, newText, newHtml, oldScore, newScore, oldParams, newParams, addedKeywords, pdfUrl, onEditMore, onRebuildFromThis }) {
   const diff      = computeLineDiff(oldText || '', newText || '');
   const removed   = diff.filter(d => d.type === 'removed');
   const added     = diff.filter(d => d.type === 'added');
@@ -427,8 +427,7 @@ function ResultsView({ oldText, newText, oldScore, newScore, oldParams, newParam
   const scoreColor = newScore >= 70 ? '#00e5a0' : newScore >= 50 ? '#f5a623' : '#ff4d5e';
 
   const downloadDoc = () => {
-    const html = `<html><head><style>body{font-family:Georgia,serif;font-size:12pt;line-height:1.7;max-width:740px;margin:36px auto;color:#1a1a2e}</style></head><body><pre style="white-space:pre-wrap;font-family:inherit">${(newText || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre></body></html>`;
-    const blob = new Blob([html], { type: 'application/msword' });
+    const blob = new Blob([newHtml || newText], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'resume-optimized.doc'; a.click();
     URL.revokeObjectURL(url);
@@ -437,7 +436,7 @@ function ResultsView({ oldText, newText, oldScore, newScore, oldParams, newParam
   const downloadPdf = () => {
     const win = window.open('', '_blank');
     if (!win) return;
-    win.document.write(`<html><head><title>Optimised Resume</title><style>body{font-family:Georgia,serif;font-size:12pt;line-height:1.7;max-width:740px;margin:36px auto;color:#1a1a2e}pre{white-space:pre-wrap;font-family:inherit}</style></head><body><pre>${(newText || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre></body></html>`);
+    win.document.write(newHtml || `<pre style="font-family:sans-serif;padding:40px">${newText}</pre>`);
     win.document.close(); win.print();
   };
 
@@ -501,7 +500,10 @@ function ResultsView({ oldText, newText, oldScore, newScore, oldParams, newParam
             </span>
           </div>
           <div className="atb-doc-viewer">
-            <div className="atb-doc-page">{newText}</div>
+            {newHtml
+              ? <iframe srcDoc={newHtml} title="Optimised resume" className="atb-doc-iframe" style={{ background: '#fff' }} />
+              : <div className="atb-doc-page">{newText}</div>
+            }
           </div>
         </div>
 
@@ -761,17 +763,19 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
     setPhase('building');
     setError(null);
     try {
-      const newText = await callLLM(
+      const newHtml = await callLLM(
         [{ role: 'user', content: buildRebuildPrompt(resumeText, doneCards) }],
         4096
       );
+      const newText = stripHtmlToText(newHtml);
       const analysisRaw = await callLLM(
         [{ role: 'user', content: buildAnalysisPrompt(resumeText, newText) }],
         1024
       );
       const analysis = extractJSON(analysisRaw);
       setBuildResult({
-        newText:       newText.trim(),
+        newHtml:       newHtml.trim(),
+        newText,
         newScore:      analysis.atsScore || Math.min(100, (atsScore || 0) + doneCards.length * 5),
         newParams:     analysis.parameters || parameters,
         addedKeywords: analysis.addedKeywords || [],
@@ -912,6 +916,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
         <ResultsView
           oldText={resumeText}
           newText={buildResult.newText}
+          newHtml={buildResult.newHtml}
           oldScore={atsScore}
           newScore={buildResult.newScore}
           oldParams={parameters}
