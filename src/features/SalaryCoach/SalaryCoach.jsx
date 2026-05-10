@@ -48,7 +48,10 @@ Be specific — no generic advice. Scripts must be ready to say out loud.` }], 1
       const parsed = extractJSON(raw);
       if (parsed.error) throw new Error(parsed.msg);
       setResult(parsed);
-      if (updateMemory) updateMemory(m => ({ negotiationPractice: (m.negotiationPractice || 0) + 1 }));
+      if (updateMemory) updateMemory(
+        m => ({ negotiationPractice: (m.negotiationPractice || 0) + 1 }),
+        { table: 'negotiation_practice', data: { role: form.role, market: form.market, market_mid: parsed.marketMid, win_condition: parsed.winCondition } }
+      );
     } catch (e) {
       showToast("Analysis failed: " + e.message, "error");
     }

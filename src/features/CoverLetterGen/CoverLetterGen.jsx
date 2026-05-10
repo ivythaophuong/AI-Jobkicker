@@ -45,9 +45,10 @@ Write a real letter — no [brackets] or placeholders. Match the tone exactly.` 
       const parsed = extractJSON(raw);
       if (parsed.error) throw new Error(parsed.msg);
       setResult(parsed);
-      if (updateMemory) updateMemory(m => ({
-        coverLetters: [{ date: new Date().toISOString(), role: form.role, tone }, ...(m.coverLetters || [])].slice(-20)
-      }));
+      if (updateMemory) updateMemory(
+        m => ({ coverLetters: [{ date: new Date().toISOString(), role: form.role, tone }, ...(m.coverLetters || [])].slice(-20) }),
+        { table: 'cover_letters', data: { role: form.role, tone, subject: parsed.subject, cover_letter: parsed.coverLetter } }
+      );
     } catch (e) {
       showToast("Generation failed: " + e.message, "error");
     }

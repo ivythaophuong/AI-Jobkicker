@@ -39,9 +39,10 @@ Be specific to the actual content — no generic advice.` }], 1500);
       const parsed = extractJSON(raw);
       if (parsed.error) throw new Error(parsed.msg);
       setResult(parsed);
-      if (updateMemory) updateMemory(m => ({
-        jdAnalyses: [{ date: new Date().toISOString(), company: parsed.company, matchScore: parsed.matchScore, role: parsed.roleTitle }, ...(m.jdAnalyses || [])].slice(-20)
-      }));
+      if (updateMemory) updateMemory(
+        m => ({ jdAnalyses: [{ date: new Date().toISOString(), company: parsed.company, matchScore: parsed.matchScore, role: parsed.roleTitle }, ...(m.jdAnalyses || [])].slice(-20) }),
+        { table: 'jd_analyses', data: { role_title: parsed.roleTitle, company: parsed.company, match_score: parsed.matchScore, key_requirements: parsed.keyRequirements, critical_gaps: parsed.criticalGaps } }
+      );
     } catch (e) {
       showToast("Analysis failed: " + e.message, "error");
     }
