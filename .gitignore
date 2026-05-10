@@ -34,3 +34,6 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+
+# MCP config (contains secrets)
+.mcp.json

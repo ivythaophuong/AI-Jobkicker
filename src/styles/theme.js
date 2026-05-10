@@ -27,5 +27,6 @@ export const MODULES = [
   { id: "radar",    icon: "📡", label: "Weakness Radar",  color: C.red      },
   { id: "score",    icon: "🏆", label: "Readiness Score", color: C.accent   },
   { id: "market",   icon: "🌏", label: "Market Intel",    color: C.muted    },
-  { id: "memory",   icon: "🧬", label: "AI Memory",        color: C.purple   },
+  { id: "memory",      icon: "🧬", label: "AI Memory",        color: C.purple   },
+  { id: "trustmatch", icon: "",   label: "TrustMatch",       color: C.purple   },
 ];

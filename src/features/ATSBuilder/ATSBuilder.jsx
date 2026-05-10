@@ -744,6 +744,12 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
     setDoneCards([]);
     setBuildResult(null);
     setPhase('kanban');
+    if (updateMemory) {
+      updateMemory(
+        m => ({ scanHistory: [{ score: parsed.atsScore, date: new Date().toISOString() }, ...(m.scanHistory || [])].slice(-20) }),
+        { table: 'resume_scans', data: { credibility_score: parsed.atsScore ?? 0, metrics_found: parsed.parameters ? Object.keys(parsed.parameters).length : 0, summary: parsed.summary || '', issues: parsed.gaps || [], questions: parsed.interrogationQuestions || [] } }
+      );
+    }
   };
 
   // ── Card movement ─────────────────────────────────────────────────────────────

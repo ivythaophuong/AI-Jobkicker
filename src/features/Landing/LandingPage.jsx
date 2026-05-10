@@ -476,13 +476,19 @@ export const NAV_CATEGORIES = [
       { icon: '💰', label: 'Salary Coach', sub: 'Negotiate what you deserve', moduleId: 'salary' },
     ],
   },
+  {
+    icon: '', label: 'TrustMatch', tag: 'New',
+    tools: [
+      { icon: '', label: 'TrustMatch', sub: 'Verified employer matching', moduleId: 'trustmatch' },
+    ],
+  },
 ];
 
 // 3-column megamenu arrangement
 const MEGA_COLS = [
   [NAV_CATEGORIES[0], NAV_CATEGORIES[3]], // Job Search + Get the Offer
   [NAV_CATEGORIES[1], NAV_CATEGORIES[4]], // Get Seen + Get Paid
-  [NAV_CATEGORIES[2]],                    // Get Ready
+  [NAV_CATEGORIES[2], NAV_CATEGORIES[5]], // Get Ready + TrustMatch
 ];
 
 export function NavFeatMenu({ onFeatOpen }) {
@@ -657,7 +663,8 @@ function AppHubPill({ cat, activeModule, onNavigate }) {
         <span style={{ fontSize: 15 }}>{cat.icon}</span>
         <span className="lp-hub-pill-label">{cat.label}</span>
         {cat.tag === 'Free' && <span className="lp-hub-pill-sub">Always free</span>}
-        {cat.tag === 'Pro' && <span className="lp-hub-pill-badge">Pro</span>}
+        {cat.tag === 'Pro'  && <span className="lp-hub-pill-badge">Pro</span>}
+        {cat.tag === 'New'  && <span className="lp-hub-pill-badge" style={{ background: 'linear-gradient(135deg,#B026FF,#00D4FF)' }}>NEW</span>}
       </button>
       {open && typeof document !== 'undefined' && ReactDOM.createPortal(
         <div
@@ -711,7 +718,8 @@ export const PILLS = [
   { icon: '📡', label: 'Weakness Radar', moduleId: 'radar'    },
   { icon: '🏆', label: 'Readiness Score',moduleId: 'score'    },
   { icon: '🌏', label: 'Market Intel',   moduleId: 'market'   },
-  { icon: '🧬', label: 'AI Memory',      moduleId: 'memory'   },
+  { icon: '🧬', label: 'AI Memory',      moduleId: 'memory'      },
+  { icon: '',   label: 'TrustMatch',    moduleId: 'trustmatch'  },
 ];
 
 export function ModulePills({ active, setActive }) {
@@ -1705,6 +1713,1291 @@ function L4DemoPanel({ onClose, onNext }) {
     <DemoShell label="LAYER 04 AI MARKETPLACE — LIVE DEMO" accent={DS.purple} borderC={DS.pb} onClose={onClose} onNext={onNext}>
       <iframe srcdoc={l4Html} style={{ width:'100%', height:l4HtmlHeight, border:'none', display:'block', background:'#09090d' }} title="Layer 04 AI Marketplace Demo" />
     </DemoShell>
+  );
+}
+
+// ── JOURNEY SECTION ──────────────────────────────────────────────────────────
+
+const JOURNEY_STAGES = [
+  {
+    num: '01', label: 'Get Seen', color: '#1D9E75',
+    problem: 'Your resume is filtered out before a human ever reads it.',
+    pain: '"75% of resumes are rejected by ATS software — not people."',
+    bullets: [
+      'Resume Scan — ATS score & issue flags in 20 seconds',
+      'ATS Builder — rebuild your resume for keywords & format',
+      'JD Analyzer — decode any job description instantly',
+      'Cover Letter — AI-written, role-tailored in seconds',
+    ],
+    outcome: '↑ ATS score 38→91 avg — in 20 seconds',
+  },
+  {
+    num: '02', label: 'Get Ready', color: '#7F77DD',
+    problem: 'Your personalized plan — built from your scores, not a template.',
+    pain: '"Most people prep randomly. AI targets your exact weaknesses."',
+    bullets: [
+      'AI hiring managers in 8 archetypes — real pressure, real feedback',
+      'STAR story builder & bank your best answers',
+      'Scored on clarity, STAR structure, and relevance',
+      'Get Ready plan — personalized study roadmap',
+    ],
+    outcome: '9 days avg. time to interview-ready',
+  },
+  {
+    num: '03', label: 'Get the Offer', color: '#BA7517',
+    problem: 'Negotiate with data, not hope.',
+    pain: '"I always take the first number."',
+    bullets: [
+      'Salary Coach — market benchmarks & negotiation scripts',
+      'Market Intel — salary + hiring demand live data',
+      'Counter-offer scripts with position anchors',
+      'Pushback simulation with AI playing the recruiter',
+    ],
+    outcome: '↑ SGD 4–12k more per month',
+  },
+  {
+    num: '04', label: 'Get Found', color: '#D4537E',
+    problem: 'Skip the black hole. Get found in 4 minutes.',
+    pain: '"Applied to 60 roles. Heard back from 3."',
+    bullets: [
+      'AI Marketplace — dual-screen match engine',
+      'Credential verify — Singpass, Credly, university',
+      'TrustChat — recruiter ping with verified sidebar',
+      'Trust Score built from your actual ATS + interview performance',
+    ],
+    outcome: '↑ 95% match · 4 min avg time-to-recruiter',
+  },
+];
+
+function ATSMiniDemo({ color }) {
+  const [phase, setPhase] = useState(0);
+  const [afterScore, setAfterScore] = useState(38);
+  useEffect(() => {
+    const timers = [];
+    let inc = null;
+    const run = () => {
+      setPhase(0); setAfterScore(38);
+      timers.push(setTimeout(() => setPhase(1), 600));
+      timers.push(setTimeout(() => {
+        setPhase(2);
+        let s = 38;
+        inc = setInterval(() => {
+          s = Math.min(91, s + 2);
+          setAfterScore(s);
+          if (s >= 91) { clearInterval(inc); setPhase(3); timers.push(setTimeout(run, 3000)); }
+        }, 55);
+      }, 1800));
+    };
+    run();
+    return () => { timers.forEach(clearTimeout); clearInterval(inc); };
+  }, []);
+
+  const DIMS = [
+    { label: 'Keywords', before: 22, after: 91 },
+    { label: 'Format',   before: 55, after: 88 },
+    { label: 'Impact',   before: 18, after: 84 },
+    { label: 'Seniority',before: 40, after: 79 },
+  ];
+  const FIXES = ['Add "React 18"', 'Quantify results', 'Fix date gaps', 'Remove tables', 'Add metrics', 'Senior keywords'];
+
+  return (
+    <div style={{ background: 'rgba(255,255,255,.04)', border: `1px solid ${color}33`, borderRadius: 16, padding: 24, width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 2 }}>ATS Resume Scan</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)' }}>Senior Engineer · Singapore</div>
+        </div>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: 'rgba(255,100,100,.8)', lineHeight: 1 }}>38</div>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', marginTop: 1 }}>BEFORE</div>
+          </div>
+          <div style={{ fontSize: 14, color: 'rgba(255,255,255,.2)' }}>→</div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color, lineHeight: 1, transition: 'color .3s' }}>{phase >= 2 ? afterScore : '—'}</div>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', marginTop: 1 }}>AFTER</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 16 }}>
+        {DIMS.map((d, i) => (
+          <div key={d.label}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)' }}>{d.label}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: phase >= 2 ? color : 'rgba(255,255,255,.3)' }}>
+                {phase >= 2 ? d.after : d.before}
+              </span>
+            </div>
+            <div style={{ height: 5, borderRadius: 3, background: 'rgba(255,255,255,.06)', overflow: 'hidden', position: 'relative' }}>
+              <div style={{ position: 'absolute', height: '100%', borderRadius: 3, background: 'rgba(255,255,255,.15)', width: `${d.before}%` }} />
+              <div style={{ position: 'absolute', height: '100%', borderRadius: 3, background: color,
+                width: phase >= 2 ? `${d.after}%` : `${d.before}%`,
+                transition: `width 1s ease ${i * 0.12}s`, boxShadow: `0 0 8px ${color}66` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {phase >= 1 && (
+        <div style={{ animation: 'lp-fadeUp .4s ease' }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>
+            {phase >= 3 ? '✓ Fixes applied' : '⚠ Issues found'}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+            {FIXES.map((f, i) => (
+              <span key={i} style={{ fontSize: 10, padding: '3px 8px', borderRadius: 20, fontWeight: 600,
+                background: phase >= 3 ? color + '20' : 'rgba(255,80,80,.12)',
+                color: phase >= 3 ? color : 'rgba(255,140,140,.8)',
+                border: `1px solid ${phase >= 3 ? color + '44' : 'rgba(255,80,80,.25)'}`,
+                transition: 'all .5s ease',
+              }}>{phase >= 3 ? '✓ ' : '+ '}{f}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {phase >= 3 && (
+        <div style={{ marginTop: 14, padding: '9px 14px', background: `${color}18`, borderRadius: 10, border: `1px solid ${color}44`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', animation: 'lp-fadeUp .4s ease' }}>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,.6)', fontWeight: 600 }}>ATS score lift</span>
+          <span style={{ fontSize: 13, fontWeight: 900, color }}>38 → 91 <span style={{ fontSize: 10, opacity: .7 }}>+53 pts</span></span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InterviewMiniDemo({ color }) {
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    const timers = [];
+    const run = () => {
+      setPhase(0);
+      [700, 1600, 2800, 4200].forEach((d, i) => timers.push(setTimeout(() => setPhase(i + 1), d)));
+      timers.push(setTimeout(run, 7500));
+    };
+    run();
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const DIMS = [
+    { label: 'STAR Stories',    score: 38,  clr: '#e05252', tag: 'Weakest gap' },
+    { label: 'Behavioral',      score: 61,  clr: '#d4941a', tag: 'Needs work' },
+    { label: 'Technical depth', score: 82,  clr: color,     tag: 'Good' },
+    { label: 'Communication',   score: 74,  clr: '#1D9E75', tag: 'Good' },
+    { label: 'Overall ready',   score: 67,  clr: 'rgba(255,255,255,.5)', tag: '' },
+  ];
+  const MODULES = [
+    { icon: '🎭', label: 'Mock Interview' },
+    { icon: '⭐', label: 'STAR Builder' },
+    { icon: '📊', label: 'Weakness Radar' },
+    { icon: '📖', label: 'Study Plan' },
+  ];
+
+  return (
+    <div style={{ background: 'rgba(255,255,255,.04)', border: `1px solid ${color}33`, borderRadius: 16, padding: 24, width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 2 }}>Readiness Dashboard</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)' }}>Senior Product Engineer</div>
+        </div>
+        {phase >= 1 && (
+          <div style={{ textAlign: 'right', animation: 'lp-fadeUp .3s ease' }}>
+            <div style={{ fontSize: 26, fontWeight: 900, color, lineHeight: 1 }}>67</div>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)' }}>OVERALL</div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+        {DIMS.map((d, i) => (
+          <div key={d.label} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 9, color: 'rgba(255,255,255,.35)', width: 88, flexShrink: 0 }}>{d.label}</span>
+            <div style={{ flex: 1, height: 5, background: 'rgba(255,255,255,.06)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: '100%', background: d.clr, borderRadius: 3,
+                width: phase >= 1 ? `${d.score}%` : '0%',
+                transition: `width 1s ease ${i * 0.1}s` }} />
+            </div>
+            <span style={{ fontSize: 10, fontWeight: 800, color: d.clr, width: 22, flexShrink: 0, textAlign: 'right' }}>{phase >= 1 ? d.score : 0}</span>
+            {d.tag && phase >= 2 && (
+              <span style={{ fontSize: 9, color: d.clr, opacity: .8, flexShrink: 0, animation: 'lp-fadeUp .3s ease' }}>{d.tag}</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {phase >= 2 && (
+        <div style={{ padding: '8px 12px', background: `${color}15`, borderRadius: 8, border: `1px solid ${color}33`, marginBottom: 12, animation: 'lp-fadeUp .4s ease' }}>
+          <div style={{ fontSize: 10, color, fontWeight: 700, marginBottom: 2 }}>AI Coach insight</div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,.6)', lineHeight: 1.5 }}>
+            Focus on STAR stories first — it's your biggest gap. <strong style={{ color }}>9 days to interview-ready</strong> with the plan below.
+          </div>
+        </div>
+      )}
+
+      {phase >= 3 && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, animation: 'lp-fadeUp .4s ease' }}>
+          {MODULES.map((m, i) => (
+            <div key={i} style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 7 }}>
+              <span style={{ fontSize: 14 }}>{m.icon}</span>
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,.6)', fontWeight: 600 }}>{m.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SalaryMiniDemo({ color }) {
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    const timers = [];
+    const run = () => {
+      setPhase(0);
+      timers.push(setTimeout(() => setPhase(1), 600));
+      timers.push(setTimeout(() => setPhase(2), 2000));
+      timers.push(setTimeout(() => setPhase(3), 3500));
+      timers.push(setTimeout(run, 7000));
+    };
+    run();
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const MARKET = [
+    { label: 'P25',    amt: 'SGD 9K',  pct: 41, clr: 'rgba(255,255,255,.2)' },
+    { label: 'Median', amt: 'SGD 12K', pct: 55, clr: 'rgba(255,255,255,.4)' },
+    { label: 'P75',    amt: 'SGD 16K', pct: 72, clr: 'rgba(255,255,255,.6)' },
+    { label: 'Top 10%',amt: 'SGD 22K', pct: 100, clr: color },
+  ];
+  const STEPS = ['Identify your anchor', 'Cite market data', 'Counter with range', 'Secure written offer'];
+
+  return (
+    <div style={{ background: 'rgba(255,255,255,.04)', border: `1px solid ${color}33`, borderRadius: 16, padding: 24, width: '100%' }}>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 2 }}>Market Intel</div>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.6)' }}>Senior Software Engineer · Singapore</div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+        {MARKET.map((m, i) => (
+          <div key={m.label}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', fontWeight: 600 }}>{m.label}</span>
+              <span style={{ fontSize: 11, fontWeight: 800, color: phase >= 1 ? m.clr : 'rgba(255,255,255,.2)' }}>{m.amt}</span>
+            </div>
+            <div style={{ height: 7, borderRadius: 4, background: 'rgba(255,255,255,.06)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 4, background: m.clr,
+                width: phase >= 1 ? `${m.pct}%` : '0%',
+                transition: `width 1s ease ${i * 0.15}s`,
+                boxShadow: i === 3 && phase >= 1 ? `0 0 10px ${color}88` : 'none',
+              }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {phase >= 2 && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, animation: 'lp-fadeUp .4s ease' }}>
+          <div style={{ flex: 1, padding: '9px 12px', background: 'rgba(255,80,80,.08)', borderRadius: 10, border: '1px solid rgba(255,80,80,.2)', textAlign: 'center' }}>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,.35)', marginBottom: 3 }}>Initial offer</div>
+            <div style={{ fontSize: 14, fontWeight: 900, color: 'rgba(255,180,180,.8)' }}>SGD 10,500</div>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)', marginTop: 2 }}>P28 · Below median</div>
+          </div>
+          <div style={{ flex: 1, padding: '9px 12px', background: `${color}15`, borderRadius: 10, border: `1px solid ${color}44`, textAlign: 'center' }}>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,.35)', marginBottom: 3 }}>AI counter</div>
+            <div style={{ fontSize: 14, fontWeight: 900, color }}>SGD 14,000</div>
+            <div style={{ fontSize: 9, color, marginTop: 2, fontWeight: 700 }}>+33% · P72</div>
+          </div>
+        </div>
+      )}
+
+      {phase >= 3 && (
+        <div style={{ animation: 'lp-fadeUp .4s ease' }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 7 }}>Negotiation playbook</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {STEPS.map((s, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 16, height: 16, borderRadius: '50%', background: `${color}25`, border: `1px solid ${color}55`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: 8, fontWeight: 900, color }}>{i + 1}</span>
+                </div>
+                <span style={{ fontSize: 10, color: 'rgba(255,255,255,.55)' }}>{s}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TrustMiniDemo({ color }) {
+  const [phase, setPhase] = useState(0);
+  const [matchPct, setMatchPct] = useState(0);
+  useEffect(() => {
+    const timers = [];
+    let inc = null;
+    const run = () => {
+      setPhase(0); setMatchPct(0);
+      timers.push(setTimeout(() => {
+        setPhase(1);
+        let v = 0;
+        inc = setInterval(() => {
+          v = Math.min(95, v + 2);
+          setMatchPct(v);
+          if (v >= 95) { clearInterval(inc); }
+        }, 40);
+      }, 600));
+      timers.push(setTimeout(() => setPhase(2), 2200));
+      timers.push(setTimeout(() => setPhase(3), 3600));
+      timers.push(setTimeout(run, 7500));
+    };
+    run();
+    return () => { timers.forEach(clearTimeout); clearInterval(inc); };
+  }, []);
+
+  const FUNNEL = [
+    { label: 'Profiles in pool', val: '2,714' },
+    { label: 'Skill match',      val: '142'   },
+    { label: 'Trust verified',   val: '31'    },
+    { label: 'Your rank',        val: '#1'    },
+  ];
+  const CREDS = [
+    { icon: '🎓', label: 'NUS Computer Science', sub: 'Degree · Verified' },
+    { icon: '☁️', label: 'AWS Solutions Architect', sub: 'Cert · Active' },
+    { icon: '🪪', label: 'Singpass Identity', sub: 'ID · Verified' },
+    { icon: '🏅', label: 'Credly ML Certificate', sub: 'Cert · Active' },
+  ];
+
+  return (
+    <div style={{ background: 'rgba(255,255,255,.04)', border: `1px solid ${color}33`, borderRadius: 16, padding: 24, width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.35)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 2 }}>TrustMatch Engine</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)' }}>2,714 candidates evaluated</div>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: 32, fontWeight: 900, color, lineHeight: 1, transition: 'color .2s' }}>{phase >= 1 ? matchPct : 0}<span style={{ fontSize: 14, opacity: .6 }}>%</span></div>
+          <div style={{ fontSize: 9, color: 'rgba(255,255,255,.3)' }}>MATCH SCORE</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6, marginBottom: 14 }}>
+        {FUNNEL.map((f, i) => (
+          <div key={i} style={{ textAlign: 'center', padding: '8px 4px', background: i === 3 ? `${color}18` : 'rgba(255,255,255,.03)', border: `1px solid ${i === 3 ? color + '44' : 'rgba(255,255,255,.07)'}`, borderRadius: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 900, color: i === 3 ? color : 'rgba(255,255,255,.6)', lineHeight: 1 }}>{phase >= 1 ? f.val : '—'}</div>
+            <div style={{ fontSize: 8, color: 'rgba(255,255,255,.3)', marginTop: 3, lineHeight: 1.3 }}>{f.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {phase >= 2 && (
+        <div style={{ marginBottom: 12, animation: 'lp-fadeUp .4s ease' }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 7 }}>Verified credentials</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
+            {CREDS.map((c, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '6px 8px', background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 8 }}>
+                <span style={{ fontSize: 14 }}>{c.icon}</span>
+                <div>
+                  <div style={{ fontSize: 9, color: 'rgba(255,255,255,.7)', fontWeight: 600, lineHeight: 1.2 }}>{c.label}</div>
+                  <div style={{ fontSize: 8, color, fontWeight: 700 }}>{c.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {phase >= 3 && (
+        <div style={{ padding: '10px 14px', background: `${color}18`, borderRadius: 10, border: `1px solid ${color}44`, animation: 'lp-fadeUp .4s ease' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: color, boxShadow: `0 0 8px ${color}` }} />
+            <div style={{ fontSize: 10, color, fontWeight: 700 }}>TrustChat — Recruiter match</div>
+          </div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,.6)', lineHeight: 1.5 }}>
+            <strong style={{ color: 'rgba(255,255,255,.85)' }}>Vertex AI Labs</strong> · Senior AI Engineer<br />
+            SGD 12–16K · 95% match · All credentials verified ✓
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+function JourneyCarousel({ stageIdx, color, progressRef, stageN }) {
+  const cardRefs = useRef([]);
+  const CARD_W = 400, CARD_H = 370;
+
+  useEffect(() => {
+    if (!progressRef) return;
+    const N = stageN;
+    const P_ENTER = (stageIdx + 0.5) / N;
+    const P_EXIT  = Math.min(1.0, (stageIdx + 1.35) / N);
+    const SPREAD  = 430;
+    let raf;
+    const tick = () => {
+      const p = progressRef.current;
+      const t = Math.max(0, Math.min(1, (p - P_ENTER) / (P_EXIT - P_ENTER)));
+      const cards = cardRefs.current.filter(Boolean);
+      const cardFloat = t * cards.length - 1;
+      for (let i = 0; i < cards.length; i++) {
+        const el = cards[i];
+        const dist    = i - cardFloat;
+        const absDist = Math.abs(dist);
+        const scale   = Math.max(0.22, 1 - absDist * 0.24);
+        const tx      = dist * SPREAD;
+        const opacity = Math.max(0, 1 - absDist * 0.52);
+        el.style.transform = `translateX(${tx}px) scale(${scale})`;
+        el.style.opacity   = String(opacity);
+        el.style.zIndex    = String(Math.round(50 - absDist * 12));
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [progressRef, stageN, stageIdx]);
+
+  // ── Stage 0: Get Seen (teal) ──
+  const stage0Cards = [
+    <div style={{ background:'rgba(13,20,40,.96)', border:'2px dashed rgba(255,255,255,.14)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:16, padding:'32px 22px', boxSizing:'border-box' }}>
+      <div style={{ width:54, height:54, borderRadius:14, background:'#1D9E7520', border:'1px solid #1D9E7544', display:'flex', alignItems:'center', justifyContent:'center', fontSize:26 }}>📄</div>
+      <div style={{ textAlign:'center' }}>
+        <div style={{ fontSize:15, fontWeight:800, color:'var(--lp-text)', marginBottom:6 }}>Drop your resume here</div>
+        <div style={{ fontSize:11, color:'rgba(255,255,255,.35)' }}>or click to browse files</div>
+      </div>
+      <div style={{ display:'flex', gap:6 }}>
+        {['PDF','DOCX','TXT'].map(f => <span key={f} style={{ fontSize:9, fontWeight:700, padding:'3px 8px', borderRadius:4, background:'#1D9E7518', color:'#1D9E75', border:'1px solid #1D9E7533' }}>{f}</span>)}
+      </div>
+      <div style={{ padding:'10px 0', borderRadius:8, background:'linear-gradient(135deg,#1D9E75,#12785388)', color:'#fff', fontSize:12, fontWeight:700, width:'100%', textAlign:'center', marginTop:8 }}>Browse Files</div>
+      <div style={{ fontSize:10, color:'rgba(255,255,255,.18)', textAlign:'center', lineHeight:1.5 }}>Scans in under 20 seconds<br/>No data stored without consent</div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(0,212,255,.25)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', gap:12, padding:22, boxSizing:'border-box' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+        <span style={{ width:8, height:8, borderRadius:'50%', background:'#00D4FF', animation:'lp-pulse 1.5s infinite', flexShrink:0 }} />
+        <span style={{ fontSize:12, fontWeight:700, color:'#00D4FF' }}>Scanning your resume…</span>
+      </div>
+      <div>
+        <div style={{ height:5, borderRadius:3, background:'rgba(255,255,255,.06)', overflow:'hidden', marginBottom:4 }}>
+          <div style={{ height:'100%', borderRadius:3, background:'linear-gradient(90deg,#00D4FF,#B026FF)', width:'68%', boxShadow:'0 0 10px #00D4FF88' }} />
+        </div>
+        <div style={{ fontSize:10, color:'rgba(255,255,255,.3)', textAlign:'right' }}>68%</div>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+        {[{l:'Reading structure',d:true},{l:'Extracting keywords',d:true},{l:'Matching PM roles',d:true},{l:'Scoring 5 dimensions',d:false},{l:'Generating fix recommendations',d:false}].map((s,i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:8, fontSize:11, color:s.d?'#00E5A0':'rgba(255,255,255,.28)' }}>
+            <span style={{ width:16, height:16, borderRadius:'50%', border:'1.5px solid currentColor', display:'flex', alignItems:'center', justifyContent:'center', fontSize:8, flexShrink:0 }}>{s.d?'✓':i+1}</span>
+            {s.l}
+          </div>
+        ))}
+      </div>
+      <div style={{ textAlign:'center', padding:'10px 0', background:'rgba(0,212,255,.06)', borderRadius:10, border:'1px solid rgba(0,212,255,.14)', marginTop:'auto' }}>
+        <div style={{ fontSize:28, fontWeight:900, color:'#00D4FF', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>61</div>
+        <div style={{ fontSize:9, color:'rgba(255,255,255,.28)', marginTop:3 }}>ATS score building…</div>
+      </div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(255,77,106,.22)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:'rgba(255,77,106,.06)', borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
+        <span style={{ width:7, height:7, borderRadius:'50%', background:'#FF4D6A', boxShadow:'0 0 7px rgba(255,77,106,.8)', flexShrink:0 }} />
+        <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>Original Resume</span>
+        <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:'rgba(255,77,106,.12)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.2)' }}>Before</span>
+      </div>
+      <div style={{ padding:14, flex:1 }}>
+        <div style={{ fontSize:12, fontWeight:800, color:'var(--lp-text)', marginBottom:2 }}>Minh Tran</div>
+        <div style={{ fontSize:9, color:'rgba(255,255,255,.28)', marginBottom:10 }}>minh@email.com · Singapore</div>
+        <div style={{ height:5, borderRadius:3, background:'rgba(255,255,255,.07)', marginBottom:5 }} />
+        <div style={{ height:5, borderRadius:3, background:'rgba(255,77,106,.2)', borderLeft:'2px solid #FF4D6A', marginBottom:5 }} />
+        <div style={{ fontSize:9, color:'#FF4D6A', fontStyle:'italic', padding:'5px 8px', background:'rgba(255,77,106,.06)', borderRadius:5, marginBottom:10, lineHeight:1.4 }}>"Helped drive product roadmap, worked with teams on deliverables…"</div>
+        <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginBottom:14 }}>
+          {['Missing: OKR','Missing: SQL','Vague bullets','No metrics'].map(t => <span key={t} style={{ fontSize:8, padding:'2px 6px', borderRadius:4, background:'rgba(255,77,106,.08)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.18)' }}>{t}</span>)}
+        </div>
+        <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'5px 11px', borderRadius:20, background:'rgba(255,77,106,.1)', border:'1px solid rgba(255,77,106,.25)' }}>
+          <span style={{ fontSize:22, fontWeight:900, color:'#FF4D6A', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>38</span>
+          <span style={{ fontSize:9, color:'#FF4D6A', fontWeight:600 }}>ATS score · Filtered</span>
+        </div>
+      </div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(176,38,255,.28)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:'rgba(176,38,255,.06)', borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
+        <span style={{ width:7, height:7, borderRadius:'50%', background:'#B026FF', flexShrink:0 }} />
+        <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>AI Fix Engine</span>
+        <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:'rgba(176,38,255,.12)', color:'#B026FF', border:'1px solid rgba(176,38,255,.22)' }}>Fixing</span>
+      </div>
+      <div style={{ padding:13, flex:1 }}>
+        <div style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,.28)', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:9 }}>6 issues found &amp; fixed</div>
+        {[{l:'Add missing keywords',a:'52 +14pts',f:true},{l:'Quantify impact bullets',a:'Metric added',f:true},{l:'Fix formatting issues',a:'Clean format',f:true},{l:'Add seniority signals',a:'Signals added',f:true},{l:'Cover letter alignment',a:'Aligned',f:false},{l:'ATS keyword density',a:'89%',f:false}].map((e,i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 7px', borderRadius:6, border:`1px solid ${e.f?'rgba(0,229,160,.22)':'rgba(255,255,255,.05)'}`, background:e.f?'rgba(0,229,160,.05)':'rgba(255,255,255,.015)', marginBottom:5 }}>
+            <span style={{ width:9, height:9, borderRadius:'50%', border:`1.5px solid ${e.f?'#00E5A0':'rgba(255,255,255,.18)'}`, flexShrink:0, background:e.f?'#00E5A0':'transparent' }} />
+            <span style={{ flex:1, fontSize:10, color:'rgba(255,255,255,.65)' }}>{e.l}</span>
+            <span style={{ fontSize:9, color:e.f?'#00E5A0':'rgba(255,255,255,.25)', whiteSpace:'nowrap' }}>{e.a}</span>
+          </div>
+        ))}
+      </div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(0,229,160,.24)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:'rgba(0,229,160,.06)', borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
+        <span style={{ width:7, height:7, borderRadius:'50%', background:'#00E5A0', boxShadow:'0 0 7px rgba(0,229,160,.8)', flexShrink:0 }} />
+        <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>Optimized Resume</span>
+        <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:'rgba(0,229,160,.1)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.2)' }}>After ✓</span>
+      </div>
+      <div style={{ padding:14, flex:1 }}>
+        <div style={{ fontSize:12, fontWeight:800, color:'var(--lp-text)', marginBottom:2 }}>Minh Tran</div>
+        <div style={{ fontSize:9, color:'rgba(255,255,255,.28)', marginBottom:10 }}>minh@email.com · Singapore</div>
+        <div style={{ height:5, borderRadius:3, background:'rgba(0,229,160,.18)', borderLeft:'2px solid #00E5A0', marginBottom:5 }} />
+        <div style={{ fontSize:9, color:'#00E5A0', fontStyle:'italic', padding:'5px 8px', background:'rgba(0,229,160,.06)', borderRadius:5, marginBottom:10, lineHeight:1.4 }}>"Led product roadmap → 40% increase in user retention, OKR delivery 94%"</div>
+        <div style={{ display:'flex', gap:4, flexWrap:'wrap', marginBottom:14 }}>
+          {['✓ OKR added','✓ SQL included','✓ Metrics cited','✓ Impact clear'].map(t => <span key={t} style={{ fontSize:8, padding:'2px 6px', borderRadius:4, background:'rgba(0,229,160,.08)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.18)' }}>{t}</span>)}
+        </div>
+        <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'5px 11px', borderRadius:20, background:'rgba(0,229,160,.1)', border:'1px solid rgba(0,229,160,.28)', marginBottom:10 }}>
+          <span style={{ fontSize:22, fontWeight:900, color:'#00E5A0', fontFamily:'var(--lp-ffm)', lineHeight:1 }}>91</span>
+          <span style={{ fontSize:9, color:'#00E5A0', fontWeight:600 }}>ATS score · Top tier</span>
+        </div>
+        <div style={{ padding:'6px 10px', background:'rgba(0,229,160,.07)', borderRadius:7, border:'1px solid rgba(0,229,160,.18)', textAlign:'center' }}>
+          <span style={{ fontSize:11, fontWeight:800, color:'#00E5A0' }}>38 → 91 · +53 pts · Top 12%</span>
+        </div>
+      </div>
+    </div>,
+  ];
+
+  // ── Stage 1: Get Ready (purple #7F77DD) ──
+  const stage1Cards = [
+    <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
+      <div style={{ fontSize:10, fontWeight:700, color:`${color}`, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Readiness Dashboard</div>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+        <div style={{ fontSize:11, color:'rgba(255,255,255,.45)' }}>Senior Product Engineer</div>
+        <div style={{ textAlign:'right' }}>
+          <div style={{ fontSize:30, fontWeight:900, color, lineHeight:1 }}>67</div>
+          <div style={{ fontSize:9, color:'rgba(255,255,255,.3)' }}>/ 100</div>
+        </div>
+      </div>
+      {[{l:'STAR Stories',s:38,c:'#e05252',t:'Weakest'},{l:'Behavioral',s:61,c:'#d4941a',t:'Gap'},{l:'Technical',s:82,c:color,t:'Good'},{l:'Communication',s:74,c:'#1D9E75',t:'Good'},{l:'Overall',s:67,c:'rgba(255,255,255,.5)',t:''}].map((d,i) => (
+        <div key={i} style={{ display:'flex', gap:8, alignItems:'center', marginBottom:8 }}>
+          <span style={{ fontSize:9, color:'rgba(255,255,255,.35)', width:90, flexShrink:0 }}>{d.l}</span>
+          <div style={{ flex:1, height:5, background:'rgba(255,255,255,.06)', borderRadius:3, overflow:'hidden' }}>
+            <div style={{ height:'100%', background:d.c, borderRadius:3, width:`${d.s}%` }} />
+          </div>
+          <span style={{ fontSize:10, fontWeight:800, color:d.c, width:22, textAlign:'right', flexShrink:0 }}>{d.s}</span>
+          {d.t && <span style={{ fontSize:9, color:d.c, opacity:.75, flexShrink:0, width:42 }}>{d.t}</span>}
+        </div>
+      ))}
+      <div style={{ marginTop:'auto', padding:'8px 12px', background:`${color}12`, borderRadius:8, border:`1px solid ${color}30` }}>
+        <div style={{ fontSize:10, color, fontWeight:700, marginBottom:2 }}>AI Coach</div>
+        <div style={{ fontSize:11, color:'rgba(255,255,255,.55)', lineHeight:1.5 }}>Focus on STAR stories first. <strong style={{ color }}>9 days to interview-ready.</strong></div>
+      </div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:`${color}0d`, borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
+        <span style={{ width:7, height:7, borderRadius:'50%', background:color, animation:'lp-pulse 2s infinite', flexShrink:0 }} />
+        <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>AI Mock Interview</span>
+        <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:`${color}20`, color, border:`1px solid ${color}44` }}>Live</span>
+      </div>
+      <div style={{ padding:14, flex:1, display:'flex', flexDirection:'column', gap:10 }}>
+        <div style={{ padding:'10px 12px', background:`${color}12`, borderRadius:'4px 12px 12px 12px', border:`1px solid ${color}30` }}>
+          <div style={{ fontSize:9, color, fontWeight:700, marginBottom:4 }}>AI Hiring Manager</div>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,.7)', lineHeight:1.5 }}>"Tell me about a time you led a project under significant pressure."</div>
+        </div>
+        <div style={{ padding:'10px 12px', background:'rgba(255,255,255,.05)', borderRadius:'12px 4px 12px 12px', border:'1px solid rgba(255,255,255,.08)', marginLeft:20 }}>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,.65)', lineHeight:1.5 }}>"In Q3 2023, I led a payment service migration with a 3-week deadline…"</div>
+        </div>
+        <div style={{ padding:'8px 12px', background:`${color}12`, borderRadius:'4px 12px 12px 12px', border:`1px solid ${color}30` }}>
+          <div style={{ fontSize:9, color, fontWeight:700, marginBottom:3 }}>AI Feedback</div>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,.65)', lineHeight:1.5 }}>Good STAR structure. Add quantified results — "reduced latency by X%".</div>
+        </div>
+        <div style={{ marginTop:'auto', display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 12px', background:'rgba(255,255,255,.03)', borderRadius:8, border:'1px solid rgba(255,255,255,.07)' }}>
+          <span style={{ fontSize:11, color:'rgba(255,255,255,.4)', fontWeight:600 }}>Response score</span>
+          <span style={{ fontSize:18, fontWeight:900, color }}>{74}<span style={{ fontSize:9, color:'rgba(255,255,255,.3)', fontWeight:400 }}>/100</span></span>
+        </div>
+      </div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:`${color}0d`, borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
+        <span style={{ width:7, height:7, borderRadius:'50%', background:color, flexShrink:0 }} />
+        <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>STAR Story Builder</span>
+        <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:'rgba(0,229,160,.15)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.3)' }}>Score 82</span>
+      </div>
+      <div style={{ padding:14, flex:1, display:'flex', flexDirection:'column', gap:9 }}>
+        {[{k:'S',l:'Situation',t:'Payment service needed migration — 3-week deadline, $2M revenue at risk',c:'#1D9E75'},{k:'T',l:'Task',t:'Lead 4-engineer team, own architecture decisions end-to-end',c:color},{k:'A',l:'Action',t:'Phased rollout, feature flags, daily standups, real-time monitoring dashboard',c:'#BA7517'},{k:'R',l:'Result',t:'Zero downtime. Latency ↓40%. Saved $2M quarterly revenue',c:'#e05252'}].map(d => (
+          <div key={d.k} style={{ display:'flex', gap:8 }}>
+            <span style={{ flexShrink:0, fontSize:9, fontWeight:900, color:d.c, background:`${d.c}18`, border:`1px solid ${d.c}40`, borderRadius:4, padding:'2px 6px', height:'fit-content', marginTop:2 }}>{d.k}</span>
+            <div>
+              <div style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,.35)', textTransform:'uppercase', letterSpacing:'.06em', marginBottom:2 }}>{d.l}</div>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,.7)', lineHeight:1.45 }}>{d.t}</div>
+            </div>
+          </div>
+        ))}
+        <div style={{ marginTop:'auto', padding:'6px 12px', background:'rgba(255,210,51,.08)', borderRadius:7, border:'1px solid rgba(255,210,51,.25)', textAlign:'center' }}>
+          <span style={{ fontSize:11, fontWeight:800, color:'#FFD233' }}>"Led payment migration → saved $2M, zero downtime"</span>
+        </div>
+      </div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
+      <div style={{ fontSize:10, fontWeight:700, color, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:4 }}>AI Study Plan</div>
+      <div style={{ fontSize:13, fontWeight:800, color:'var(--lp-text)', marginBottom:16 }}>9 days to interview-ready</div>
+      {[{day:'Day 1–2',task:'STAR story bank (3 stories min)',hrs:'4 hrs',done:true},{day:'Day 3–4',task:'Behavioral coaching — 8 scenarios',hrs:'3 hrs',done:true},{day:'Day 5',task:'Technical depth — system design',hrs:'2 hrs',done:false},{day:'Day 6–7',task:'Mock interview × 3 — full sessions',hrs:'6 hrs',done:false},{day:'Day 8–9',task:'Weakness drill + final rehearsal',hrs:'3 hrs',done:false}].map((s,i) => (
+        <div key={i} style={{ display:'flex', gap:10, alignItems:'flex-start', marginBottom:10, padding:'8px 10px', borderRadius:8, background:s.done?`${color}0d`:'rgba(255,255,255,.02)', border:`1px solid ${s.done?color+'2a':'rgba(255,255,255,.06)'}` }}>
+          <span style={{ fontSize:9, fontWeight:900, color:s.done?color:'rgba(255,255,255,.25)', width:14, marginTop:1 }}>{s.done?'✓':i+1}</span>
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:9, color:s.done?color:'rgba(255,255,255,.25)', fontWeight:700, marginBottom:2 }}>{s.day}</div>
+            <div style={{ fontSize:11, color:s.done?'rgba(255,255,255,.7)':'rgba(255,255,255,.4)', lineHeight:1.35 }}>{s.task}</div>
+          </div>
+          <span style={{ fontSize:9, color:'rgba(255,255,255,.25)', flexShrink:0 }}>{s.hrs}</span>
+        </div>
+      ))}
+    </div>,
+  ];
+
+  // ── Stage 2: Get the Offer (gold #BA7517) ──
+  const stage2Cards = [
+    <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
+      <div style={{ fontSize:10, fontWeight:700, color, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:4 }}>Market Intel</div>
+      <div style={{ fontSize:12, color:'rgba(255,255,255,.45)', marginBottom:18 }}>Senior Software Engineer · Singapore</div>
+      {[{l:'P25',a:'SGD 9K',p:41,c:'rgba(255,255,255,.2)'},{l:'Median',a:'SGD 12K',p:55,c:'rgba(255,255,255,.4)'},{l:'P75',a:'SGD 16K',p:72,c:'rgba(255,255,255,.6)'},{l:'Top 10%',a:'SGD 22K',p:100,c:color}].map((m,i) => (
+        <div key={m.l} style={{ marginBottom:12 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+            <span style={{ fontSize:10, color:'rgba(255,255,255,.4)', fontWeight:600 }}>{m.l}</span>
+            <span style={{ fontSize:11, fontWeight:800, color:m.c }}>{m.a}</span>
+          </div>
+          <div style={{ height:7, borderRadius:4, background:'rgba(255,255,255,.06)', overflow:'hidden' }}>
+            <div style={{ height:'100%', borderRadius:4, background:m.c, width:`${m.p}%`, boxShadow:i===3?`0 0 10px ${color}88`:'none' }} />
+          </div>
+        </div>
+      ))}
+      <div style={{ marginTop:'auto', padding:'8px 12px', background:`${color}12`, borderRadius:8, border:`1px solid ${color}30`, textAlign:'center' }}>
+        <div style={{ fontSize:11, color, fontWeight:700 }}>Your target: P72 — SGD 14,000</div>
+      </div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(255,77,106,.25)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:18 }}>
+        <span style={{ width:8, height:8, borderRadius:'50%', background:'#FF4D6A', flexShrink:0 }} />
+        <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)' }}>Offer Received</span>
+      </div>
+      <div style={{ textAlign:'center', padding:'20px 16px', background:'rgba(255,77,106,.06)', borderRadius:12, border:'1px solid rgba(255,77,106,.2)', marginBottom:16 }}>
+        <div style={{ fontSize:9, color:'rgba(255,255,255,.3)', marginBottom:6 }}>TechCorp Singapore · Senior Engineer</div>
+        <div style={{ fontSize:32, fontWeight:900, color:'rgba(255,180,180,.85)', fontFamily:'var(--lp-ffm)', lineHeight:1, marginBottom:4 }}>SGD 10,500</div>
+        <div style={{ fontSize:10, color:'rgba(255,77,106,.8)', fontWeight:600 }}>per month · P28 · Below median</div>
+      </div>
+      <div style={{ padding:'10px 14px', background:'rgba(255,77,106,.06)', borderRadius:10, border:'1px solid rgba(255,77,106,.18)', marginBottom:12 }}>
+        <div style={{ fontSize:10, color:'rgba(255,255,255,.45)', lineHeight:1.6 }}>This offer is <strong style={{ color:'#FF4D6A' }}>SGD 1,500 below market median</strong> and SGD 5,000 below P75. You have strong leverage — your skills match Top 10%.</div>
+      </div>
+      <div style={{ padding:'10px 0', borderRadius:8, background:`linear-gradient(135deg,${color},${color}99)`, color:'#fff', fontSize:12, fontWeight:700, textAlign:'center', marginTop:'auto' }}>Negotiate with AI →</div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:14 }}>
+        <span style={{ width:8, height:8, borderRadius:'50%', background:color, animation:'lp-pulse 2s infinite', flexShrink:0 }} />
+        <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)' }}>AI Negotiation Coach</span>
+      </div>
+      <div style={{ padding:'10px 12px', background:`${color}12`, borderRadius:'4px 12px 12px 12px', border:`1px solid ${color}30`, marginBottom:12 }}>
+        <div style={{ fontSize:9, color, fontWeight:700, marginBottom:4 }}>Strategy</div>
+        <div style={{ fontSize:11, color:'rgba(255,255,255,.65)', lineHeight:1.55 }}>"Thank you for the offer. Based on current Singapore market data (P72 = SGD 14,000), I was expecting SGD 13,500–15,000. Can we revisit the base?"</div>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:7, marginBottom:14 }}>
+        {['Anchor: SGD 14,000 (P72 data)','Market proof: SGD 12K median cited','Range given: 13,500–15,000','Non-salary asks: equity, remote days'].map((s,i) => (
+          <div key={i} style={{ display:'flex', gap:8, alignItems:'center', fontSize:11, color:'rgba(255,255,255,.55)' }}>
+            <span style={{ fontSize:9, fontWeight:900, color, width:14, flexShrink:0 }}>{i+1}</span>{s}
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop:'auto', padding:'8px 12px', background:'rgba(0,229,160,.08)', borderRadius:8, border:'1px solid rgba(0,229,160,.25)', textAlign:'center' }}>
+        <span style={{ fontSize:11, fontWeight:800, color:'#00E5A0' }}>Counter sent ✓ — awaiting response</span>
+      </div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:'1px solid rgba(0,229,160,.28)', borderRadius:16, height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:24, boxSizing:'border-box', textAlign:'center' }}>
+      <div style={{ fontSize:32, marginBottom:10 }}>🎉</div>
+      <div style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,.45)', marginBottom:6 }}>Offer accepted</div>
+      <div style={{ fontSize:30, fontWeight:900, color:'#00E5A0', fontFamily:'var(--lp-ffm)', lineHeight:1, marginBottom:4 }}>SGD 14,000</div>
+      <div style={{ fontSize:11, color:'rgba(255,255,255,.4)', marginBottom:20 }}>TechCorp Singapore · Senior Engineer</div>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, width:'100%', marginBottom:16 }}>
+        {[{l:'Monthly gain',v:'+SGD 3,500'},{l:'Annual gain',v:'+SGD 42K'},{l:'Market position',v:'P72'},{l:'vs initial offer',v:'+33%'}].map(m => (
+          <div key={m.l} style={{ padding:'10px 8px', background:'rgba(0,229,160,.06)', borderRadius:8, border:'1px solid rgba(0,229,160,.18)' }}>
+            <div style={{ fontSize:9, color:'rgba(255,255,255,.3)', marginBottom:3 }}>{m.l}</div>
+            <div style={{ fontSize:14, fontWeight:900, color:'#00E5A0' }}>{m.v}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize:11, color:'rgba(255,255,255,.3)', lineHeight:1.6 }}>AI negotiation secured you<br/><strong style={{ color:'#00E5A0' }}>SGD 42,000 more per year.</strong></div>
+    </div>,
+  ];
+
+  // ── Stage 3: Get Found (pink #D4537E) ──
+  const stage3Cards = [
+    <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
+      <div style={{ fontSize:10, fontWeight:700, color, textTransform:'uppercase', letterSpacing:'.08em', marginBottom:14 }}>Trust Profile</div>
+      <div style={{ display:'flex', justifyContent:'center', marginBottom:14 }}>
+        <svg width={110} height={110}>
+          <circle cx={55} cy={55} r={44} fill="none" stroke="rgba(255,255,255,.06)" strokeWidth={9} />
+          <circle cx={55} cy={55} r={44} fill="none" stroke={color} strokeWidth={9} strokeDasharray={`${2*Math.PI*44*0.84} ${2*Math.PI*44}`} strokeLinecap="round" transform="rotate(-90 55 55)" />
+          <text x={55} y={51} textAnchor="middle" fill={color} fontSize={22} fontWeight={900} fontFamily="var(--lp-ffm)">84</text>
+          <text x={55} y={66} textAnchor="middle" fill="rgba(255,255,255,.4)" fontSize={9} fontFamily="var(--lp-ff)">TRUST SCORE</text>
+        </svg>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6, marginBottom:12 }}>
+        {[{icon:'🎓',l:'NUS CS Degree',s:'Verified'},{icon:'☁️',l:'AWS SA Cert',s:'Active'},{icon:'🪪',l:'Singpass ID',s:'Verified'},{icon:'🏅',l:'Credly ML Cert',s:'Active'}].map((c,i) => (
+          <div key={i} style={{ display:'flex', gap:7, padding:'7px 8px', background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.07)', borderRadius:8 }}>
+            <span style={{ fontSize:14 }}>{c.icon}</span>
+            <div>
+              <div style={{ fontSize:9, color:'rgba(255,255,255,.65)', fontWeight:600, lineHeight:1.2 }}>{c.l}</div>
+              <div style={{ fontSize:8, color, fontWeight:700 }}>{c.s}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ padding:'7px 12px', background:`${color}10`, borderRadius:8, border:`1px solid ${color}28`, textAlign:'center' }}>
+        <div style={{ fontSize:11, color:'rgba(255,255,255,.55)' }}>ATS <strong style={{ color:'#1D9E75' }}>91</strong> · Interview <strong style={{ color:'#7F77DD' }}>79</strong> · STAR <strong style={{ color:'#BA7517' }}>88</strong></div>
+      </div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', padding:20, boxSizing:'border-box' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:16 }}>
+        <span style={{ width:8, height:8, borderRadius:'50%', background:color, animation:'lp-pulse 1.5s infinite', flexShrink:0 }} />
+        <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)' }}>TrustMatch Engine</span>
+      </div>
+      <div style={{ textAlign:'center', marginBottom:16 }}>
+        <div style={{ fontSize:11, color:'rgba(255,255,255,.35)', marginBottom:6 }}>Scanning 2,714 profiles…</div>
+        <div style={{ height:5, borderRadius:3, background:'rgba(255,255,255,.06)', overflow:'hidden', marginBottom:4 }}>
+          <div style={{ height:'100%', borderRadius:3, background:`linear-gradient(90deg,${color},${color}88)`, width:'78%', boxShadow:`0 0 10px ${color}88` }} />
+        </div>
+        <div style={{ fontSize:10, color, fontWeight:700 }}>78% complete</div>
+      </div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:6, marginBottom:14 }}>
+        {[{l:'Pool',v:'2,714'},{l:'Skills',v:'142'},{l:'Trust',v:'31'},{l:'Rank',v:'#1'}].map((f,i) => (
+          <div key={i} style={{ textAlign:'center', padding:'8px 4px', background:i===3?`${color}18`:'rgba(255,255,255,.03)', border:`1px solid ${i===3?color+'40':'rgba(255,255,255,.07)'}`, borderRadius:8 }}>
+            <div style={{ fontSize:13, fontWeight:900, color:i===3?color:'rgba(255,255,255,.6)', lineHeight:1 }}>{f.v}</div>
+            <div style={{ fontSize:8, color:'rgba(255,255,255,.3)', marginTop:3 }}>{f.l}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize:10, color:'rgba(255,255,255,.3)', lineHeight:1.7 }}>
+        Filtering by trust score → skill depth → role fit…
+      </div>
+      <div style={{ marginTop:'auto', padding:'8px 12px', background:`${color}10`, borderRadius:8, border:`1px solid ${color}28`, textAlign:'center' }}>
+        <div style={{ fontSize:11, color, fontWeight:700 }}>Match found — 95% · Top candidate</div>
+      </div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}40`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:22, boxSizing:'border-box', textAlign:'center' }}>
+      <div style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,.3)', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:10 }}>#1 Match</div>
+      <div style={{ fontSize:48, fontWeight:900, color, fontFamily:'var(--lp-ffm)', lineHeight:1, marginBottom:4 }}>95%</div>
+      <div style={{ fontSize:11, color:'rgba(255,255,255,.35)', marginBottom:16 }}>match score</div>
+      <div style={{ width:'100%', padding:'14px 16px', background:'rgba(255,255,255,.04)', borderRadius:12, border:`1px solid ${color}28`, marginBottom:12, textAlign:'left' }}>
+        <div style={{ fontSize:13, fontWeight:800, color:'var(--lp-text)', marginBottom:4 }}>Vertex AI Labs</div>
+        <div style={{ fontSize:11, color:'rgba(255,255,255,.5)', marginBottom:6 }}>Senior AI Engineer · Singapore</div>
+        <div style={{ fontSize:11, fontWeight:700, color }}>SGD 12,000 – 16,000 / month</div>
+      </div>
+      <div style={{ display:'flex', gap:6, flexWrap:'wrap', justifyContent:'center' }}>
+        {['Skills ✓','Trust score ✓','Seniority ✓','Credentials ✓'].map(b => (
+          <span key={b} style={{ fontSize:9, padding:'3px 8px', borderRadius:20, background:`${color}18`, color, border:`1px solid ${color}33` }}>{b}</span>
+        ))}
+      </div>
+    </div>,
+    <div style={{ background:'rgba(13,20,40,.96)', border:`1px solid ${color}33`, borderRadius:16, height:'100%', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:6, padding:'11px 14px', background:`${color}0d`, borderBottom:'1px solid rgba(255,255,255,.05)', flexShrink:0 }}>
+        <div style={{ width:7, height:7, borderRadius:'50%', background:color, boxShadow:`0 0 8px ${color}`, flexShrink:0 }} />
+        <span style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.55)', flex:1 }}>TrustChat</span>
+        <span style={{ fontSize:9, fontWeight:700, padding:'2px 6px', borderRadius:4, background:`${color}20`, color, border:`1px solid ${color}44` }}>New message</span>
+      </div>
+      <div style={{ padding:16, flex:1, display:'flex', flexDirection:'column', gap:10 }}>
+        <div style={{ display:'flex', gap:8, alignItems:'flex-start' }}>
+          <div style={{ width:28, height:28, borderRadius:'50%', background:`${color}22`, border:`1px solid ${color}44`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, flexShrink:0 }}>V</div>
+          <div>
+            <div style={{ fontSize:9, color:'rgba(255,255,255,.35)', marginBottom:4 }}>Vertex AI Labs · Recruiter · Now</div>
+            <div style={{ padding:'10px 12px', background:`${color}12`, borderRadius:'4px 12px 12px 12px', border:`1px solid ${color}30` }}>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,.7)', lineHeight:1.6 }}>"Hi! Your profile matched our Senior AI Engineer role perfectly. All your credentials are verified. Are you open to a call this week?"</div>
+            </div>
+          </div>
+        </div>
+        <div style={{ display:'flex', justifyContent:'flex-end' }}>
+          <div style={{ padding:'10px 12px', background:'rgba(255,255,255,.05)', borderRadius:'12px 4px 12px 12px', border:'1px solid rgba(255,255,255,.08)', maxWidth:'80%' }}>
+            <div style={{ fontSize:11, color:'rgba(255,255,255,.65)', lineHeight:1.6 }}>"Yes, happy to connect! Thursday or Friday works."</div>
+          </div>
+        </div>
+        <div style={{ marginTop:'auto', padding:'8px 12px', background:'rgba(0,229,160,.07)', borderRadius:8, border:'1px solid rgba(0,229,160,.22)', textAlign:'center' }}>
+          <div style={{ fontSize:11, color:'#00E5A0', fontWeight:700 }}>SGD 12–16K · 95% match · All credentials verified ✓</div>
+        </div>
+      </div>
+    </div>,
+  ];
+
+  const allCards = [stage0Cards, stage1Cards, stage2Cards, stage3Cards];
+  const cards = allCards[stageIdx] || stage0Cards;
+
+  return (
+    <div style={{ width:'100%', height:'100%', position:'relative', display:'flex', alignItems:'center', justifyContent:'center', overflow:'visible' }}>
+      {cards.map((card, i) => (
+        <div key={i} ref={el => { cardRefs.current[i] = el; }}
+          style={{ position:'absolute', width:CARD_W, height:CARD_H, opacity:0, zIndex:0, willChange:'transform, opacity' }}>
+          {card}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function JourneyMiniDemo({ stageIdx, stage, progressRef, stageN }) {
+  return <JourneyCarousel stageIdx={stageIdx} color={stage.color} progressRef={progressRef} stageN={stageN} />;
+}
+
+function TrustChatSection({ onJoin }) {
+  const VERIFY_PILLARS = [
+    { icon: '🎓', color: 'rgba(139,124,246,.15)', title: 'Degree Verification', desc: 'Verified with universities — NUS, NTU, SMU & more' },
+    { icon: '🛡️', color: 'rgba(0,212,255,.1)',   title: 'Certificate Verification', desc: 'Real-time via Credly, AWS, Google & others' },
+    { icon: '💼', color: 'rgba(0,229,160,.1)',   title: 'Employment Verification', desc: 'Verified via official sources including Singpass & APIs' },
+    { icon: '✦',  color: 'rgba(245,179,64,.1)', title: 'AI Readiness Layer', desc: 'ATS score, interview readiness & project validation' },
+  ];
+  const CAND_FEATS = [
+    'Build a verified profile that stands out',
+    'Get matched with roles that fit your skills and goals',
+    'Chat directly with interested recruiters',
+    'Higher trust score = more opportunities',
+  ];
+
+  return (
+    <section style={{ padding: '72px 24px 80px', background: 'var(--lp-bg)' }}>
+      <style>{`
+        @keyframes tsmPulse   { 0%,100%{opacity:1} 50%{opacity:.35} }
+      `}</style>
+
+      <div style={{ textAlign: 'center', marginBottom: 40 }}>
+        <div className="ey">Trust Chat</div>
+        <h2 className="sh" style={{ textAlign: 'center', maxWidth: 'none', margin: '0 0 10px' }}>Built for candidates and recruiters<br />
+          <span style={{ background: 'var(--lp-grad-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+            to connect through verified trust.
+          </span>
+        </h2>
+      </div>
+
+      <div style={{ maxWidth: 1400, margin: '0 auto', background: 'rgba(255,255,255,.025)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 20, overflow: 'hidden' }}>
+
+        {/* ── Row 1: 3-panel demo ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px 1fr', padding: '28px 28px 24px', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+
+          {/* Candidate panel — job listings */}
+          <div style={{ paddingRight: 20 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 12 }}>
+              Candidate · 88 trust score
+            </div>
+            {[
+              { logo: 'VA', logoClr: 'rgba(139,124,246,.2)', logoBdr: 'rgba(139,124,246,.3)', logoTxt: '#a89bf8', co: 'Vertex AI Labs', tag: 'verified employer', role: 'Senior AI Engineer · SGD 12–16k', pct: '95%', tags: ['Remote-first','Visa sponsorship','Equity'], active: true },
+              { logo: 'GR', logoClr: 'rgba(0,229,160,.1)', logoBdr: 'rgba(0,229,160,.2)', logoTxt: '#00e5a0', co: 'Grab', tag: 'verified employer', role: 'ML Research Scientist · SGD 14–18k', pct: '88%', tags: ['Hybrid','L7 senior track','Stock options'], active: false },
+            ].map((job, i) => (
+              <div key={i} style={{ background: job.active ? 'rgba(0,212,255,.04)' : 'rgba(255,255,255,.02)', border: `1px solid ${job.active ? 'rgba(0,212,255,.18)' : 'rgba(255,255,255,.06)'}`, borderRadius: 12, padding: '12px 14px', marginBottom: i === 0 ? 10 : 0 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: job.logoClr, border: `1px solid ${job.logoBdr}`, color: job.logoTxt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{job.logo}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text)' }}>{job.co} <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--lp-teal)', background: 'rgba(0,212,255,.1)', borderRadius: 10, padding: '1px 6px', border: '1px solid rgba(0,212,255,.2)' }}>{job.tag}</span></div>
+                    <div style={{ fontSize: 11, color: 'var(--lp-text2)' }}>{job.role}</div>
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--lp-teal)', fontFamily: 'var(--lp-ffm)', flexShrink: 0 }}>{job.pct}<span style={{ fontSize: 9, fontWeight: 400, color: 'rgba(255,255,255,.35)' }}>fit</span></div>
+                </div>
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                  {job.tags.map(t => <span key={t} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 10, background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)', color: 'rgba(255,255,255,.5)' }}>{t}</span>)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Center atom bridge */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,.2)' }}>←</span>
+              <OrbitMark size={64} animated duration={6} />
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,.2)' }}>→</span>
+            </div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', textAlign: 'center', lineHeight: 1.55 }}>Verified trust<br/>matches the<br/>right opportunities</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {[...Array(4)].map((_, i) => <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(0,212,255,.4)', animation: `tsmPulse 2s ${i * 0.4}s infinite` }} />)}
+            </div>
+          </div>
+
+          {/* Recruiter panel — candidate card */}
+          <div style={{ paddingLeft: 20 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.3)', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 12 }}>Find high-confidence candidates</div>
+            <div style={{ background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, padding: '14px 14px' }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #7F77DD, #D4537E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0 }}>BT</div>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text)' }}>Ben Tan <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#00e5a0', boxShadow: '0 0 4px rgba(0,229,160,.5)', marginLeft: 4, verticalAlign: 'middle' }} /></div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,.4)' }}>ML Research Scientist · 6 yrs · NTU MSc CS</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {['NTU OpenCerts ✓', 'TensorFlow cert ✓'].map(v => <span key={v} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(0,212,255,.07)', border: '1px solid rgba(0,212,255,.2)', color: 'var(--lp-teal)' }}>{v}</span>)}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <div style={{ position: 'relative', width: 54, height: 54 }}>
+                    <svg width="54" height="54" viewBox="0 0 54 54" style={{ position: 'absolute', inset: 0 }}>
+                      <circle cx="27" cy="27" r="21" fill="none" stroke="rgba(0,212,255,.1)" strokeWidth="4"/>
+                      <circle cx="27" cy="27" r="21" fill="none" stroke="#00D4FF" strokeWidth="4" strokeDasharray="131.9" strokeDashoffset="23.7" strokeLinecap="round" transform="rotate(-90 27 27)"/>
+                    </svg>
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--lp-teal)', lineHeight: 1 }}>82</span>
+                      <span style={{ fontSize: 9, color: 'rgba(255,255,255,.4)' }}>trust</span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#00e5a0' }}>High trust</div>
+                </div>
+              </div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.5)', lineHeight: 1.6, fontStyle: 'italic', marginBottom: 8, padding: '5px 8px', background: 'rgba(255,255,255,.03)', borderLeft: '2px solid rgba(255,255,255,.1)', borderRadius: '0 4px 4px 0' }}>
+                "ML researcher focused on efficient inference. Published 2 papers at NeurIPS."
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4, marginBottom: 8 }}>
+                {[['ATS', '84/100', 'var(--lp-teal)'], ['Interview', '79/100', '#7F77DD'], ['STAR', 'Good', '#00e5a0']].map(([l, v, c]) => (
+                  <div key={l} style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)', borderRadius: 6, padding: '5px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,.4)', textTransform: 'uppercase', letterSpacing: '.04em', marginBottom: 2 }}>{l}</div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: c }}>{v}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
+                {['TensorFlow', 'CUDA', 'Python', 'Research'].map((s, i) => (
+                  <span key={s} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: 'rgba(255,255,255,.03)', border: `1px solid ${i < 3 ? 'rgba(0,212,255,.2)' : 'rgba(255,255,255,.08)'}`, color: i < 3 ? 'rgba(0,212,255,.75)' : 'rgba(255,255,255,.4)' }}>{s}</span>
+                ))}
+              </div>
+              <div style={{ textAlign: 'right', fontSize: 12, fontWeight: 800, color: 'var(--lp-teal)' }}>91% match</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Row 2: Verification pillars ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderBottom: '1px solid rgba(255,255,255,.06)' }}>
+          {VERIFY_PILLARS.map((p, i) => (
+            <div key={i} style={{ padding: '16px 18px', borderRight: i < 3 ? '1px solid rgba(255,255,255,.06)' : 'none', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>{p.icon}</div>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 2 }}>{p.title}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', lineHeight: 1.5 }}>{p.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Row 3: Candidate value strip ── */}
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ padding: '18px 28px', flexShrink: 0 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#a78bfa', whiteSpace: 'nowrap' }}>For Candidates</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,.4)', whiteSpace: 'nowrap' }}>Increase your visibility.</div>
+          </div>
+          {CAND_FEATS.map((f, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11.5, color: 'rgba(255,255,255,.55)', padding: '18px 18px', borderLeft: '1px solid rgba(255,255,255,.06)' }}>
+              <span style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(167,139,250,.18)', color: '#a78bfa', fontSize: 8, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✓</span>
+              {f}
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </section>
+  );
+}
+
+function JourneySection({ onJoin }) {
+  const wrapRef = useRef(null);
+  const leftCardRefs = useRef([]);
+  const rightCardRefs = useRef([]);
+  const dotRefs = useRef([]);
+  const rafRef = useRef(null);
+  const progressRef = useRef(0);
+  const lockedRef = useRef(false);
+  const savedScrollYRef = useRef(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const mobileCardRefs = useRef([]);
+  const N = JOURNEY_STAGES.length;
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mq.matches);
+    const h = e => setIsMobile(e.matches);
+    mq.addEventListener('change', h);
+    return () => mq.removeEventListener('change', h);
+  }, []);
+
+  // Desktop: scroll lock + wheel-driven progress
+  useEffect(() => {
+    if (isMobile) return;
+
+    const clamp01 = t => Math.max(0, Math.min(1, t));
+    const easeOut = t => 1 - Math.pow(1 - t, 3);
+    // Each stage needs ~500px of wheel delta; N stages total
+    const TOTAL_DELTA = N * 1000;
+
+    let cooldown = false; // prevents re-lock from the synthetic scroll fired by scrollTo
+
+    const lockScroll = () => {
+      if (lockedRef.current) return;
+      lockedRef.current = true;
+      // Snap to exact section top so section fills viewport perfectly
+      savedScrollYRef.current = wrapRef.current ? wrapRef.current.offsetTop : window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${savedScrollYRef.current}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    };
+
+    const unlockScroll = (exitDir) => {
+      if (!lockedRef.current) return;
+      lockedRef.current = false;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      if (exitDir === 'forward') {
+        const wrap = wrapRef.current;
+        const targetY = wrap ? wrap.offsetTop + wrap.offsetHeight : savedScrollYRef.current + window.innerHeight;
+        // Restore to section position first (instant, before repaint), then smooth-scroll past it
+        window.scrollTo(0, savedScrollYRef.current);
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: targetY, behavior: 'smooth' });
+        });
+      } else {
+        window.scrollTo(0, Math.max(0, savedScrollYRef.current - 1));
+      }
+    };
+
+    const releaseWheel = (exitDir) => {
+      unlockScroll(exitDir);
+      window.removeEventListener('wheel', onWheel);
+      cooldown = true;
+      // Smooth scroll takes ~500ms; keep cooldown long enough to avoid re-locking mid-animation
+      setTimeout(() => {
+        cooldown = false;
+        window.addEventListener('scroll', onPageScroll, { passive: true });
+      }, 700);
+    };
+
+    // Wheel handler — active while locked
+    const onWheel = (e) => {
+      if (!lockedRef.current) return;
+      e.preventDefault();
+      const step = e.deltaY / TOTAL_DELTA;
+      const newP = clamp01(progressRef.current + step);
+
+      if (newP >= 1 && e.deltaY > 0) {
+        progressRef.current = 1;
+        releaseWheel('forward');
+        return;
+      }
+      if (newP <= 0 && e.deltaY < 0) {
+        progressRef.current = 0;
+        releaseWheel('backward');
+        return;
+      }
+      progressRef.current = newP;
+    };
+
+    // Page scroll watcher — crossing detection handles both slow and fast scroll
+    let prevScrollY = window.scrollY;
+    const onPageScroll = () => {
+      if (lockedRef.current || cooldown) return;
+      const wrap = wrapRef.current;
+      if (!wrap) return;
+      const currScrollY = window.scrollY;
+      const sectionTop = wrap.offsetTop;
+      // Downward crossing: entering section from above
+      if (prevScrollY < sectionTop && currScrollY >= sectionTop) {
+        if (currScrollY - sectionTop < 350) {
+          lockScroll();
+          window.removeEventListener('scroll', onPageScroll);
+          window.addEventListener('wheel', onWheel, { passive: false });
+        }
+      }
+      // Upward crossing: entering section from below — resume from end
+      else if (prevScrollY > sectionTop && currScrollY <= sectionTop) {
+        if (sectionTop - currScrollY < 350) {
+          progressRef.current = 1;
+          lockScroll();
+          window.removeEventListener('scroll', onPageScroll);
+          window.addEventListener('wheel', onWheel, { passive: false });
+        }
+      }
+      prevScrollY = currScrollY;
+    };
+
+    // RAF — animates cards based on progressRef
+    const tick = () => {
+      const p = progressRef.current;
+      // stageP -0.5→N-0.5: stage 0 gets entrance animation, last stage stays through end
+      const stageP = p * N - 0.5;
+
+      for (let i = 0; i < N; i++) {
+        const dist = stageP - i;
+
+        // Left card: enters from bottom, freezes, exits upward
+        const leftEl = leftCardRefs.current[i];
+        let lop = 0;
+        if (leftEl) {
+          let ty;
+          if (dist <= -0.5) {
+            ty = 90; lop = 0;
+          } else if (dist <= 0) {
+            const t = easeOut(clamp01((dist + 0.5) / 0.5));
+            ty = 90 * (1 - t); lop = t;
+          } else if (dist <= 0.85 || i === N - 1) {
+            ty = 0; lop = 1;
+          } else if (dist <= 1.0) {
+            const t = clamp01((dist - 0.85) / 0.15);
+            ty = -28 * t; lop = 1 - t;
+          } else {
+            ty = -28; lop = 0;
+          }
+          leftEl.style.transform = `translateY(${ty}px)`;
+          leftEl.style.opacity = lop;
+        }
+
+        // Progress dot
+        const dotEl = dotRefs.current[i];
+        if (dotEl) {
+          dotEl.style.width = lop > 0.5 ? '20px' : '6px';
+          dotEl.style.background = lop > 0.5 ? JOURNEY_STAGES[i].color : 'rgba(255,255,255,.2)';
+        }
+
+        // Right card: only shows after left card fully settles (dist >= 0)
+        const rightEl = rightCardRefs.current[i];
+        if (rightEl) {
+          let ro;
+          if (dist < 0) ro = 0;
+          else if (dist <= 0.08) ro = clamp01(dist / 0.08);
+          else if (dist <= 0.85 || i === N - 1) ro = 1;
+          else if (dist <= 1.0) ro = 1 - clamp01((dist - 0.85) / 0.15);
+          else ro = 0;
+          rightEl.style.opacity = ro;
+        }
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener('scroll', onPageScroll, { passive: true });
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener('scroll', onPageScroll);
+      window.removeEventListener('wheel', onWheel);
+      cancelAnimationFrame(rafRef.current);
+      unlockScroll();
+    };
+  }, [isMobile]);
+
+  // Mobile fade-in
+  useEffect(() => {
+    if (!isMobile) return;
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; }
+      });
+    }, { threshold: 0.15 });
+    mobileCardRefs.current.forEach(el => {
+      if (!el) return;
+      el.style.opacity = '0'; el.style.transform = 'translateY(28px)';
+      el.style.transition = 'opacity .6s ease, transform .6s ease';
+      obs.observe(el);
+    });
+    return () => obs.disconnect();
+  }, [isMobile]);
+
+  // ── MOBILE ──
+  if (isMobile) {
+    return (
+      <section style={{ padding: '60px 20px', background: 'var(--lp-bg)' }}>
+        <div style={{ padding: '0 4px', marginBottom: 32 }}>
+          <div className="ey">Your career journey</div>
+          <h2 className="sh" style={{ fontSize: 'clamp(32px,6vw,48px)', fontWeight: 700, fontFamily: 'var(--lp-ffm)', letterSpacing: '-1px', lineHeight: 1.1, marginBottom: 12 }}>
+            From invisible<br />to <em style={{ fontStyle: 'italic', background: 'var(--lp-grad-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>hired.</em>
+          </h2>
+          <p className="ss">One AI memory powers four stages. Every tool knows who you are.</p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 480, margin: '0 auto' }}>
+          {JOURNEY_STAGES.map((stage, i) => (
+            <div key={i} ref={el => mobileCardRefs.current[i] = el}
+              style={{ background: 'rgba(255,255,255,.04)', border: `1px solid ${stage.color}33`, borderRadius: 18, padding: '24px 20px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, right: 0, width: 70, height: 70, borderRadius: '0 18px 0 70px', background: stage.color, opacity: .07 }} />
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: stage.color, marginBottom: 7 }}>{stage.num} · {stage.label}</div>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--lp-text)', lineHeight: 1.25, marginBottom: 7, fontFamily: 'var(--lp-ffm)' }}>{stage.problem}</h3>
+              <p style={{ fontSize: 12, fontStyle: 'italic', color: 'rgba(255,255,255,.35)', marginBottom: 12, paddingLeft: 10, borderLeft: '2px solid rgba(255,255,255,.12)', lineHeight: 1.5 }}>{stage.pain}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                {stage.bullets.map((b, j) => (
+                  <div key={j} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 12, color: 'var(--lp-text2)' }}>
+                    <span style={{ width: 16, height: 16, borderRadius: '50%', background: stage.color + '22', color: stage.color, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✦</span>
+                    {b}
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 500, padding: '6px 12px', borderRadius: 30, background: stage.color + '18', color: stage.color, border: `1px solid ${stage.color}30`, display: 'inline-block', marginBottom: 16 }}>{stage.outcome}</div>
+              <JourneyMiniDemo stageIdx={i} stage={stage} />
+            </div>
+          ))}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: 36 }}>
+          <button className="cta-btn" onClick={onJoin}>Start free — no card →</button>
+        </div>
+      </section>
+    );
+  }
+
+  // ── DESKTOP: section sits in normal flow at height 100vh ──
+  // When section top hits viewport top, body is position:fixed (page frozen)
+  // Wheel events drive progressRef → RAF animates left cards + right demos
+  // ── DESKTOP: section sits in normal flow at height 100vh ──
+  return (
+    <section ref={wrapRef} style={{ height: '100vh', position: 'relative', background: 'var(--lp-bg)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+      {/* ── FULL-WIDTH CENTERED HEADER ── */}
+      <div style={{ padding: '44px 0 20px', textAlign: 'center', flexShrink: 0 }}>
+        <div className="ey" style={{ marginBottom: 8 }}>Your career journey</div>
+        <h2 style={{ fontFamily: 'var(--lp-ffm)', fontSize: 'clamp(28px,2.8vw,42px)', fontWeight: 700, letterSpacing: '-.5px', lineHeight: 1.14, color: 'var(--lp-text)', margin: '0 0 16px' }}>
+          From invisible<br />to <em style={{ fontStyle: 'italic', background: 'var(--lp-grad-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>hired.</em>
+        </h2>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'center' }}>
+          {JOURNEY_STAGES.map((_, j) => (
+            <div key={j} ref={el => dotRefs.current[j] = el}
+              style={{ width: 6, height: 6, borderRadius: 3, background: 'rgba(255,255,255,.2)', transition: 'width .4s ease, background .4s ease' }} />
+          ))}
+        </div>
+      </div>
+
+      {/* ── TWO-PANEL ROW ── */}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+
+        {/* LEFT 40%: card animation area only */}
+        <div style={{ width: '40%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            {JOURNEY_STAGES.map((s, i) => (
+              <div key={i}
+                ref={el => leftCardRefs.current[i] = el}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '8px 48px 32px', opacity: 0, transform: 'translateY(90px)', willChange: 'transform, opacity' }}>
+                <div style={{ background: 'rgba(255,255,255,.04)', border: `1px solid ${s.color}40`, borderRadius: 18, padding: '28px 24px', position: 'relative', overflow: 'hidden', boxShadow: `0 4px 32px ${s.color}12` }}>
+                  <div style={{ position: 'absolute', top: 0, right: 0, width: 80, height: 80, borderRadius: '0 18px 0 80px', background: s.color, opacity: .06, pointerEvents: 'none' }} />
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: s.color, marginBottom: 12 }}>{s.num} · {s.label}</div>
+                  <h3 style={{ fontFamily: 'var(--lp-ffm)', fontSize: 'clamp(16px,1.6vw,20px)', fontWeight: 700, lineHeight: 1.22, color: 'var(--lp-text)', marginBottom: 10 }}>{s.problem}</h3>
+                  <p style={{ fontSize: 13, fontStyle: 'italic', color: 'rgba(255,255,255,.35)', marginBottom: 14, paddingLeft: 12, borderLeft: `2px solid ${s.color}44`, lineHeight: 1.55 }}>{s.pain}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
+                    {s.bullets.map((b, j) => (
+                      <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 12, color: 'var(--lp-text2)' }}>
+                        <span style={{ width: 17, height: 17, borderRadius: '50%', background: s.color + '22', color: s.color, fontSize: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 800 }}>✦</span>
+                        {b.includes(' — ') ? <><strong style={{ color: 'var(--lp-text)', fontWeight: 700 }}>{b.split(' — ')[0]}</strong>{' — '}{b.split(' — ').slice(1).join(' — ')}</> : b}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, padding: '6px 14px', borderRadius: 30, background: s.color + '18', color: s.color, border: `1px solid ${s.color}30` }}>{s.outcome}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT 60%: mini-demo per stage, RAF-driven opacity */}
+        <div style={{ width: '60%', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 60, background: 'linear-gradient(to bottom, var(--lp-bg), transparent)', zIndex: 2, pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 60, background: 'linear-gradient(to top, var(--lp-bg), transparent)', zIndex: 2, pointerEvents: 'none' }} />
+          {JOURNEY_STAGES.map((s, i) => (
+            <div key={i}
+              ref={el => rightCardRefs.current[i] = el}
+              style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 0', opacity: 0, willChange: 'opacity' }}>
+              <div style={{ width: '100%', maxWidth: 'none', height: '100%' }}>
+                <JourneyMiniDemo stageIdx={i} stage={s} progressRef={progressRef} stageN={N} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </section>
   );
 }
 
@@ -3015,11 +4308,11 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
 
       <div className="sec-divider" />
 
-      <PlatformLayers onJoin={onJoin} />
+      <JourneySection onJoin={onJoin} />
 
       <div className="sec-divider" />
 
-      <HowItWorksSection onJoin={onJoin} onSampleReport={() => setSampleReportOpen(true)} />
+      <TrustChatSection onJoin={onJoin} />
 
       <div className="sec-divider" />
 

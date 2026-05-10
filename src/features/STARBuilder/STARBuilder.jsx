@@ -37,7 +37,10 @@ Be specific — use the candidate's actual content. Add plausible metrics if the
       if (p.error) throw new Error(p.msg);
       setRefined(p);
       const story = { id: Date.now(), bankAs: p.bankAs || p.oneLiner?.slice(0, 40), oneLiner: p.oneLiner, score: p.score, situation: S, refined: p.refined, date: new Date().toISOString() };
-      if (updateMemory) updateMemory(m => ({ starBank: [story, ...(m.starBank || [])].slice(-20) }));
+      if (updateMemory) updateMemory(
+        m => ({ starBank: [story, ...(m.starBank || [])].slice(-20) }),
+        { table: 'star_stories', data: { one_liner: story.oneLiner, score: p.score, situation: S, task: T, action: A, result: R, refined: p.refined } }
+      );
     } catch (e) {
       showToast("Refinement failed: " + e.message, "error");
     }

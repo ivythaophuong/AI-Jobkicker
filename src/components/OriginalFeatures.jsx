@@ -101,6 +101,8 @@ export function AuthModal({ initialMode, onSuccess, onClose, onViewLegal }) {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [name, setName] = useState("");
+  const [company, setCompany] = useState("");
+  const [accountType, setAccountType] = useState("candidate");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
@@ -109,7 +111,7 @@ export function AuthModal({ initialMode, onSuccess, onClose, onViewLegal }) {
     e.preventDefault(); setErr(""); setLoading(true);
     try {
       if (mode === "register") {
-        const { data, error } = await sb.signUp(email, pass, name);
+        const { data, error } = await sb.signUp(email, pass, name, { role: accountType, company: accountType === 'recruiter' ? company : null });
         if (error) throw error;
         if (!data?.user) throw new Error("Registration started. Please check your email for confirmation.");
         onSuccess(data.session || { user: data.user });
@@ -157,14 +159,39 @@ export function AuthModal({ initialMode, onSuccess, onClose, onViewLegal }) {
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {mode === "register" && (
-            <div>
-              <div style={{ color: C.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>Full Name</div>
-              <input 
-                placeholder="Your full name" 
-                value={name} onChange={e => { setName(e.target.value); setErr(""); }} required 
-                style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.text, padding: "12px 14px", fontSize: 14, outline: "none", transition: "border-color 0.2s" }} 
-              />
-            </div>
+            <>
+              {/* Account type toggle */}
+              <div style={{ display: "flex", gap: 8, background: C.surface, borderRadius: 10, padding: 4, border: `1px solid ${C.border}` }}>
+                {[["candidate", "🎯 Job Seeker"], ["recruiter", "🏢 Employer"]].map(([val, label]) => (
+                  <button key={val} type="button" onClick={() => setAccountType(val)}
+                    style={{ flex: 1, padding: "8px 12px", borderRadius: 7, border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all .18s",
+                      background: accountType === val ? (val === "recruiter" ? "linear-gradient(135deg,#B026FF,#FF46E5)" : C.accent) : "transparent",
+                      color: accountType === val ? "#fff" : C.muted }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <div>
+                <div style={{ color: C.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>Full Name</div>
+                <input
+                  placeholder="Your full name"
+                  value={name} onChange={e => { setName(e.target.value); setErr(""); }} required
+                  style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.text, padding: "12px 14px", fontSize: 14, outline: "none", transition: "border-color 0.2s" }}
+                />
+              </div>
+
+              {accountType === "recruiter" && (
+                <div>
+                  <div style={{ color: C.muted, fontSize: 11, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6, fontWeight: 700 }}>Company Name</div>
+                  <input
+                    placeholder="e.g. Acme Corp"
+                    value={company} onChange={e => { setCompany(e.target.value); setErr(""); }} required
+                    style={{ width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, color: C.text, padding: "12px 14px", fontSize: 14, outline: "none", transition: "border-color 0.2s" }}
+                  />
+                </div>
+              )}
+            </>
           )}
           
           <div>

@@ -68,6 +68,12 @@ export default function HiringManagerSim({ resumeText, scanResult, form, memory,
       const result = extractJSON(raw);
       if (result.error) throw new Error('Could not parse response');
       setFb(result);
+      if (updateMemory) {
+        updateMemory(
+          m => ({ mockSessions: [{ score: result.score, mode: archetype.id, date: new Date().toISOString() }, ...(m.mockSessions || [])].slice(-20) }),
+          { table: 'mock_sessions', data: { avg_score: result.score, questions_count: 1, mode: archetype.id } }
+        );
+      }
     } catch (e) {
       setError('Evaluation failed — please try again.');
     } finally {

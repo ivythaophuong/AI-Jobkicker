@@ -17,6 +17,7 @@ import MarketIntel from './features/MarketIntel/MarketIntel';
 import JobSearch from './features/JobSearch/JobSearch';
 import MemoryDashboard from './features/MemoryDashboard/MemoryDashboard';
 import ATSBuilder from './features/ATSBuilder/ATSBuilder';
+import TrustMatch from './features/TrustMatch/TrustMatch';
 import PrivacyPolicy from './features/Legal/PrivacyPolicy';
 import TermsOfService from './features/Legal/TermsOfService';
 import LandingPage, { GuestNav, AppHubNav, LogoMark, StudyPlanModal, GetReadyTabStrip } from './features/Landing/LandingPage';
@@ -26,6 +27,7 @@ import './styles/appTheme.css';
 // ── Original Overlay Components ──────────────────────────────────────────────
 import { Ticker, UserMenu, AuthGate } from './components/OriginalUIOverlays';
 import { AuthModal, CommandPalette } from './components/OriginalFeatures';
+import EmployerPortal from './features/EmployerPortal/EmployerPortal';
 
 // ── Main App Shell ───────────────────────────────────────────────────────────
 function App() {
@@ -39,6 +41,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [toast, setToast] = useState(null);
 
+  const [isRecruiter, setIsRecruiter] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
   const [grModalOpen, setGrModalOpen] = useState(false);
   const [grModalTab, setGrModalTab] = useState('dashboard');
@@ -63,12 +66,15 @@ function App() {
         if (session) {
           const userObj = session.user;
           const meta = userObj.user_metadata || {};
-          setUser({ 
-            id: userObj.id, 
-            email: userObj.email, 
+          setUser({
+            id: userObj.id,
+            email: userObj.email,
             name: meta.full_name || userObj.email?.split("@")[0] || "User",
-            token: session.access_token 
+            token: session.access_token,
+            role: meta.role || 'candidate',
+            company: meta.company || null,
           });
+          setIsRecruiter(meta.role === 'recruiter');
           setIsRestoring(true); // Trigger composite fetch on session restore
           setSetupDone(true);
         }
@@ -82,13 +88,16 @@ function App() {
   const login = (session) => {
     const userObj = session.user;
     const meta = userObj.user_metadata || {};
-    const newUser = { 
-      id: userObj.id, 
-      email: userObj.email, 
+    const newUser = {
+      id: userObj.id,
+      email: userObj.email,
       name: meta.full_name || userObj.email?.split("@")[0] || "User",
-      token: session.access_token 
+      token: session.access_token,
+      role: meta.role || 'candidate',
+      company: meta.company || null,
     };
     setUser(newUser);
+    setIsRecruiter(meta.role === 'recruiter');
     localStorage.setItem("supabase.auth.token", JSON.stringify({ currentSession: session }));
     setIsRestoring(true); // Trigger composite fetch
     setAuthModal(null);
@@ -100,6 +109,7 @@ function App() {
     sb.signOut(user?.token);
     localStorage.removeItem("supabase.auth.token");
     setUser(null);
+    setIsRecruiter(false);
     setSetupDone(false);
     window.location.reload();
   };
@@ -139,7 +149,8 @@ function App() {
       case "market":   return <MarketIntel {...props} />;
       case "jobs":     return <JobSearch {...props} />;
       case "memory":   return <MemoryDashboard {...props} />;
-      case "ats":      return <ATSBuilder {...props} />;
+      case "ats":        return <ATSBuilder {...props} />;
+      case "trustmatch": return <TrustMatch {...props} />;
       case "privacy":  return <PrivacyPolicy onBack={() => setActiveModule("jobs")} />;
       case "terms":    return <TermsOfService onBack={() => setActiveModule("jobs")} />;
       default:         return <ResumeScan {...props} />;
@@ -155,6 +166,8 @@ function App() {
   const renderMainContent = () => {
 
     if (!user && showLanding) return <LandingPage setAuthModal={setAuthModal} onModuleSelect={goToModule} />;
+
+    if (user && isRecruiter) return <EmployerPortal user={user} onLogout={logout} />;
 
     if (!setupDone) {
       return (
@@ -259,7 +272,7 @@ function App() {
 
     if (isRestoring) return <AppLoader label="Restoring your session…" />;
 
-    const NATIVE_FULL_MODULES = new Set(['ats', 'scan']);
+    const NATIVE_FULL_MODULES = new Set(['ats', 'scan', 'trustmatch']);
     const isNativeFull = NATIVE_FULL_MODULES.has(activeModule);
 
     return (

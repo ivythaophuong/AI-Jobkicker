@@ -7,11 +7,11 @@ export const sb = {
   _au: () => ({ "Content-Type": "application/json", "apikey": SUPABASE_ANON }),
 
   // ── Auth ───────────────────────────────────────────────────────────────────
-  async signUp(email, password, name) {
+  async signUp(email, password, name, extraMeta = {}) {
     try {
       const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
         method: "POST", headers: sb._au(),
-        body: JSON.stringify({ email, password, data: { full_name: name } })
+        body: JSON.stringify({ email, password, data: { full_name: name, ...extraMeta } })
       });
       const d = await r.json();
       if (r.status >= 400 || d.error) return { data: null, error: d.error || { message: d.msg || "Sign up failed" } };
