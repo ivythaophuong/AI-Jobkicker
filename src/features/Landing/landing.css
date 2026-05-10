@@ -1063,3 +1063,184 @@ body.lp-light .lp{background:#F0F4FF}
   .lp .price-grid{max-width:100%}
   .lp-nav-logo .lp-wordmark{font-size:14px}
 }
+
+/* ── JOURNEY ZIGZAG DECK-STACK ───────────────────────────────────────────── */
+
+/* Stage entrance */
+.jny-stage{
+  padding:72px 5vw;
+  position:relative;
+  overflow:hidden;
+  opacity:0;
+  transform:translateY(40px) scale(.985);
+}
+.jny-stage.vis{
+  opacity:1;
+  transform:none;
+  transition:opacity .65s ease, transform .65s cubic-bezier(.34,1.12,.64,1);
+}
+
+/* Ambient glow layer */
+.jny-stage-glow{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* Stage separator line */
+.jny-sep{
+  position:absolute;
+  bottom:0;left:6%;right:6%;
+  height:1px;
+  background:var(--lp-bdr);
+}
+.jny-stage:last-of-type .jny-sep{display:none}
+
+/* Zigzag 2-col grid */
+.jny-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:60px;
+  align-items:center;
+  position:relative;
+  z-index:1;
+  max-width:1160px;
+  margin:0 auto;
+}
+.jny-stage.swapped .jny-copy{order:2}
+.jny-stage.swapped .jny-deck-side{order:1}
+
+/* Copy side */
+.jny-copy{padding:8px 0}
+.jny-stage-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  padding:4px 12px;
+  border-radius:20px;
+  margin-bottom:16px;
+}
+.jny-badge-dot{
+  width:5px;height:5px;border-radius:50%;
+  animation:lp-pulse 1.4s ease infinite;
+}
+.jny-copy-h3{
+  font-family:var(--lp-ffm);
+  font-size:clamp(20px,2vw,28px);
+  font-weight:700;
+  letter-spacing:-.4px;
+  line-height:1.18;
+  color:var(--lp-text);
+  margin:0 0 10px;
+  max-width:360px;
+}
+.jny-pain{
+  font-size:12.5px;
+  font-style:italic;
+  color:rgba(255,255,255,.35);
+  padding-left:12px;
+  border-left:2px solid;
+  line-height:1.6;
+  margin:0 0 20px;
+  max-width:340px;
+}
+.jny-feats{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.jny-feat{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;color:var(--lp-text2);line-height:1.45}
+.jny-feat-ic{
+  width:17px;height:17px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8px;flex-shrink:0;margin-top:1px;font-weight:900;
+}
+.jny-outcome{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 16px;
+  border-radius:100px;
+  font-size:12px;
+  font-weight:600;
+}
+
+/* Deck side */
+.jny-deck-side{display:flex;align-items:center;justify-content:center}
+
+/* Step pills */
+.jny-deck-wrap{position:relative;width:100%;max-width:400px}
+.jny-steps{display:flex;gap:5px;margin-bottom:14px;justify-content:center}
+.jny-step{
+  display:flex;align-items:center;
+  padding:4px 10px;border-radius:20px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--lp-bdr);
+  font-size:8px;letter-spacing:1px;text-transform:uppercase;
+  color:rgba(255,255,255,.25);
+  cursor:pointer;transition:all .3s;user-select:none;
+  font-family:monospace;
+}
+.jny-step.active{color:var(--sc,#00E88F);background:color-mix(in srgb,var(--sc,#00E88F) 10%,transparent);border-color:color-mix(in srgb,var(--sc,#00E88F) 30%,transparent)}
+.jny-step.done{color:color-mix(in srgb,var(--sc,#00E88F) 55%,transparent);background:color-mix(in srgb,var(--sc,#00E88F) 6%,transparent);border-color:color-mix(in srgb,var(--sc,#00E88F) 18%,transparent)}
+
+/* Hint */
+.jny-deck-hint{
+  text-align:center;margin-top:12px;
+  font-size:8px;letter-spacing:1.5px;text-transform:uppercase;
+  color:rgba(255,255,255,.18);opacity:0;transition:opacity .7s;
+}
+.jny-deck-hint.vis{opacity:1}
+
+/* Deck stack container */
+.jny-deck-stack{
+  position:relative;
+  width:100%;max-width:400px;
+  height:350px;
+}
+
+/* Individual cards */
+.jny-dcard{
+  position:absolute;
+  top:0;left:0;width:100%;height:100%;
+  border-radius:16px;
+  overflow:hidden;
+  cursor:pointer;
+  will-change:transform;
+  background:rgba(13,20,40,.96);
+  border:1px solid var(--lp-bdr);
+  box-sizing:border-box;
+  transition:transform .5s cubic-bezier(.34,1.1,.64,1),opacity .4s,filter .4s,border-color .4s,box-shadow .4s;
+}
+
+/* Stack positions (not fanned) */
+.jny-dcard[data-pos="0"]{transform:translate(0,0) rotate(0deg);z-index:4;opacity:1;box-shadow:0 14px 44px rgba(0,0,0,.55)}
+.jny-dcard[data-pos="1"]{transform:translate(10px,7px) rotate(1.3deg);z-index:3;opacity:.52;filter:brightness(.68) saturate(.65)}
+.jny-dcard[data-pos="2"]{transform:translate(18px,13px) rotate(2.5deg);z-index:2;opacity:.3;filter:brightness(.55) saturate(.5)}
+.jny-dcard[data-pos="3"]{transform:translate(25px,18px) rotate(3.5deg);z-index:1;opacity:.14;filter:brightness(.44) saturate(.28)}
+.jny-dcard[data-pos="4"]{transform:translate(31px,22px) rotate(4.3deg);z-index:0;opacity:.07;filter:brightness(.36) saturate(.2)}
+
+/* Fanned positions (horizontal spread) */
+.jny-deck-stack.fanned .jny-dcard[data-fan="0"]{transform:translate(-130px,6px) rotate(-6.5deg);z-index:4;opacity:1;filter:none;box-shadow:0 14px 44px rgba(0,0,0,.55)}
+.jny-deck-stack.fanned .jny-dcard[data-fan="1"]{transform:translate(-42px,0) rotate(-2deg);z-index:3;opacity:.88;filter:brightness(.88)}
+.jny-deck-stack.fanned .jny-dcard[data-fan="2"]{transform:translate(46px,0) rotate(2deg);z-index:2;opacity:.74;filter:brightness(.8)}
+.jny-deck-stack.fanned .jny-dcard[data-fan="3"]{transform:translate(130px,6px) rotate(6deg);z-index:1;opacity:.58;filter:brightness(.68)}
+.jny-deck-stack.fanned .jny-dcard[data-fan="4"]{transform:translate(208px,12px) rotate(9.5deg);z-index:0;opacity:.4;filter:brightness(.56)}
+.jny-deck-stack.fanned .jny-dcard:hover{filter:brightness(1.08) !important;z-index:10 !important}
+
+@media(max-width:900px){
+  .jny-grid{grid-template-columns:1fr;gap:36px}
+  .jny-stage.swapped .jny-copy{order:0}
+  .jny-stage.swapped .jny-deck-side{order:0}
+  .jny-copy-h3{max-width:none}
+  .jny-pain{max-width:none}
+  .jny-deck-wrap{max-width:100%}
+  .jny-deck-stack{height:300px}
+  .jny-deck-stack.fanned .jny-dcard[data-fan="0"]{transform:translate(-100px,5px) rotate(-6deg)}
+  .jny-deck-stack.fanned .jny-dcard[data-fan="1"]{transform:translate(-32px,0) rotate(-2deg)}
+  .jny-deck-stack.fanned .jny-dcard[data-fan="2"]{transform:translate(36px,0) rotate(2deg)}
+  .jny-deck-stack.fanned .jny-dcard[data-fan="3"]{transform:translate(100px,5px) rotate(5.5deg)}
+  .jny-deck-stack.fanned .jny-dcard[data-fan="4"]{transform:translate(160px,10px) rotate(9deg)}
+  .jny-stage{padding:56px 20px}
+}
