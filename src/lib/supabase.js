@@ -7,17 +7,25 @@ export const sb = {
   _au: () => ({ "Content-Type": "application/json", "apikey": SUPABASE_ANON }),
 
   // ── Auth ───────────────────────────────────────────────────────────────────
+  async _parseAuth(r) {
+    const text = await r.text();
+    let d;
+    try { d = JSON.parse(text); } catch {
+      return { data: null, error: { message: 'Auth service unavailable — try again in a moment.' } };
+    }
+    if (r.status >= 400 || d.error) return { data: null, error: d.error || { message: d.msg || `Request failed (${r.status})` } };
+    return { data: d, error: null };
+  },
+
   async signUp(email, password, name, extraMeta = {}) {
     try {
       const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
         method: "POST", headers: sb._au(),
         body: JSON.stringify({ email, password, data: { full_name: name, ...extraMeta } })
       });
-      const d = await r.json();
-      if (r.status >= 400 || d.error) return { data: null, error: d.error || { message: d.msg || "Sign up failed" } };
-      return { data: d, error: null };
+      return sb._parseAuth(r);
     } catch (e) {
-      return { data: null, error: e };
+      return { data: null, error: { message: 'Network error — check your connection.' } };
     }
   },
 
@@ -27,11 +35,9 @@ export const sb = {
         method: "POST", headers: sb._au(),
         body: JSON.stringify({ email, password })
       });
-      const d = await r.json();
-      if (r.status >= 400 || d.error) return { data: null, error: d.error || { message: "Sign in failed" } };
-      return { data: d, error: null };
+      return sb._parseAuth(r);
     } catch (e) {
-      return { data: null, error: e };
+      return { data: null, error: { message: 'Network error — check your connection.' } };
     }
   },
 
