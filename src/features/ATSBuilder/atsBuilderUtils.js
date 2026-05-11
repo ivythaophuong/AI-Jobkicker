@@ -46,7 +46,8 @@ export function buildRebuildPrompt(resumeText, doneCards) {
     if (c.userNotes?.trim()) s += `\n   User intent: ${c.userNotes}`;
     return s;
   }).join('\n\n');
-  return `You are an expert resume writer and ATS specialist. Rewrite the resume below applying ONLY the listed edits. Do not change anything not mentioned. Preserve all sections.
+  const css = `*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Calibri','Segoe UI',Arial,sans-serif;font-size:11pt;line-height:1.55;color:#1a1a2e;max-width:800px;margin:0 auto;padding:40px 48px;background:#fff}h1{font-size:22pt;font-weight:700;letter-spacing:-.5px;margin-bottom:5px}.contact{font-size:9.5pt;color:#444;margin-bottom:22px;line-height:1.7}h2{font-size:10pt;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:#1a1a2e;border-bottom:1.5px solid #1a1a2e;padding-bottom:3px;margin:20px 0 10px}.entry{margin-bottom:14px}.entry-header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px}.role{font-weight:700;font-size:10.5pt}.period{font-size:9pt;color:#555;white-space:nowrap}.org{font-size:10pt;color:#444;font-style:italic;margin:2px 0 5px}ul{padding-left:18px;margin-top:4px}li{margin-bottom:3px;font-size:10.5pt}.skills{font-size:10.5pt;line-height:1.7}@media print{body{padding:24px 36px}h2{break-after:avoid}.entry{break-inside:avoid}}`;
+  return `You are an expert resume writer and ATS specialist. Rewrite the resume below applying ONLY the listed edits. Do not change anything not mentioned. Preserve all sections and all original content not covered by an edit.
 
 ORIGINAL RESUME:
 ${resumeText}
@@ -54,27 +55,17 @@ ${resumeText}
 EDITS TO APPLY:
 ${edits}
 
-Return ONLY a complete self-contained HTML document. No markdown, no explanation, start with <!DOCTYPE html>.
-
-Use exactly this structure and CSS:
-<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Calibri','Segoe UI',Arial,sans-serif;font-size:11pt;line-height:1.55;color:#1a1a2e;max-width:800px;margin:0 auto;padding:40px 48px;background:#fff}
-h1{font-size:22pt;font-weight:700;letter-spacing:-.5px;margin-bottom:5px}
-.contact{font-size:9.5pt;color:#444;margin-bottom:22px;line-height:1.7}
-h2{font-size:10pt;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:#1a1a2e;border-bottom:1.5px solid #1a1a2e;padding-bottom:3px;margin:20px 0 10px}
-.entry{margin-bottom:14px}
-.entry-header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px}
-.role{font-weight:700;font-size:10.5pt}
-.period{font-size:9pt;color:#555;white-space:nowrap}
-.org{font-size:10pt;color:#444;font-style:italic;margin:2px 0 5px}
-ul{padding-left:18px;margin-top:4px}
-li{margin-bottom:3px;font-size:10.5pt}
-.skills{font-size:10.5pt;line-height:1.7}
-@media print{body{padding:24px 36px}h2{break-after:avoid}.entry{break-inside:avoid}}
-</style></head><body>
-[RESUME CONTENT HERE using h1 for name, p.contact for contact line, h2 for each section, div.entry + div.entry-header + span.role + span.period + p.org + ul>li for jobs, p.skills for skills]
-</body></html>`;
+OUTPUT REQUIREMENTS:
+- Return ONLY a complete HTML document. No markdown, no code fences, no explanation.
+- Start your response with: <!DOCTYPE html>
+- Use this exact CSS in a <style> tag inside <head>: ${css}
+- HTML structure to use in <body>:
+  - <h1> for candidate name
+  - <p class="contact"> for contact info (email · phone · location · LinkedIn)
+  - <h2> for each section heading (EXPERIENCE, EDUCATION, SKILLS, etc.)
+  - For each job: <div class="entry"><div class="entry-header"><span class="role">Title</span><span class="period">Dates</span></div><p class="org">Company</p><ul><li>bullet</li></ul></div>
+  - <p class="skills"> for skills section content
+- Do NOT include any placeholder text, comments, or instructions in the output.`;
 }
 
 export function stripHtmlToText(html) {

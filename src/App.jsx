@@ -34,7 +34,13 @@ function App() {
   const [setupDone, setSetupDone] = useState(true);
   const [form, setForm] = useState({ role: "", industry: "", level: "Senior", market: "Singapore", urgency: "7 days" });
   const [user, setUser] = useState(null);
-  const [activeModule, setActiveModule] = useState("jobs");
+  const [activeModule, _setActiveModule] = useState("jobs");
+
+  const navigate = (moduleId) => {
+    window.history.pushState({ module: moduleId, showLanding: false }, '', `?tab=${moduleId}`);
+    _setActiveModule(moduleId);
+    setShowLanding(false);
+  };
   const [authModal, setAuthModal] = useState(null);
   const [proModal, setProModal] = useState(null);
   const [cmdOpen, setCmdOpen] = useState(false);
@@ -55,6 +61,22 @@ function App() {
 
   const setResumeText = (val) => updateMemory(m => ({ ...m, resumeText: val }));
   const setScanResult = (val) => updateMemory(m => ({ ...m, scanResult: val }));
+
+  // Browser history support
+  useEffect(() => {
+    window.history.replaceState({ showLanding: true }, '', window.location.pathname);
+    const handlePop = (e) => {
+      const state = e.state;
+      if (!state || state.showLanding) {
+        setShowLanding(true);
+      } else {
+        _setActiveModule(state.module || 'jobs');
+        setShowLanding(false);
+      }
+    };
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, []);
 
   // Restore session
   useEffect(() => {
@@ -133,7 +155,7 @@ function App() {
       resumeText, setResumeText, scanResult, setScanResult,
       form, memory, updateMemory,
       onProTrigger: setProModal,
-      user, setAuthModal, showToast, setActiveModule,
+      user, setAuthModal, showToast, setActiveModule: navigate,
       onStudyPlan: (tab) => { setGrModalTab(tab); setGrModalOpen(true); },
     };
     
@@ -151,17 +173,14 @@ function App() {
       case "memory":   return <MemoryDashboard {...props} />;
       case "ats":        return <ATSBuilder {...props} />;
       case "trustmatch": return <TrustMatch {...props} />;
-      case "privacy":  return <PrivacyPolicy onBack={() => setActiveModule("jobs")} />;
-      case "terms":    return <TermsOfService onBack={() => setActiveModule("jobs")} />;
+      case "privacy":  return <PrivacyPolicy onBack={() => navigate("jobs")} />;
+      case "terms":    return <TermsOfService onBack={() => navigate("jobs")} />;
       default:         return <ResumeScan {...props} />;
     }
   };
 
   // ── 3. Render Helper ───────────────────────────────────────────────────────
-  const goToModule = (moduleId) => {
-    setActiveModule(moduleId);
-    setShowLanding(false);
-  };
+  const goToModule = (moduleId) => navigate(moduleId);
 
   const renderMainContent = () => {
 
@@ -301,14 +320,14 @@ function App() {
         initialMode={authModal}
         onSuccess={login}
         onClose={() => setAuthModal(null)}
-        onViewLegal={(m) => { setActiveModule(m); setAuthModal(null); }}
+        onViewLegal={(m) => { navigate(m); setAuthModal(null); }}
       />}
-      {cmdOpen && <CommandPalette modules={MODULES} setActiveModule={setActiveModule} setAuthModal={setAuthModal} user={user} onClose={() => setCmdOpen(false)} />}
+      {cmdOpen && <CommandPalette modules={MODULES} setActiveModule={navigate} setAuthModal={setAuthModal} user={user} onClose={() => setCmdOpen(false)} />}
       {grModalOpen && (
         <StudyPlanModal
           onClose={() => setGrModalOpen(false)}
           initialTab={grModalTab}
-          onModuleSelect={(moduleId) => { setActiveModule(moduleId); setGrModalOpen(false); }}
+          onModuleSelect={(moduleId) => { navigate(moduleId); setGrModalOpen(false); }}
         />
       )}
       
@@ -320,7 +339,7 @@ function App() {
             onJoin={() => setAuthModal('register')}
             onHome={() => setShowLanding(true)}
           />
-          <AppHubNav activeModule={activeModule} onNavigate={(id) => setActiveModule(id)} />
+          <AppHubNav activeModule={activeModule} onNavigate={navigate} />
         </>
       )}
 
@@ -328,7 +347,7 @@ function App() {
       {user && (
         <>
           <nav className="lp-nav scrolled">
-            <button className="lp-nav-logo" onClick={() => setActiveModule("jobs")}>
+            <button className="lp-nav-logo" onClick={() => navigate("jobs")}>
               <LogoMark size={26} radius={7} />
               CareerAiHub
             </button>
@@ -342,7 +361,7 @@ function App() {
               <UserMenu user={user} onLogout={logout} />
             </div>
           </nav>
-          <AppHubNav activeModule={activeModule} onNavigate={(id) => setActiveModule(id)} />
+          <AppHubNav activeModule={activeModule} onNavigate={navigate} />
         </>
       )}
 
@@ -354,8 +373,8 @@ function App() {
         <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
           <div style={{ color: C.muted, fontSize: 11 }}>© 2026 CareerAiHub. All rights reserved.</div>
           <div style={{ display: "flex", gap: 20 }}>
-            <button onClick={() => setActiveModule("privacy")} style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Privacy Policy</button>
-            <button onClick={() => setActiveModule("terms")} style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Terms of Service</button>
+            <button onClick={() => navigate("privacy")} style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Privacy Policy</button>
+            <button onClick={() => navigate("terms")} style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Terms of Service</button>
             <a href="mailto:hello@careeraihub.com" style={{ color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Support & Trust</a>
           </div>
         </div>

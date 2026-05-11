@@ -11,7 +11,8 @@ export const sb = {
     const text = await r.text();
     let d;
     try { d = JSON.parse(text); } catch {
-      return { data: null, error: { message: 'Auth service unavailable — try again in a moment.' } };
+      console.error('[auth] non-JSON response:', r.status, text.slice(0, 200));
+      return { data: null, error: { message: `Auth request failed (${r.status}). Check console for details.` } };
     }
     if (r.status >= 400 || d.error) return { data: null, error: d.error || { message: d.msg || `Request failed (${r.status})` } };
     return { data: d, error: null };
