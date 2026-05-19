@@ -22,6 +22,11 @@ import PrivacyPolicy from './features/Legal/PrivacyPolicy';
 import TermsOfService from './features/Legal/TermsOfService';
 import LandingPage, { GuestNav, AppHubNav, LogoMark, StudyPlanModal, GetReadyTabStrip } from './features/Landing/LandingPage';
 import { AppLoader, OrbitSpinner } from './components/OrbitMark';
+import AppSidebar from './components/AppSidebar';
+import Dashboard from './features/Dashboard/Dashboard';
+import SkillsGap from './features/SkillsGap/SkillsGap';
+import CareerRoadmap from './features/CareerRoadmap/CareerRoadmap';
+import AICoach from './features/AICoach/AICoach';
 import './styles/appTheme.css';
 
 // ── Original Overlay Components ──────────────────────────────────────────────
@@ -124,6 +129,7 @@ function App() {
     setIsRestoring(true); // Trigger composite fetch
     setAuthModal(null);
     setSetupDone(true);
+    _setActiveModule('dashboard');
     showToast("✓ Welcome back!", "success");
   };
 
@@ -173,6 +179,10 @@ function App() {
       case "memory":   return <MemoryDashboard {...props} />;
       case "ats":        return <ATSBuilder {...props} />;
       case "trustmatch": return <TrustMatch {...props} />;
+      case "dashboard":  return <Dashboard {...props} />;
+      case "skillsgap":  return <SkillsGap {...props} />;
+      case "roadmap":    return <CareerRoadmap {...props} />;
+      case "aichat":     return <AICoach {...props} />;
       case "privacy":  return <PrivacyPolicy onBack={() => navigate("jobs")} />;
       case "terms":    return <TermsOfService onBack={() => navigate("jobs")} />;
       default:         return <ResumeScan {...props} />;
@@ -291,24 +301,10 @@ function App() {
 
     if (isRestoring) return <AppLoader label="Restoring your session…" />;
 
-    const NATIVE_FULL_MODULES = new Set(['ats', 'scan', 'trustmatch']);
-    const isNativeFull = NATIVE_FULL_MODULES.has(activeModule);
-
     return (
-      <>
-        {/* Content Wrapper */}
-        {isNativeFull ? (
-          <div key={activeModule} style={{ animation: "fadeIn 0.4s ease" }}>
-            {renderActiveModule()}
-          </div>
-        ) : (
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 24px 0", animation: "fadeIn 0.4s ease" }}>
-            <div key={activeModule}>
-              {renderActiveModule()}
-            </div>
-          </div>
-        )}
-      </>
+      <div key={activeModule} style={{ animation: "fadeIn 0.4s ease" }}>
+        {renderActiveModule()}
+      </div>
     );
   };
 
@@ -331,54 +327,49 @@ function App() {
         />
       )}
       
-      {/* Guest nav — shown when browsing modules without an account */}
-      {!user && !showLanding && (
+      {/* Sidebar + main — logged-in layout */}
+      {user ? (
         <>
-          <GuestNav
-            onSignIn={() => setAuthModal('login')}
-            onJoin={() => setAuthModal('register')}
-            onHome={() => setShowLanding(true)}
+          <AppSidebar
+            activeModule={activeModule}
+            onNavigate={navigate}
+            user={user}
+            onLogout={logout}
+            memory={memory}
           />
-          <AppHubNav activeModule={activeModule} onNavigate={navigate} />
-        </>
-      )}
-
-      {/* App header — only shown when logged in */}
-      {user && (
-        <>
-          <nav className="lp-nav scrolled">
-            <button className="lp-nav-logo" onClick={() => navigate("jobs")}>
-              <LogoMark size={26} radius={7} />
-              CareerAiHub
-            </button>
-            <div className="lp-nav-r">
-              <button onClick={() => setDarkMode(d => !d)} title="Toggle light/dark mode" style={{ background: "transparent", border: `1px solid var(--lp-bdr2)`, color: "var(--lp-text2)", borderRadius: 6, padding: "4px 8px", fontSize: 13, cursor: "pointer", fontFamily: "inherit", lineHeight: 1 }}>
-                {darkMode ? "☀️" : "🌙"}
+          <div className="app-sidebar-layout">
+            {/* Thin top bar: ⌘K + dark mode toggle */}
+            <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--lp-bg)', borderBottom: '1px solid var(--lp-bdr)', padding: '0 20px', height: 44, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+              <button onClick={() => setDarkMode(d => !d)} title="Toggle theme" style={{ background: 'transparent', border: `1px solid var(--lp-bdr2)`, color: 'var(--lp-text2)', borderRadius: 6, padding: '3px 8px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', lineHeight: 1 }}>
+                {darkMode ? '☀️' : '🌙'}
               </button>
-              <button onClick={() => setCmdOpen(true)} title="Command palette (⌘K)" style={{ background: "transparent", border: `1px solid var(--lp-bdr2)`, color: "var(--lp-text2)", borderRadius: 6, padding: "4px 10px", fontSize: 11, cursor: "pointer", fontFamily: "inherit" }}>
+              <button onClick={() => setCmdOpen(true)} title="Command palette (⌘K)" style={{ background: 'transparent', border: `1px solid var(--lp-bdr2)`, color: 'var(--lp-text2)', borderRadius: 6, padding: '3px 10px', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>
                 ⌘K
               </button>
-              <UserMenu user={user} onLogout={logout} />
             </div>
-          </nav>
-          <AppHubNav activeModule={activeModule} onNavigate={navigate} />
+            {renderMainContent()}
+            <footer style={{ borderTop: `1px solid var(--lp-bdr)`, padding: '14px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+              <div style={{ color: 'var(--lp-text3)', fontSize: 11 }}>© 2026 CareerAiHub. All rights reserved.</div>
+              <div style={{ display: 'flex', gap: 16 }}>
+                <button onClick={() => navigate('privacy')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--lp-text3)', fontSize: 11, fontWeight: 600, fontFamily: 'inherit' }}>Privacy</button>
+                <button onClick={() => navigate('terms')} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--lp-text3)', fontSize: 11, fontWeight: 600, fontFamily: 'inherit' }}>Terms</button>
+                <a href="mailto:hello@careeraihub.com" style={{ color: 'var(--lp-text3)', fontSize: 11, textDecoration: 'none', fontWeight: 600 }}>Support</a>
+              </div>
+            </footer>
+          </div>
+        </>
+      ) : (
+        /* Guest / landing layout */
+        <>
+          {!showLanding && (
+            <>
+              <GuestNav onSignIn={() => setAuthModal('login')} onJoin={() => setAuthModal('register')} onHome={() => setShowLanding(true)} />
+              <AppHubNav activeModule={activeModule} onNavigate={navigate} />
+            </>
+          )}
+          {renderMainContent()}
         </>
       )}
-
-      {/* Main Content Area */}
-      {renderMainContent()}
-
-      {/* Trust Footer — only shown when logged in */}
-      {user && <footer style={{ marginTop: "auto", borderTop: `1px solid ${C.border}`, padding: "20px 24px", background: C.surface }}>
-        <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-          <div style={{ color: C.muted, fontSize: 11 }}>© 2026 CareerAiHub. All rights reserved.</div>
-          <div style={{ display: "flex", gap: 20 }}>
-            <button onClick={() => navigate("privacy")} style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Privacy Policy</button>
-            <button onClick={() => navigate("terms")} style={{ background: "transparent", border: "none", cursor: "pointer", color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Terms of Service</button>
-            <a href="mailto:hello@careeraihub.com" style={{ color: C.muted, fontSize: 11, textDecoration: "none", fontWeight: 600 }}>Support & Trust</a>
-          </div>
-        </div>
-      </footer>}
 
       {/* Toast Notification */}
       {toast && (

@@ -29,4 +29,8 @@ export const MODULES = [
   { id: "market",   icon: "🌏", label: "Market Intel",    color: C.muted    },
   { id: "memory",      icon: "🧬", label: "AI Memory",        color: C.purple   },
   { id: "trustmatch", icon: "",   label: "TrustMatch",       color: C.purple   },
+  { id: "dashboard",  icon: "⚡", label: "Dashboard",        color: C.accent   },
+  { id: "skillsgap",  icon: "📊", label: "Skills Gap",       color: C.pink     },
+  { id: "roadmap",    icon: "🗺️", label: "Career Roadmap",   color: C.purple   },
+  { id: "aichat",     icon: "🤖", label: "AI Coach",         color: C.green    },
 ];
