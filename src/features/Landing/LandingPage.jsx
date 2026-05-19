@@ -3689,6 +3689,11 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
 
     /* HERO CARD ANIMATION — ring → badges → match → TrustChat */
     ;(function(){
+      const timers=[];
+      const ST=(fn,ms)=>{const id=setTimeout(fn,ms);timers.push(()=>clearTimeout(id));return id;};
+      const SI=(fn,ms)=>{const id=setInterval(fn,ms);timers.push(()=>clearInterval(id));return id;};
+      cleanup.push(()=>timers.forEach(fn=>fn()));
+
       function runHeroAnim(){
         const ringArc=document.getElementById('hcRingArc');
         const scoreNum=document.getElementById('hcScoreNum');
@@ -3701,52 +3706,38 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
         const msgEl=document.getElementById('hcMsg');
         if(!ringArc)return;
 
-        // t=0: badge label fades in
         if(badge){badge.style.opacity='1';badge.style.transform='translateY(0)';}
 
-        // t=400: score ring animates (188.5 * (1-92/100) = 15.08)
-        setTimeout(()=>{
+        ST(()=>{
           ringArc.style.strokeDashoffset='15.08';
           let n=0;
-          const iv=setInterval(()=>{n=Math.min(n+2,92);if(scoreNum)scoreNum.textContent=n;if(n>=92){clearInterval(iv);if(scoreLbl)scoreLbl.textContent='Excellent';}},22);
+          SI(()=>{n=Math.min(n+2,92);if(scoreNum)scoreNum.textContent=n;if(n>=92){if(scoreLbl)scoreLbl.textContent='Excellent';}},22);
         },400);
 
-        // t=900–1450: 4 verification badges stagger in
         ['hcb0','hcb1','hcb2','hcb3'].forEach((id,i)=>{
-          setTimeout(()=>{
-            const el=document.getElementById(id);
-            if(el){el.style.opacity='1';el.style.transform='translateY(0)';}
-          },900+i*160);
+          ST(()=>{const el=document.getElementById(id);if(el){el.style.opacity='1';el.style.transform='translateY(0)';}},900+i*160);
         });
-        // t=1560: verification sources strip fades in
-        setTimeout(()=>{
-          const strip=document.getElementById('hcb4');
-          if(strip){strip.style.opacity='1';strip.style.transform='translateY(0)';}
-        },1560);
+        ST(()=>{const strip=document.getElementById('hcb4');if(strip){strip.style.opacity='1';strip.style.transform='translateY(0)';}},1560);
 
-        // t=1600: AI insight + match score slide up, bar animates
-        setTimeout(()=>{
+        ST(()=>{
           if(bottom){bottom.style.opacity='1';bottom.style.transform='translateY(0)';}
-          setTimeout(()=>{
+          ST(()=>{
             if(matchBar)matchBar.style.width='87%';
-            let m=0;const mv=setInterval(()=>{m=Math.min(m+2,87);if(matchNum)matchNum.textContent=m+'%';if(m>=87)clearInterval(mv);},18);
+            let m=0;SI(()=>{m=Math.min(m+2,87);if(matchNum)matchNum.textContent=m+'%';if(m>=87)clearInterval;},18);
           },200);
         },1600);
 
-        // t=2600: TrustChat notification slides up with typewriter message
-        setTimeout(()=>{
+        ST(()=>{
           if(trustChat){trustChat.style.opacity='1';trustChat.style.transform='translateY(0)';}
           if(msgEl){
+            msgEl.textContent='';
             const msg='Hi Marcus — I can see your ✓NUS · ✓AWS · ✓Singpass credentials and your VCS 92/100. Are you open to a quick call this Friday?';
             let i=0;
-            const tv=setInterval(()=>{
-              if(i<msg.length){msgEl.textContent+=msg[i];i++;}else clearInterval(tv);
-            },22);
+            SI(()=>{if(i<msg.length){msgEl.textContent+=msg[i];i++;}},22);
           }
         },2600);
       }
       runHeroAnim();
-  
     })();
 
     /* GA4 — consent-gated loader */
@@ -4302,7 +4293,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
       {/* NAV */}
       <nav>
         <a href="#" onClick={e => e.preventDefault()} className="nav-logo">
-          <div className="nav-logo-mark">C</div>
+          <LogoMark size={28} />
           <div>
             <div className="nav-logo-text">CareerAiHub</div>
             <div className="nav-logo-sub">Proof over claims.</div>
@@ -5205,7 +5196,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
             {/* Brand */}
             <div>
               <a href="#" style={{display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '16px'}}>
-                <div style={{width: '28px', height: '28px', borderRadius: '8px', background: 'var(--grad)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700', color: '#fff', flexShrink: '0'}}>C</div>
+                <LogoMark size={28} />
                 <div>
                   <div style={{fontWeight: '700', fontSize: '15px', color: 'var(--ink)', letterSpacing: '-.02em'}}>CareerAiHub</div>
                   <div style={{fontSize: '9px', color: 'var(--ink3)', fontFamily: '\'DM Mono\',monospace', letterSpacing: '.08em', textTransform: 'uppercase'}}>Proof over claims.</div>
