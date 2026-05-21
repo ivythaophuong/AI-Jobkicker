@@ -173,7 +173,7 @@ function App() {
     }
   }, []);
 
-  const loadProfile = useCallback(async (userObj, { fromLogin = false } = {}) => {
+  const loadProfile = useCallback(async (userObj, { fromLogin = false, isRecruiter: recruiter = false } = {}) => {
     try {
       const rows = await sb.select('profiles', { id: `eq.${userObj.id}` }, userObj.token);
       const p = rows?.[0];
@@ -186,7 +186,7 @@ function App() {
           market:   p.market   || prev.market,
           urgency:  p.urgency  || prev.urgency,
         }));
-        if (fromLogin && p.role) setSetupDone(true);
+        if (fromLogin && p.role && !recruiter) setSetupDone(true);
       }
       // fromLogin + no profile row = new user, leave setupDone=false → onboarding shows
     } catch {
@@ -208,7 +208,7 @@ function App() {
     setUser(newUser);
     setIsRecruiter(meta.role === 'recruiter');
     localStorage.setItem("supabase.auth.token", JSON.stringify({ currentSession: session }));
-    loadProfile(newUser, { fromLogin: true });
+    loadProfile(newUser, { fromLogin: true, isRecruiter: meta.role === 'recruiter' });
     setIsRestoring(true); // Trigger composite fetch
     setAuthModal(null);
     _setActiveModule('dashboard');
