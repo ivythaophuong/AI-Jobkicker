@@ -49,8 +49,9 @@ export default function HiringManagerSim({ resumeText, scanResult, form, memory,
     setFb(null);
     setError('');
 
-    const resumeContext = resumeText?.content
-      ? `\n\nCandidate's resume:\n${resumeText.content.slice(0, 3000)}`
+    const resumeStr = typeof resumeText === 'string' ? resumeText : resumeText?.content || '';
+    const resumeContext = resumeStr
+      ? `\n\nCandidate's resume:\n${resumeStr.slice(0, 3000)}`
       : '';
     const memoryContext = memory?.profile
       ? `\n\nCandidate profile from memory: ${JSON.stringify(memory.profile).slice(0, 800)}`
@@ -70,7 +71,7 @@ export default function HiringManagerSim({ resumeText, scanResult, form, memory,
       setFb(result);
       if (updateMemory) {
         updateMemory(
-          m => ({ mockSessions: [{ score: result.score, mode: archetype.id, date: new Date().toISOString() }, ...(m.mockSessions || [])].slice(-20) }),
+          m => ({ mockSessions: [{ score: result.score, mode: archetype.id, date: new Date().toISOString() }, ...(m.mockSessions || [])].slice(0, 20) }),
           { table: 'mock_sessions', data: { avg_score: result.score, questions_count: 1, mode: archetype.id } }
         );
       }

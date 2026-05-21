@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { C } from '../../styles/theme';
 import { Card, Btn, Spinner } from '../../components/CommonUI';
 import { callLLM, extractJSON } from '../../lib/ai';
+import { sb } from '../../lib/supabase';
 import { GetReadyTabStrip } from '../Landing/LandingPage';
 import '../../styles/featurePage.css';
 
@@ -26,7 +27,7 @@ function buildMemoryContext(mem, form) {
   return lines.length ? "\n\nUSER HISTORY CONTEXT:\n" + lines.join("\n") : "";
 }
 
-export default function MemoryDashboard({ memory, form, updateMemory, setActiveModule, onStudyPlan }) {
+export default function MemoryDashboard({ memory, form, user, updateMemory, setActiveModule, onStudyPlan, embedded }) {
   if (!memory) return <div style={{textAlign:"center",padding:40}}><Spinner label="Assembling AI memory bank..."/></div>;
 
   const [aiSummary, setAiSummary]   = useState(null);
@@ -42,20 +43,26 @@ export default function MemoryDashboard({ memory, form, updateMemory, setActiveM
       const raw = await callLLM([{role:"user", content:`Elite career coach. Based on comprehensive user history, generate a personalized career acceleration plan.${memCtx}
 
 Return ONLY raw JSON:
-{"overallProgress":"0-100 score based on activity","status":"Ready|Almost|Needs Work","topStrength":"best thing about their journey","biggestRisk":"most critical risk to landing the job","weeklyPlan":[{"day":"Mon","action":"..."},{"day":"Tue","action":"..."},{"day":"Wed","action":"..."},{"day":"Thu","action":"..."},{"day":"Fri","action":"..."}],"uniqueInsights":["insight1 specific to their data","insight2","insight3"],"predictedTimeline":"estimated weeks to get offer based on their activity pace","nextMilestone":"the single most important thing to do next"}`}], 1500,"memory");
+{"overallProgress":"0-100 score based on activity","status":"Ready|Almost|Needs Work","topStrength":"best thing about their journey","biggestRisk":"most critical risk to landing the job","weeklyPlan":[{"day":"Mon","action":"..."},{"day":"Tue","action":"..."},{"day":"Wed","action":"..."},{"day":"Thu","action":"..."},{"day":"Fri","action":"..."}],"uniqueInsights":["insight1 specific to their data","insight2","insight3"],"predictedTimeline":"estimated weeks to get offer based on their activity pace","nextMilestone":"the single most important thing to do next"}`}], 1500);
       setAiSummary(extractJSON(raw));
     } catch(e) { setAiSummary({error:e.message}); }
     setLoading(false);
   };
 
-  const clearMemory = () => {
+  const clearMemory = async () => {
+    setCleared(true);
+    setAiSummary(null);
     updateMemory(() => ({
-      scanHistory: [], starBank: [], mockSessions: [], applications: [], 
+      scanHistory: [], starBank: [], mockSessions: [], applications: [],
       rejections: [], negotiationPractice: 0, coverLetters: [], jdAnalyses: [],
       insights: [], totalSessions: 0, lastSeen: null, profile: {}, lastResume: null
     }));
-    setAiSummary(null);
-    setCleared(true);
+    if (user?.id && user?.token) {
+      const filter = { user_id: `eq.${user.id}` };
+      const tables = ['resume_scans', 'star_stories', 'mock_sessions', 'cover_letters',
+                      'jd_analyses', 'applications', 'negotiation_practice', 'insights'];
+      await Promise.allSettled(tables.map(t => sb.delete(t, filter, user.token)));
+    }
   };
 
   const statCards = [
@@ -74,7 +81,7 @@ Return ONLY raw JSON:
 
   return (
     <div className="fp-wrap" style={{display:"flex",flexDirection:"column",gap:0}}>
-      <GetReadyTabStrip activeModuleId="memory" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />
+      {!embedded && <GetReadyTabStrip activeModuleId="memory" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />}
       <div style={{display:"flex",flexDirection:"column",gap:16,padding:24}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div>

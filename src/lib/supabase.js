@@ -113,5 +113,17 @@ export const sb = {
       throw new Error(d.message || "Database insert failed.");
     }
     return r.json();
+  },
+
+  async delete(table, filters, token) {
+    const params = new URLSearchParams(filters || {});
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {
+      method: "DELETE",
+      headers: { ...sb._h(), "Authorization": `Bearer ${token}` }
+    });
+    if (r.status >= 400) {
+      const d = await r.json();
+      throw new Error(d.message || "Database delete failed.");
+    }
   }
 };

@@ -246,6 +246,199 @@ function deriveProgBars(result) {
   return { bullet, metrics, ownership };
 }
 
+// ── ATS Scanner main view (matches reference: no tabs, left card + right results) ──
+function JDMatchTab({ resumeText, form, setActiveModule, updateMemory }) {
+  const [jd, setJd]           = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult]   = useState(null);
+
+  const resumeCtx = resumeText
+    ? (typeof resumeText === 'string' ? resumeText : resumeText.content || '') : '';
+
+  const scan = async () => {
+    if (!jd.trim()) return;
+    setLoading(true); setResult(null);
+    try {
+      const raw = await callLLM([{ role: 'user', content:
+        `Compare this resume against the job description and return a match analysis.
+Resume:
+${resumeCtx.slice(0, 3000) || 'No resume provided — infer from context.'}
+
+Job Description:
+${jd.slice(0, 2000)}
+
+Return ONLY raw JSON (no markdown, start with {):
+{
+  "matchScore": 0-100,
+  "roleTitle": "job title from the JD",
+  "company": "company name from the JD or empty string",
+  "verdict": "one phrase like Good match — 3 critical gaps to fix",
+  "bars": [
+    {"label":"Keywords matched","score":0-100},
+    {"label":"Skills alignment","score":0-100},
+    {"label":"Format score","score":0-100}
+  ],
+  "missingKeywords": ["keyword1","keyword2","keyword3","keyword4","keyword5","keyword6","keyword7"],
+  "aiInsight": "2-sentence specific advice about the biggest gap and estimated score improvement after rewrite"
+}` }], 800);
+      const parsed = extractJSON(raw);
+      if (!parsed.error) {
+        setResult(parsed);
+        if (updateMemory) {
+          updateMemory(
+            m => ({ jdAnalyses: [{ date: new Date().toISOString(), roleTitle: parsed.roleTitle, matchScore: parsed.matchScore }, ...(m.jdAnalyses || [])].slice(0, 20) }),
+            { table: 'jd_analyses', data: { role_title: parsed.roleTitle || form?.role || '', company: parsed.company || '', match_score: parsed.matchScore, keywords: parsed.bars || [], gaps: parsed.missingKeywords || [], advice: parsed.aiInsight || '' } }
+          );
+        }
+      }
+    } catch { /* silent */ }
+    setLoading(false);
+  };
+
+  const scoreColor = result
+    ? result.matchScore >= 80 ? '#00E5A0' : result.matchScore >= 60 ? '#FFB84D' : '#FF5A5A'
+    : '#00D4FF';
+
+  const barColor = (score) => score >= 80 ? '#00E5A0' : score >= 60 ? '#FFB84D' : '#FF5A5A';
+
+  return (
+    <div style={{ padding: '24px 28px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
+
+      {/* ── Left: JD input card ── */}
+      <div style={{
+        background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 12,
+        padding: 20, display: 'flex', flexDirection: 'column', gap: 14,
+      }}>
+        <div style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--lp-text3)' }}>
+          Job Description
+        </div>
+
+        {!resumeCtx && (
+          <div style={{ fontSize: 11, color: 'var(--lp-text3)', fontStyle: 'italic' }}>
+            No resume uploaded — score will be estimated.{' '}
+            <button onClick={() => setActiveModule?.('ats')} style={{ background: 'none', border: 'none', color: 'var(--lp-teal)', cursor: 'pointer', fontWeight: 700, fontSize: 11, padding: 0, fontFamily: 'inherit' }}>
+              Upload in Resume Builder →
+            </button>
+          </div>
+        )}
+
+        <textarea
+          value={jd} onChange={e => setJd(e.target.value)}
+          placeholder={`Paste the full job description here...\ne.g. We are looking for a Senior Product Manager at Grab Singapore with 5+ years experience in fintech...`}
+          style={{
+            width: '100%', minHeight: 260, background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)',
+            borderRadius: 10, color: 'var(--lp-text)', padding: '12px 14px',
+            fontSize: 13, outline: 'none', lineHeight: 1.6, resize: 'vertical', boxSizing: 'border-box',
+          }}
+        />
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={scan} disabled={loading || !jd.trim()} style={{
+            flex: 1, padding: '12px 0',
+            background: loading || !jd.trim() ? 'var(--lp-bdr)' : 'var(--lp-teal)',
+            color: loading || !jd.trim() ? 'var(--lp-text3)' : '#000',
+            border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800,
+            cursor: loading || !jd.trim() ? 'default' : 'pointer', transition: 'all .15s',
+          }}>
+            {loading ? 'Scanning…' : 'Scan now →'}
+          </button>
+          <button onClick={() => setActiveModule?.('cover')} style={{
+            padding: '12px 16px', background: 'transparent', border: '1px solid var(--lp-bdr)',
+            color: 'var(--lp-text2)', borderRadius: 8, fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', whiteSpace: 'nowrap',
+          }}>
+            Generate cover letter →
+          </button>
+        </div>
+      </div>
+
+      {/* ── Right: results panel ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+        {/* Empty / loading state */}
+        {!result && !loading && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 320, color: 'var(--lp-text3)', gap: 12, opacity: .45 }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <div style={{ fontSize: 13 }}>Paste a JD and click Scan now</div>
+          </div>
+        )}
+
+        {loading && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 200, gap: 12 }}>
+            <OrbitSpinner size={40} />
+            <div style={{ color: 'var(--lp-text3)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>Analyzing match…</div>
+          </div>
+        )}
+
+        {result && (
+          <>
+            {/* Match score card */}
+            <div style={{ background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 12, padding: '20px 24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <div style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--lp-text3)' }}>Match score</div>
+                {(result.company || form?.role) && (
+                  <div style={{ background: scoreColor + '18', border: `1px solid ${scoreColor}33`, borderRadius: 20, padding: '3px 10px', fontSize: 10, fontWeight: 700, color: scoreColor }}>
+                    {result.company || form?.market} · {result.roleTitle || form?.role}
+                  </div>
+                )}
+              </div>
+              <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
+                <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 52, fontWeight: 900, color: scoreColor, lineHeight: 1 }}>
+                  {result.matchScore}<span style={{ fontSize: 20, color: 'var(--lp-text3)', fontWeight: 500 }}>/100</span>
+                </div>
+                <div style={{ fontSize: 12.5, color: 'var(--lp-text2)', marginTop: 6 }}>{result.verdict}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {(result.bars || []).map((b, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ fontSize: 12, color: 'var(--lp-text2)', width: 140, flexShrink: 0 }}>{b.label}</div>
+                    <div style={{ flex: 1, height: 6, background: 'var(--lp-bg2)', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${b.score}%`, background: barColor(b.score), borderRadius: 3, transition: 'width .6s' }} />
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: barColor(b.score), width: 24, textAlign: 'right', flexShrink: 0 }}>{b.score}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Missing keywords card */}
+            <div style={{ background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 12, padding: '16px 20px' }}>
+              <div style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--lp-text3)', marginBottom: 10 }}>Missing keywords</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+                {(result.missingKeywords || []).map((kw, i) => (
+                  <span key={i} style={{
+                    background: 'rgba(255,90,90,.1)', border: '1px solid rgba(255,90,90,.25)',
+                    color: '#FF5A5A', borderRadius: 5, padding: '3px 9px', fontSize: 11, fontWeight: 600,
+                  }}>{kw}</span>
+                ))}
+              </div>
+              <button onClick={() => setActiveModule?.('ats')} style={{
+                width: '100%', padding: '10px 0', background: 'var(--lp-bg2)',
+                border: '1px solid var(--lp-bdr)', borderRadius: 8,
+                color: 'var(--lp-text2)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              }}>
+                Rewrite bullets with these keywords →
+              </button>
+            </div>
+
+            {/* AI bubble */}
+            <div style={{
+              background: 'rgba(0,212,255,.04)', border: '1px solid rgba(0,212,255,.18)',
+              borderLeft: '4px solid var(--lp-teal)', borderRadius: 10,
+              padding: '14px 16px', display: 'flex', gap: 12,
+            }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg,#00D4FF,#B026FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, color: '#000', flexShrink: 0 }}>AI</div>
+              <div style={{ fontSize: 12.5, color: 'var(--lp-text)', lineHeight: 1.65 }}>{result.aiInsight}</div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function ResumeScan({ resumeText, setResumeText, scanResult, setScanResult, form, memory, updateMemory, setActiveModule }) {
@@ -381,10 +574,20 @@ export default function ResumeScan({ resumeText, setResumeText, scanResult, setS
     }
   };
 
-  // Determine center panel state
-  const centerState = scanning ? 'scanning' : scanResult ? 'results' : 'idle';
-
   return (
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <div style={{ padding: '18px 28px 16px', borderBottom: '1px solid var(--lp-bdr)' }}>
+        <div style={{ color: 'var(--lp-text)', fontWeight: 900, fontSize: 22, marginBottom: 2 }}>ATS Scanner</div>
+        <div style={{ color: 'var(--lp-text3)', fontSize: 13 }}>
+          Paste any job description and get your match score in seconds, with AI fixes applied instantly.
+        </div>
+      </div>
+
+      <JDMatchTab resumeText={resumeText} form={form} setActiveModule={setActiveModule} updateMemory={updateMemory} />
+
+      {/* Deep Scan legacy — kept for reference only, not rendered */}
+      {false && (
     <div className="rs-wrap">
 
       {/* ── LEFT PANEL ── */}
@@ -723,6 +926,8 @@ export default function ResumeScan({ resumeText, setResumeText, scanResult, setS
         </div>
       </div>
 
+    </div>
+      )}
     </div>
   );
 }

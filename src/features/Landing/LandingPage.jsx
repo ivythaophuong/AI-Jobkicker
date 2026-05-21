@@ -2801,8 +2801,8 @@ function DataProtectedSection({ onPrivacy, onTerms }) {
       <div className="lp-trust-links reveal d2">
         <button className="lp-trust-link" onClick={onPrivacy}>Privacy Policy ↗</button>
         <button className="lp-trust-link" onClick={onTerms}>Terms of Service ↗</button>
-        <span className="lp-trust-link">Security Statement ↗</span>
-        <span className="lp-trust-link">Data Deletion Request ↗</span>
+        <button className="lp-trust-link" onClick={() => fnRef.current.openLegal?.('security')}>Security Statement ↗</button>
+        <button className="lp-trust-link" onClick={() => fnRef.current.openLegal?.('deletion')}>Data Deletion Request ↗</button>
       </div>
     </section>
   );
@@ -4333,9 +4333,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
         </div>
         <div className="wrap" style={{display: 'contents'}}>
           <div className="hero-copy" style={{paddingLeft: '48px'}} id="hero-copy">
-            <div className="hero-badge"><span className="hero-badge-dot"></span>The Trust Infrastructure for Hiring</div>
-            <h1 className="hero-h1">Hiring Beyond<br /><span className="accent">Resumes.</span></h1>
-            <p className="hero-sub">CareerAiHub helps candidates prove real skills and helps recruiters hire with verified trust signals — <strong>not keyword spam.</strong></p>
+            <h1 className="hero-h1">Land the Role<br /><span className="accent">You've Earned.</span></h1>
             <div className="hero-actions">
               <button className="btn-hero" onClick={() => setAuthModal("register")}>Get Early Access →</button>
               <button className="btn-watch" onClick={() => fnRef.current.openATSDemo?.()}><span className="btn-watch-ic">▶</span> Watch Demo</button>
@@ -4371,8 +4369,8 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
                   {/* Animated score ring */}
                   <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flexShrink: '0'}}>
                     <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', color: 'var(--ink3)', letterSpacing: '.04em'}}>Verification Clarity Score</div>
-                    <div style={{position: 'relative', width: '72px', height: '72px'}}>
-                      <svg viewBox="0 0 72 72" width="72" height="72" style={{position: 'absolute', top: '0', left: '0'}}>
+                    <div style={{position: 'relative', width: '60px', height: '60px'}}>
+                      <svg viewBox="0 0 72 72" width="60" height="60" style={{position: 'absolute', top: '0', left: '0'}}>
                         <circle cx="36" cy="36" r="30" fill="none" stroke="var(--surf2)" strokeWidth="5"/>
                         <circle cx="36" cy="36" r="30" fill="none" stroke="var(--c1)" strokeWidth="5"
                           strokeDasharray="188.5" strokeDashoffset="188.5"
@@ -4380,7 +4378,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
                           id="hcRingArc" style={{transition: 'stroke-dashoffset 2s cubic-bezier(.22,1,.36,1)'}}/>
                       </svg>
                       <div style={{position: 'absolute', inset: '0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
-                        <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '18px', fontWeight: '700', color: 'var(--ink)', lineHeight: '1'}} id="hcScoreNum">0</div>
+                        <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '16px', fontWeight: '700', color: 'var(--ink)', lineHeight: '1'}} id="hcScoreNum">0</div>
                         <div style={{fontSize: '8px', color: 'var(--ink3)', fontFamily: '\'DM Mono\',monospace'}}>VCS</div>
                       </div>
                     </div>
@@ -4389,7 +4387,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
                 </div>
 
                 {/* Verification badges — stagger in */}
-                <div className="tc-verified" style={{marginTop: '4px'}}>
+                <div className="tc-verified" style={{marginTop: '2px'}}>
                   <div className="tc-verified-title">Verification Clarity Breakdown</div>
                   <div className="tc-proof-grid">
                     <div className="tc-proof-item" id="hcb0" style={{opacity: '0', transform: 'translateY(8px)', transition: 'opacity .45s,transform .45s'}}>
@@ -4406,7 +4404,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
                     </div>
                   </div>
                   {/* Verification sources strip */}
-                  <div id="hcb4" style={{display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px', opacity: '0', transform: 'translateY(6px)', transition: 'opacity .45s .55s,transform .45s .55s'}}>
+                  <div id="hcb4" style={{display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px', opacity: '0', transform: 'translateY(6px)', transition: 'opacity .45s .55s,transform .45s .55s'}}>
                     <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.18)'}}>🇸🇬 Singpass</span>
                     <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.18)'}}>🎓 OpenCerts</span>
                     <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(139,130,240,.07)', color: 'var(--c2)', border: '1px solid rgba(139,130,240,.18)'}}>🏅 Credly</span>
@@ -4720,7 +4718,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
             <div className="scard">
               <div className="deck-wrap">
                 <div className="deck-steps" id="ds1"></div>
-                <div className="deck-stack v-stack" id="dk1"></div>
+                <div className="deck-stack h-stack" id="dk1"></div>
                 <div className="deck-progress" id="dh1">
                 <div className="deck-progress-track" id="dptrack1"><div className="deck-progress-fill" id="dpfill1"></div></div>
                 <div className="deck-progress-label"><span id="dplbl1">Step 1 / 4</span><span>click card or use arrows</span></div>
@@ -5172,10 +5170,10 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
         <div className="wrap" style={{position: 'relative', zIndex: '1'}}>
           <div className="fcta-pre">The future of hiring</div>
           <h2 className="fcta-h">The future of hiring is<br /><span className="proof">proof,</span> <span className="not">not</span> keywords.</h2>
-          <p className="fcta-sub">CareerAiHub is building the trust infrastructure for modern hiring. Join 2,714 verified candidates and forward-thinking companies already on the platform.</p>
+          <p className="fcta-sub">AI-powered career acceleration for the modern job seeker. Join 2,714 verified candidates and forward-thinking companies already on the platform.</p>
           <div className="fcta-actions">
             <button className="btn-fcta" onClick={() => setAuthModal("register")}>Get Early Access →</button>
-            <a href="#" className="btn-fcta2">Request Recruiter Access ↗</a>
+            <a href="#for-recruiters" className="btn-fcta2">Request Recruiter Access ↗</a>
           </div>
           <div className="fcta-note">Free forever · No card required · 10 AI modules unlocked instantly</div>
         </div>
@@ -5202,7 +5200,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
                   <div style={{fontSize: '9px', color: 'var(--ink3)', fontFamily: '\'DM Mono\',monospace', letterSpacing: '.08em', textTransform: 'uppercase'}}>Proof over claims.</div>
                 </div>
               </a>
-              <p style={{fontSize: '12.5px', color: 'var(--ink3)', lineHeight: '1.7', maxWidth: '240px', fontWeight: '300'}}>The trust infrastructure for modern hiring. Built in Singapore.</p>
+              <p style={{fontSize: '12.5px', color: 'var(--ink3)', lineHeight: '1.7', maxWidth: '240px', fontWeight: '300'}}>AI-powered career acceleration. Built in Singapore.</p>
               <div style={{display: 'flex', gap: '10px', marginTop: '18px'}}>
                 <a href="#" style={{width: '30px', height: '30px', borderRadius: '8px', border: '1px solid var(--border2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', textDecoration: 'none', color: 'var(--ink3)', transition: '.2s'}} title="LinkedIn">in</a>
                 <a href="#" style={{width: '30px', height: '30px', borderRadius: '8px', border: '1px solid var(--border2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', textDecoration: 'none', color: 'var(--ink3)', transition: '.2s'}} title="X/Twitter">𝕏</a>
@@ -5310,7 +5308,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
       {/* COOKIE BANNER */}
       <div id="cookieBanner" style={{position: 'fixed', bottom: '0', left: '0', right: '0', zIndex: '9000', background: 'rgba(12,14,26,.97)', borderTop: '1px solid var(--border2)', backdropFilter: 'blur(12px)', padding: '14px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', transform: 'translateY(100%)', transition: 'transform .38s cubic-bezier(.22,1,.36,1)'}}>
         <div style={{flex: '1', minWidth: '220px', display: 'flex', alignItems: 'center', gap: '12px'}}>
-          <span style={{fontSize: '18px'}}>🍪</span>
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--g1,#00D4FF)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M8 1L2 4v4c0 3.5 2.7 6.2 6 7 3.3-.8 6-3.5 6-7V4L8 1z"/><path d="M5.5 8l2 2 3-3"/></svg>
           <div>
             <div style={{fontSize: '13px', color: 'var(--ink)', lineHeight: '1.5', fontWeight: '300'}}>We use cookies to improve your experience and analyze platform usage. <strong style={{fontWeight: '500', color: 'var(--ink)'}}>Your resume data is encrypted and never sold.</strong> <a href="#privacy" onClick={() => fnRef.current.hideCookieBanner?.()} style={{color: 'var(--g1)', textDecoration: 'none'}}>Privacy Policy →</a></div>
           </div>

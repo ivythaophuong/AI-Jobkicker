@@ -15,22 +15,42 @@ function AiBubble({ children }) {
   );
 }
 
+const STATUS_META = {
+  strong:      { color: '#00E5A0', label: 'Strong'      },
+  good:        { color: '#00E5A0', label: 'Good'        },
+  developing:  { color: '#F5B340', label: 'Developing'  },
+  'best signal': { color: '#F5B340', label: 'Best signal' },
+  gap:         { color: '#FF6B6B', label: 'Gap'         },
+};
+
+const LEVEL_PCT = { strong: 90, good: 70, basic: 35, missing: 0 };
+
 function SkillRow({ name, yourLevel, marketDemand, status, cta, onCta }) {
-  const color = status === 'strong' ? '#00E5A0' : status === 'gap' ? '#FF6B6B' : '#F5B340';
-  const label = status === 'strong' ? 'Strong' : status === 'gap' ? 'Gap' : 'Developing';
+  const meta   = STATUS_META[status] || STATUS_META.developing;
+  const youPct = LEVEL_PCT[yourLevel] ?? 50;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--lp-bdr)' }}>
-      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--lp-text)', width: 160, flexShrink: 0 }}>{name}</div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 0', borderBottom: '1px solid var(--lp-bdr)' }}>
+      <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--lp-text)', width: 150, flexShrink: 0 }}>{name}</div>
       <div style={{ flex: 1 }}>
-        <div style={{ height: 5, background: 'var(--lp-bg4, #1A2540)', borderRadius: 3, overflow: 'hidden', marginBottom: 3 }}>
-          <div style={{ height: '100%', width: `${marketDemand}%`, background: color, borderRadius: 3 }} />
+        {/* You bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+          <span style={{ fontSize: 9, color: 'var(--lp-text3)', width: 58, flexShrink: 0, fontFamily: 'var(--lp-ffm)' }}>You: {yourLevel}</span>
+          <div style={{ flex: 1, height: 4, background: 'var(--lp-bg4,#1A2540)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${youPct}%`, background: meta.color, borderRadius: 2, transition: 'width .5s' }} />
+          </div>
         </div>
-        <div style={{ fontSize: 10, color: 'var(--lp-text3)', fontFamily: 'var(--lp-ffm)' }}>
-          You: {yourLevel} · Market demand: {marketDemand}%
+        {/* Market bar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 9, color: 'var(--lp-text3)', width: 58, flexShrink: 0, fontFamily: 'var(--lp-ffm)' }}>Market: {marketDemand}%</span>
+          <div style={{ flex: 1, height: 4, background: 'var(--lp-bg4,#1A2540)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${marketDemand}%`, background: 'rgba(255,255,255,.12)', borderRadius: 2 }} />
+          </div>
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: color + '18', color, border: `1px solid ${color}33`, fontFamily: 'var(--lp-ffm)' }}>{label}</span>
+        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: meta.color + '18', color: meta.color, border: `1px solid ${meta.color}33`, fontFamily: 'var(--lp-ffm)', whiteSpace: 'nowrap' }}>
+          {meta.label}
+        </span>
         {cta && (
           <button onClick={onCta} style={{ fontSize: 11, background: 'transparent', border: '1px solid var(--lp-bdr2)', color: 'var(--lp-teal)', borderRadius: 6, padding: '3px 9px', cursor: 'pointer', fontFamily: 'var(--lp-ff)', fontWeight: 600 }}>Fix →</button>
         )}
@@ -155,17 +175,17 @@ Include 6-9 skills. Be specific to their actual profile.` }], 1500);
               <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 10, padding: '16px 18px' }}>
                 <SectionLabel>Recommended next steps</SectionLabel>
                 {(result.recommendations || []).map((r, i) => {
-                  const borderColor = r.priority === 'high' ? '#FF6B6B44' : '#F5B34044';
+                  const accent = r.priority === 'high' ? '#FF6B6B' : '#F5B340';
+                  const ctaLabel = r.module === 'simulate' || r.module === 'star' ? 'Practice →' : 'Fix →';
                   return (
-                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: 10, background: 'var(--lp-bg3)', borderRadius: 8, border: `1px solid ${borderColor}`, marginBottom: 8 }}>
-                      <div style={{ fontSize: 18 }}>{r.priority === 'high' ? '🔴' : '🟡'}</div>
+                    <div key={i} style={{ padding: '10px 12px', background: 'var(--lp-bg3)', borderRadius: 8, border: '1px solid var(--lp-bdr)', borderLeft: `3px solid ${accent}`, marginBottom: 8, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--lp-text)', marginBottom: 2 }}>{r.title}</div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--lp-text)', marginBottom: 3 }}>{r.title}</div>
                         <div style={{ fontSize: 12, color: 'var(--lp-text2)', lineHeight: 1.5 }}>{r.detail}</div>
                       </div>
                       {r.module && (
                         <button onClick={() => setActiveModule(r.module)} style={{ fontSize: 11, background: 'transparent', border: '1px solid var(--lp-bdr2)', color: 'var(--lp-teal)', borderRadius: 6, padding: '3px 9px', cursor: 'pointer', fontFamily: 'var(--lp-ff)', fontWeight: 600, flexShrink: 0 }}>
-                          Fix →
+                          {ctaLabel}
                         </button>
                       )}
                     </div>

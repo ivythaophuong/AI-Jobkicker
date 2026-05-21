@@ -5,7 +5,7 @@ import { callLLM, extractJSON } from '../../lib/ai.jsx';
 import { GetReadyTabStrip } from '../Landing/LandingPage';
 import '../../styles/featurePage.css';
 
-export default function STARBuilder({ resumeText, form, memory, updateMemory, setActiveModule, onStudyPlan, showToast }) {
+export default function STARBuilder({ resumeText, form, memory, updateMemory, setActiveModule, onStudyPlan, showToast, embedded }) {
   const [S, setS] = useState(""); const [T, setT] = useState(""); const [A, setA] = useState(""); const [R, setR] = useState("");
   const [refined, setRefined] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ Be specific — use the candidate's actual content. Add plausible metrics if the
       setRefined(p);
       const story = { id: Date.now(), bankAs: p.bankAs || p.oneLiner?.slice(0, 40), oneLiner: p.oneLiner, score: p.score, situation: S, refined: p.refined, date: new Date().toISOString() };
       if (updateMemory) updateMemory(
-        m => ({ starBank: [story, ...(m.starBank || [])].slice(-20) }),
+        m => ({ starBank: [story, ...(m.starBank || [])].slice(0, 20) }),
         { table: 'star_stories', data: { one_liner: story.oneLiner, score: p.score, situation: S, task: T, action: A, result: R, refined: p.refined } }
       );
     } catch (e) {
@@ -59,7 +59,7 @@ Be specific — use the candidate's actual content. Add plausible metrics if the
 
   return (
     <div className="fp-wrap" style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      <GetReadyTabStrip activeModuleId="star" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />
+      {!embedded && <GetReadyTabStrip activeModuleId="star" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />}
       <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 24 }}>
 
         <div>

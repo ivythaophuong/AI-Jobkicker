@@ -1,64 +1,90 @@
 import React from 'react';
 import { LogoMark } from '../features/Landing/LandingPage';
 
+// ── SVG icon set — 16×16 viewBox, stroke-based ───────────────────────────────
+function Icon({ id, size = 15, color = 'currentColor' }) {
+  const s = { width: size, height: size, display: 'block', flexShrink: 0 };
+  const p = { fill: 'none', stroke: color, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  switch (id) {
+    case 'dashboard':
+      return <svg viewBox="0 0 16 16" style={s}><rect {...p} x="1" y="1" width="6" height="6" rx="1.2"/><rect {...p} x="9" y="1" width="6" height="6" rx="1.2"/><rect {...p} x="1" y="9" width="6" height="6" rx="1.2"/><rect {...p} x="9" y="9" width="6" height="6" rx="1.2"/></svg>;
+    case 'ats':
+      return <svg viewBox="0 0 16 16" style={s}><path {...p} d="M3 2h7l3 3v9H3V2z"/><path {...p} d="M10 2v3h3"/><path {...p} d="M5 7h6M5 10h4"/></svg>;
+    case 'scan':
+      return <svg viewBox="0 0 16 16" style={s}><path {...p} d="M1 5V3a2 2 0 012-2h2M11 1h2a2 2 0 012 2v2M15 11v2a2 2 0 01-2 2h-2M5 15H3a2 2 0 01-2-2v-2"/><circle {...p} cx="8" cy="8" r="2.5"/></svg>;
+    case 'cover':
+      return <svg viewBox="0 0 16 16" style={s}><rect {...p} x="1" y="3" width="14" height="10" rx="1.5"/><path {...p} d="M1 5l7 5 7-5"/></svg>;
+    case 'simulate':
+      return <svg viewBox="0 0 16 16" style={s}><circle {...p} cx="8" cy="8" r="6.5"/><path {...p} d="M5.5 6c0-1.1.9-2 2.5-2s2.5.9 2.5 2c0 1.5-2.5 2-2.5 3.5"/><circle fill={color} stroke="none" cx="8" cy="12" r=".8"/></svg>;
+    case 'salary':
+      return <svg viewBox="0 0 16 16" style={s}><circle {...p} cx="8" cy="8" r="6.5"/><path {...p} d="M8 4.5v7M6 6.5c0-.9.9-1.5 2-1.5s2 .7 2 1.5S9 8 8 8s-2 .6-2 1.5S6.9 11 8 11s2-.6 2-1.5"/></svg>;
+    case 'skillsgap':
+      return <svg viewBox="0 0 16 16" style={s}><path {...p} d="M1 13l4-5 3 3 3-4 4-3"/><circle {...p} cx="1" cy="13" r=".8"/></svg>;
+    case 'roadmap':
+      return <svg viewBox="0 0 16 16" style={s}><circle {...p} cx="3" cy="13" r="1.5"/><circle {...p} cx="8" cy="3" r="1.5"/><circle {...p} cx="13" cy="9" r="1.5"/><path {...p} d="M3 11.5V7l5-3.5M8 4.5l5 4"/></svg>;
+    case 'verify':
+      return <svg viewBox="0 0 16 16" style={s}><path {...p} d="M8 1L2 4v4c0 3.5 2.7 6.2 6 7 3.3-.8 6-3.5 6-7V4L8 1z"/><path {...p} d="M5.5 8l2 2 3-3"/></svg>;
+    case 'trustmatch':
+      return <svg viewBox="0 0 16 16" style={s}><path {...p} d="M5 8.5C5 7.1 6.1 6 7.5 6S10 7.1 10 8.5V10H5V8.5z"/><path {...p} d="M1 14v-1.5C1 11.1 2.3 10 4 10M15 14v-1.5C15 11.1 13.7 10 12 10M4 7.5A2 2 0 104 3.5M12 7.5A2 2 0 1012 3.5"/></svg>;
+    case 'aichat':
+      return <svg viewBox="0 0 16 16" style={s}><rect {...p} x="1" y="2" width="14" height="9" rx="2"/><path {...p} d="M4 14l2-3M12 14l-2-3"/><path {...p} d="M5 6.5h6M5 8.5h4"/></svg>;
+    default:
+      return <svg viewBox="0 0 16 16" style={s}><circle {...p} cx="8" cy="8" r="6"/></svg>;
+  }
+}
+
 const NAV_GROUPS = [
   {
     label: null,
     items: [
-      { id: 'dashboard', icon: '⚡', label: 'Dashboard', badge: null },
+      { id: 'dashboard', label: 'Dashboard',     badge: null      },
     ],
   },
   {
-    label: 'Layer 01 · Get Seen',
+    label: 'Get Seen',
     items: [
-      { id: 'scan',  icon: '⚡', label: 'Resume Scan',   badge: 'live' },
-      { id: 'ats',   icon: '✨', label: 'ATS Builder',   badge: 'live' },
-      { id: 'cover', icon: '✉️', label: 'Cover Letter',  badge: 'live' },
+      { id: 'ats',   label: 'Resume Builder',  badge: 'live' },
+      { id: 'scan',  label: 'ATS Scanner',     badge: 'live' },
+      { id: 'cover', label: 'Cover Letter AI', badge: 'new'  },
     ],
   },
   {
-    label: 'Layer 02 · Get Ready',
+    label: 'Get Ready',
     items: [
-      { id: 'simulate', icon: '🧠', label: 'Interview Coach', badge: 'live' },
-      { id: 'star',     icon: '⭐', label: 'STAR Builder',    badge: 'live' },
-      { id: 'salary',   icon: '💰', label: 'Salary Coach',    badge: 'live' },
-      { id: 'radar',    icon: '📡', label: 'Weakness Radar',  badge: 'live' },
-      { id: 'score',    icon: '🏆', label: 'Readiness Score', badge: 'live' },
-      { id: 'skillsgap',icon: '📊', label: 'Skills Gap',      badge: 'new'  },
-      { id: 'roadmap',  icon: '🗺️', label: 'Career Roadmap',  badge: 'new'  },
+      { id: 'simulate',  label: 'Interview Coach', badge: 'live' },
+      { id: 'salary',    label: 'Salary Prep',     badge: 'live' },
+      { id: 'skillsgap', label: 'Skills Gap',      badge: 'new'  },
+      { id: 'roadmap',   label: 'Career Roadmap',  badge: 'new'  },
     ],
   },
   {
-    label: 'Layer 03 · Get Verified',
+    label: 'Get Verified',
     items: [
-      { id: 'trustmatch', icon: '🛡️', label: 'Trust & Verify', badge: 'dev' },
+      { id: 'verify', label: 'Verify Creds', badge: 'dev' },
     ],
   },
   {
-    label: 'Layer 04 · Get Matched',
+    label: 'Get Matched',
     items: [
-      { id: 'jobs',   icon: '🔎', label: 'Job Search',   badge: 'live' },
-      { id: 'jd',     icon: '🔍', label: 'JD Analyzer',  badge: 'live' },
-      { id: 'market', icon: '🌏', label: 'Market Intel',  badge: 'live' },
-      { id: 'memory', icon: '🧬', label: 'AI Memory',     badge: 'live' },
-      { id: 'aichat', icon: '🤖', label: 'AI Coach',      badge: 'new'  },
+      { id: 'trustmatch', label: 'TrustMatch',     badge: 'planned' },
+      { id: 'aichat',     label: 'AI Career Coach', badge: 'new'    },
     ],
   },
 ];
 
-const BADGE_CLASS = { live: 'snb-live', new: 'snb-new', dev: 'snb-dev', planned: 'snb-planned' };
-const BADGE_LABEL = { live: 'Live', new: 'New', dev: 'In dev', planned: 'Planned' };
+const BADGE_CLASS  = { live: 'snb-live', new: 'snb-new', dev: 'snb-dev', planned: 'snb-planned' };
+const BADGE_LABEL  = { live: 'Live', new: 'New', dev: 'In dev', planned: 'Planned' };
 
-// Mobile: only show the 5 most important items in bottom bar
-const MOBILE_ITEMS = ['dashboard', 'scan', 'simulate', 'jobs', 'aichat'];
+const INTERVIEW_COACH_IDS = ['simulate', 'star', 'radar', 'score', 'memory'];
+const MOBILE_ITEMS        = ['dashboard', 'scan', 'simulate', 'trustmatch', 'aichat'];
 
 function initials(name) {
   if (!name) return 'U';
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
-export default function AppSidebar({ activeModule, onNavigate, user, onLogout, memory }) {
-  const allItems = NAV_GROUPS.flatMap(g => g.items);
+export default function AppSidebar({ activeModule, onNavigate, user, onLogout }) {
+  const allItems   = NAV_GROUPS.flatMap(g => g.items);
   const mobileItems = allItems.filter(i => MOBILE_ITEMS.includes(i.id));
 
   return (
@@ -78,21 +104,26 @@ export default function AppSidebar({ activeModule, onNavigate, user, onLogout, m
               {group.label && (
                 <div className="app-sidebar-sep">{group.label}</div>
               )}
-              {group.items.map(item => (
-                <button
-                  key={item.id}
-                  className={`app-sidebar-item${activeModule === item.id ? ' active' : ''}`}
-                  onClick={() => onNavigate(item.id)}
-                >
-                  <span className="app-sidebar-icon">{item.icon}</span>
-                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
-                  {item.badge && (
-                    <span className={`app-sidebar-badge ${BADGE_CLASS[item.badge] || ''}`}>
-                      {BADGE_LABEL[item.badge]}
+              {group.items.map(item => {
+                const active = activeModule === item.id || (item.id === 'simulate' && INTERVIEW_COACH_IDS.includes(activeModule));
+                return (
+                  <button
+                    key={item.id}
+                    className={`app-sidebar-item${active ? ' active' : ''}`}
+                    onClick={() => onNavigate(item.id)}
+                  >
+                    <span className="app-sidebar-icon">
+                      <Icon id={item.id} size={15} color={active ? 'var(--lp-teal)' : 'var(--lp-text3)'} />
                     </span>
-                  )}
-                </button>
-              ))}
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
+                    {item.badge && (
+                      <span className={`app-sidebar-badge ${BADGE_CLASS[item.badge] || ''}`}>
+                        {BADGE_LABEL[item.badge]}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </React.Fragment>
           ))}
         </nav>
@@ -109,29 +140,33 @@ export default function AppSidebar({ activeModule, onNavigate, user, onLogout, m
           <button
             onClick={onLogout}
             title="Sign out"
-            style={{ background: 'transparent', border: 'none', color: 'var(--lp-text3)', cursor: 'pointer', fontSize: 14, padding: 4, lineHeight: 1, flexShrink: 0 }}
+            style={{ background: 'transparent', border: 'none', color: 'var(--lp-text3)', cursor: 'pointer', padding: 4, lineHeight: 1, flexShrink: 0, display: 'flex', alignItems: 'center' }}
           >
-            ↩
+            <svg viewBox="0 0 16 16" width={14} height={14} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 8H2M5 5l-3 3 3 3M8 4V3a1 1 0 011-1h4a1 1 0 011 1v10a1 1 0 01-1 1H9a1 1 0 01-1-1v-1"/>
+            </svg>
           </button>
         </div>
       </div>
 
-      {/* Mobile bottom nav — shows only key 5 items */}
-      <div
-        className="app-sidebar"
-        style={{ display: 'none' }}  // CSS media query shows this on mobile
-      >
+      {/* Mobile bottom nav */}
+      <div className="app-sidebar" style={{ display: 'none' }}>
         <nav className="app-sidebar-nav">
-          {mobileItems.map(item => (
-            <button
-              key={item.id}
-              className={`app-sidebar-item${activeModule === item.id ? ' active' : ''}`}
-              onClick={() => onNavigate(item.id)}
-            >
-              <span className="app-sidebar-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
-          ))}
+          {mobileItems.map(item => {
+            const active = activeModule === item.id;
+            return (
+              <button
+                key={item.id}
+                className={`app-sidebar-item${active ? ' active' : ''}`}
+                onClick={() => onNavigate(item.id)}
+              >
+                <span className="app-sidebar-icon">
+                  <Icon id={item.id} size={15} color={active ? 'var(--lp-teal)' : 'var(--lp-text3)'} />
+                </span>
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </nav>
       </div>
     </>

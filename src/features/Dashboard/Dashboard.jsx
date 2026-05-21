@@ -10,76 +10,9 @@ function timeAgo(dateStr) {
   return Math.floor(s / 86400) + 'd ago';
 }
 
-function initials(name) {
-  if (!name) return 'U';
-  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-}
+const ACT_COLORS = { scan: '#00D4FF', star: '#FFB800', jd: '#FF6B9D', mock: '#8B7CF6', cover: '#F5B340', salary: '#00E5A0' };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-function MetricCard({ value, label, delta, deltaUp, color, onClick }) {
-  return (
-    <div
-      onClick={onClick}
-      style={{
-        background: 'var(--lp-bg3)',
-        border: `1px solid ${color}22`,
-        borderRadius: 10,
-        padding: '14px 16px',
-        cursor: onClick ? 'pointer' : 'default',
-        transition: 'border-color .15s',
-      }}
-      onMouseEnter={e => onClick && (e.currentTarget.style.borderColor = color + '44')}
-      onMouseLeave={e => onClick && (e.currentTarget.style.borderColor = color + '22')}
-    >
-      <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 28, fontWeight: 800, color, lineHeight: 1, marginBottom: 4 }}>
-        {value}
-      </div>
-      <div style={{ fontSize: 11, color: 'var(--lp-text2)', marginBottom: delta ? 4 : 0 }}>{label}</div>
-      {delta && (
-        <div style={{ fontSize: 10, color: deltaUp ? '#00E5A0' : 'var(--lp-text3)', fontFamily: 'var(--lp-ffm)' }}>
-          {delta}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ProgressRow({ label, value, color, max = 100 }) {
-  const pct = Math.min(100, Math.round((value / max) * 100));
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-      <div style={{ fontSize: 12, color: 'var(--lp-text2)', width: 148, flexShrink: 0 }}>{label}</div>
-      <div style={{ flex: 1, height: 5, background: 'var(--lp-bg4, #1A2540)', borderRadius: 3, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 3, transition: 'width .7s ease' }} />
-      </div>
-      <div style={{ fontFamily: 'var(--lp-ffm)', fontSize: 11, color, width: 30, textAlign: 'right', flexShrink: 0 }}>
-        {value > 0 ? value : '—'}
-      </div>
-    </div>
-  );
-}
-
-function AiBubble({ children, style }) {
-  return (
-    <div style={{
-      background: 'var(--lp-bg3)',
-      border: '1px solid rgba(0,212,255,.18)',
-      borderRadius: 10,
-      padding: '14px 16px',
-      display: 'flex',
-      gap: 12,
-      position: 'relative',
-      overflow: 'hidden',
-      fontFamily: 'var(--lp-ff)',
-      ...style,
-    }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at top left, rgba(0,212,255,.04), transparent 60%)', pointerEvents: 'none' }} />
-      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#00D4FF,#B026FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#000', flexShrink: 0 }}>AI</div>
-      <div style={{ fontSize: 12.5, color: 'var(--lp-text)', lineHeight: 1.65, flex: 1 }}>{children}</div>
-    </div>
-  );
-}
-
 function SectionLabel({ children }) {
   return (
     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.09em', textTransform: 'uppercase', color: 'var(--lp-text3)', fontFamily: 'var(--lp-ffm)', marginBottom: 10 }}>
@@ -88,15 +21,200 @@ function SectionLabel({ children }) {
   );
 }
 
-// ── Activity icon map ─────────────────────────────────────────────────────────
-const ACT_ICONS = { scan: '⚡', star: '⭐', jd: '🔍', mock: '🧠', cover: '✉️', salary: '💰' };
-const ACT_COLORS = { scan: '#00D4FF', star: '#FFB800', jd: '#FF6B9D', mock: '#8B7CF6', cover: '#F5B340', salary: '#00E5A0' };
+function pill(color) {
+  return { fontSize: 9, fontWeight: 700, color, background: color + '18', border: `1px solid ${color}33`, borderRadius: 20, padding: '2px 8px', fontFamily: 'var(--lp-ffm)', letterSpacing: '.06em', textTransform: 'uppercase' };
+}
+
+function ReadinessArc({ readiness, aiInsight, setActiveModule }) {
+  const r = 34;
+  const circ = 2 * Math.PI * r;
+  const pct = Math.min(100, readiness || 0);
+  const offset = circ - (pct / 100) * circ;
+  const color = pct >= 70 ? '#00E5A0' : pct >= 40 ? '#FFB84D' : pct > 0 ? '#FF5A5A' : 'rgba(255,255,255,.1)';
+
+  return (
+    <div style={{ ...cardStyle, display: 'flex', alignItems: 'flex-start', gap: 18 }}>
+      <div style={{ position: 'relative', width: 80, height: 80, flexShrink: 0 }}>
+        <svg width={80} height={80} viewBox="0 0 80 80">
+          <circle cx={40} cy={40} r={r} fill="none" stroke="rgba(255,255,255,.07)" strokeWidth={8} />
+          <circle cx={40} cy={40} r={r} fill="none" stroke={color} strokeWidth={8}
+            strokeLinecap="round"
+            strokeDasharray={circ}
+            strokeDashoffset={offset}
+            transform="rotate(-90 40 40)"
+            style={{ transition: 'stroke-dashoffset 1.2s ease' }}
+          />
+        </svg>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+          <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 19, fontWeight: 800, color, lineHeight: 1 }}>{pct > 0 ? pct : '—'}</div>
+          <div style={{ fontSize: 8, color: 'var(--lp-text3)', letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>ready</div>
+        </div>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 5 }}>Interview Readiness</div>
+        <div style={{ fontSize: 11.5, color: 'var(--lp-text2)', lineHeight: 1.65, marginBottom: 10 }}>{aiInsight}</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+          {pct >= 70
+            ? <span style={pill('#00E5A0')}>✓ Interview Ready</span>
+            : pct > 0
+              ? <span style={pill('#FFB84D')}>Building Readiness</span>
+              : <span style={pill('#8B7CF6')}>Start first session</span>}
+        </div>
+        <button onClick={() => setActiveModule('simulate')} style={btnStyle('primary')}>Start session →</button>
+      </div>
+    </div>
+  );
+}
+
+function StreakBar({ activities, topGap }) {
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dow === 0 ? 7 : dow) - 1));
+
+  const actDates = new Set(activities.map(a => new Date(a.time).toDateString()));
+  const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((lbl, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return { lbl, active: actDates.has(d.toDateString()), isToday: d.toDateString() === today.toDateString() };
+  });
+  const count = activities.length;
+
+  return (
+    <div style={{ ...cardStyle, background: 'linear-gradient(135deg,rgba(0,212,255,.04),rgba(99,102,241,.03))' }}>
+      <SectionLabel>This Week</SectionLabel>
+      <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 26, fontWeight: 800, color: count > 0 ? '#00D4FF' : 'var(--lp-text3)', lineHeight: 1, marginBottom: 8 }}>
+        {count} <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--lp-text2)' }}>actions logged</span>
+      </div>
+      <div style={{ display: 'flex', gap: 5, marginBottom: 14 }}>
+        {days.map((d, i) => (
+          <div key={i} style={{ textAlign: 'center' }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: 7,
+              background: d.active ? '#00D4FF' : d.isToday ? 'rgba(0,212,255,.1)' : 'var(--lp-bg3)',
+              border: `1px solid ${d.isToday ? 'rgba(0,212,255,.3)' : 'transparent'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: d.active ? '#000' : 'var(--lp-text3)' }}>
+                {d.active ? '✓' : '·'}
+              </span>
+            </div>
+            <div style={{ fontSize: 8, color: d.isToday ? 'var(--lp-teal)' : 'var(--lp-text3)', marginTop: 3, fontFamily: 'var(--lp-ffm)' }}>{d.lbl}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ height: 1, background: 'var(--lp-bdr)', marginBottom: 12 }} />
+      <div style={{ fontSize: 11, color: 'var(--lp-text2)', lineHeight: 1.5, marginBottom: 10 }}>
+        <span style={{ fontWeight: 600, color: 'var(--lp-text)' }}>Top action: </span>{topGap}
+      </div>
+    </div>
+  );
+}
+
+function MilestoneStrip({ milestones }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+      {milestones.map((m, i) => (
+        <div key={i} onClick={m.onClick} style={{
+          background: 'var(--lp-bg2)', border: `1px solid ${m.color}22`, borderRadius: 10,
+          padding: '12px 14px', cursor: 'pointer', overflow: 'hidden', transition: 'border-color .15s',
+        }}
+          onMouseEnter={e => e.currentTarget.style.borderColor = m.color + '55'}
+          onMouseLeave={e => e.currentTarget.style.borderColor = m.color + '22'}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: m.color, flexShrink: 0 }} />
+            <div style={{ fontSize: 9, fontWeight: 700, color: m.color, textTransform: 'uppercase', letterSpacing: '.08em', fontFamily: 'var(--lp-ffm)' }}>{m.iconLabel}</div>
+          </div>
+          <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 24, fontWeight: 800, color: m.color, lineHeight: 1, marginBottom: 2 }}>
+            {m.value}
+          </div>
+          <div style={{ fontSize: 10.5, color: 'var(--lp-text2)', marginBottom: 4 }}>{m.label}</div>
+          <div style={{ fontSize: 9.5, color: 'var(--lp-text3)', fontFamily: 'var(--lp-ffm)', marginBottom: 8 }}>{m.delta}</div>
+          <div style={{ height: 3, background: 'var(--lp-bg4, rgba(255,255,255,.06))', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${m.pct}%`, background: m.color, borderRadius: 2, transition: 'width .9s ease' }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AiMemoryPanel({ aiInsight, weeklyPlan, setActiveModule }) {
+  return (
+    <div style={{ ...cardStyle, borderLeft: '3px solid #8B7CF6', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg,#00D4FF,#B026FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#000', flexShrink: 0 }}>AI</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#8B7CF6', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'var(--lp-ffm)' }}>AI Memory · live</div>
+          <div style={{ fontSize: 12, color: 'var(--lp-text)', lineHeight: 1.65 }}>{aiInsight}</div>
+        </div>
+      </div>
+      <div style={{ background: 'rgba(139,124,246,.06)', border: '1px solid rgba(139,124,246,.14)', borderRadius: 8, padding: '12px 14px' }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: '#8B7CF6', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 10, fontFamily: 'var(--lp-ffm)' }}>
+          This week's plan
+        </div>
+        {weeklyPlan.map((step, i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, marginBottom: i < weeklyPlan.length - 1 ? 8 : 0, alignItems: 'flex-start' }}>
+            <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(139,124,246,.2)', border: '1px solid rgba(139,124,246,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#8B7CF6', flexShrink: 0, marginTop: 1 }}>
+              {i + 1}
+            </div>
+            <div style={{ fontSize: 11.5, color: 'var(--lp-text2)', lineHeight: 1.55 }}>{step}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <button onClick={() => setActiveModule('simulate')} style={btnStyle('outline-sm')}>Start drill →</button>
+        <button onClick={() => setActiveModule('aichat')} style={btnStyle('ghost-sm')}>Ask AI why</button>
+      </div>
+    </div>
+  );
+}
+
+function ActionItems({ items, setActiveModule }) {
+  return (
+    <div style={cardStyle}>
+      <SectionLabel>Priority Actions</SectionLabel>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {items.length === 0 ? (
+          <div style={{ fontSize: 12, color: '#00E5A0', padding: '10px 0' }}>✓ All priorities addressed — keep the momentum!</div>
+        ) : items.map((item, i) => (
+          <div key={i} onClick={() => setActiveModule(item.id)} style={{
+            display: 'flex', alignItems: 'stretch', background: 'var(--lp-bg3)',
+            border: '1px solid var(--lp-bdr)', borderRadius: 8, overflow: 'hidden',
+            cursor: 'pointer', transition: 'border-color .15s',
+          }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = item.color + '55'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--lp-bdr)'}
+          >
+            <div style={{ width: 4, background: item.color, flexShrink: 0 }} />
+            <div style={{ flex: 1, padding: '10px 12px' }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--lp-text)', marginBottom: 2 }}>{item.label}</div>
+              <div style={{ fontSize: 10.5, color: 'var(--lp-text3)', fontFamily: 'var(--lp-ffm)', lineHeight: 1.4 }}>{item.why}</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', paddingRight: 12, color: 'var(--lp-text3)', fontSize: 14 }}>→</div>
+          </div>
+        ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+          {[
+            { label: 'Scan resume vs new JD',  id: 'scan'      },
+            { label: 'Generate cover letter',   id: 'cover'     },
+            { label: 'Check skills gap',        id: 'skillsgap' },
+          ].map(a => (
+            <button key={a.id} onClick={() => setActiveModule(a.id)} style={btnStyle('full-secondary')}>
+              {a.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function Dashboard({ memory, form, user, setActiveModule }) {
   const [trustScore, setTrustScore] = useState(0);
 
-  // Fetch trust score from candidate_trust_profiles
   useEffect(() => {
     if (!user?.id || !user?.token) return;
     sb.select('candidate_trust_profiles', { user_id: `eq.${user.id}` }, user.token)
@@ -104,24 +222,12 @@ export default function Dashboard({ memory, form, user, setActiveModule }) {
       .catch(() => {});
   }, [user]);
 
-  // Derived metrics
-  const atsScore    = memory.scanHistory?.[0]?.score ?? 0;
-  const readiness   = memory.mockSessions?.[0]?.avgScore ?? 0;
-  const starCount   = memory.starBank?.length ?? 0;
-  const jdCount     = memory.jdAnalyses?.length ?? 0;
-  const coverCount  = memory.coverLetters?.length ?? 0;
-  const totalScans  = memory.scanHistory?.length ?? 0;
+  const atsScore   = memory.scanHistory?.[0]?.score ?? 0;
+  const readiness  = memory.mockSessions?.[0]?.avgScore ?? 0;
+  const starCount  = memory.starBank?.length ?? 0;
+  const jdCount    = memory.jdAnalyses?.length ?? 0;
+  const coverCount = memory.coverLetters?.length ?? 0;
 
-  // Profile completeness (simple heuristic)
-  const profilePct = Math.min(100, Math.round(
-    (!!memory.resumeText ? 25 : 0) +
-    (totalScans > 0 ? 20 : 0) +
-    (starCount > 0 ? 20 : 0) +
-    (jdCount > 0 ? 15 : 0) +
-    (trustScore > 0 ? 20 : 0)
-  ));
-
-  // Activity feed — merge memory arrays by date, sort desc, take 6
   const activities = useMemo(() => {
     const rows = [
       ...(memory.scanHistory?.slice(0, 3).map(s => ({ type: 'scan', time: s.date || s.created_at, label: `Resume scanned · ATS ${s.score ?? '—'}` })) || []),
@@ -133,17 +239,43 @@ export default function Dashboard({ memory, form, user, setActiveModule }) {
     return rows.filter(r => r.time).sort((a, b) => new Date(b.time) - new Date(a.time)).slice(0, 6);
   }, [memory]);
 
-  // AI insight text
   const aiInsight = useMemo(() => {
     const gaps = [];
-    if (atsScore < 70)    gaps.push(`ATS score ${atsScore}/100 — paste a JD in ATS Builder to close keyword gaps`);
-    if (starCount < 3)    gaps.push(`only ${starCount} STAR ${starCount === 1 ? 'story' : 'stories'} saved — aim for 8+ to cover all question types`);
-    if (readiness < 70)   gaps.push(`interview readiness ${readiness}/100 — run a mock session in Interview Coach`);
-    if (trustScore < 65)  gaps.push(`trust score ${trustScore}/100 — verify credentials to unlock TrustMatch`);
-    if (gaps.length === 0) return `Profile looks strong — ${profilePct}% complete. Keep running mock sessions to stay sharp.`;
+    if (atsScore < 70)   gaps.push(`ATS score ${atsScore}/100 — paste a JD to close keyword gaps`);
+    if (starCount < 3)   gaps.push(`${starCount} STAR ${starCount === 1 ? 'story' : 'stories'} saved — aim for 8+`);
+    if (readiness < 70)  gaps.push(`interview readiness ${readiness}/100 — run a mock session`);
+    if (trustScore < 65) gaps.push(`trust score ${trustScore}/100 — verify credentials`);
+    if (gaps.length === 0) return 'Profile looks strong. Keep running mock sessions to stay sharp.';
     return `Top priority: ${gaps[0]}.${gaps[1] ? ` Also: ${gaps[1]}.` : ''}`;
-  }, [atsScore, starCount, readiness, trustScore, profilePct]);
+  }, [atsScore, starCount, readiness, trustScore]);
 
+  const weeklyPlan = useMemo(() => {
+    const steps = [];
+    if (atsScore < 70)   steps.push('Scan resume against your target JD — close keyword gaps');
+    if (starCount < 8)   steps.push(`Add ${8 - starCount} STAR ${8 - starCount === 1 ? 'story' : 'stories'} to cover behavioral questions`);
+    if (readiness < 80)  steps.push('Complete 2 mock interview sessions this week');
+    if (trustScore < 65) steps.push('Verify at least one credential to unlock TrustMatch');
+    steps.push('Review AI feedback and refine target role keywords');
+    return steps.slice(0, 4);
+  }, [atsScore, starCount, readiness, trustScore]);
+
+  const actionItems = useMemo(() => [
+    atsScore < 70   && { label: 'Improve ATS Score',  why: `Score ${atsScore}/100 — add missing keywords from your target JD`,         color: '#FF5A5A', id: 'scan'       },
+    starCount < 5   && { label: 'Build STAR Bank',     why: `${starCount} of 8 stories saved — cover all behavioral categories`,         color: '#FFB84D', id: 'star'       },
+    readiness < 70  && { label: 'Run Mock Interview',  why: `Readiness ${readiness}/100 — simulate to sharpen your answers`,             color: '#00D4FF', id: 'simulate'   },
+    trustScore < 65 && { label: 'Verify Credentials', why: `Trust score ${trustScore}/100 — verification unlocks TrustMatch hiring`,    color: '#8B7CF6', id: 'trustmatch' },
+    jdCount < 3     && { label: 'Analyze More JDs',   why: `${jdCount} JD${jdCount !== 1 ? 's' : ''} scanned — tailor prep to each role`, color: '#00E5A0', id: 'jd'        },
+  ].filter(Boolean).slice(0, 4), [atsScore, starCount, readiness, trustScore, jdCount]);
+
+  const milestones = [
+    { iconLabel: 'ATS Score',   value: atsScore > 0 ? atsScore : '—',    label: 'Resume ATS',        delta: atsScore >= 80 ? '✓ Strong' : atsScore > 0 ? '↑ Improve' : 'No scans yet',              color: '#00D4FF', pct: atsScore,                        onClick: () => setActiveModule('scan')       },
+    { iconLabel: 'Readiness',   value: readiness > 0 ? readiness : '—',  label: 'Interview prep',    delta: readiness > 0 ? `${100 - readiness} pts to go` : 'Start a session',                      color: '#FFB84D', pct: readiness,                       onClick: () => setActiveModule('simulate')   },
+    { iconLabel: 'STAR Bank',   value: starCount,                         label: 'Stories saved',     delta: starCount >= 8 ? '✓ Solid bank' : `target: 8`,                                            color: '#FFB800', pct: Math.min(100, starCount * 12.5), onClick: () => setActiveModule('star')       },
+    { iconLabel: 'Trust Score', value: trustScore > 0 ? trustScore : '—', label: 'Verified profile', delta: trustScore >= 65 ? '✓ TrustMatch on' : 'Verify → unlock',                                 color: trustScore >= 65 ? '#00E5A0' : '#FF5A5A', pct: trustScore, onClick: () => setActiveModule('trustmatch') },
+    { iconLabel: 'JDs Scanned', value: jdCount,                           label: 'Roles analyzed',   delta: jdCount > 0 ? `${jdCount} role${jdCount !== 1 ? 's' : ''} analyzed` : 'Scan a JD →',     color: '#8B7CF6', pct: Math.min(100, jdCount * 20),   onClick: () => setActiveModule('jd')         },
+  ];
+
+  const topGap = actionItems[0]?.why || 'All good — keep the momentum!';
   const firstName = user?.name?.split(' ')[0] || 'there';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -152,143 +284,60 @@ export default function Dashboard({ memory, form, user, setActiveModule }) {
     <div style={{ padding: '24px 28px', maxWidth: 1100, margin: '0 auto', fontFamily: 'var(--lp-ff)', color: 'var(--lp-text)' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22, flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 20, fontWeight: 800, color: 'var(--lp-text)', letterSpacing: '-.02em' }}>
             {greeting}, {firstName}
           </div>
           <div style={{ fontSize: 12.5, color: 'var(--lp-text2)', marginTop: 3 }}>
-            Profile {profilePct}% complete
-            {form?.role ? ` · targeting ${form.role}` : ''}
-            {form?.market ? ` · ${form.market}` : ''}
+            {form?.role ? `Targeting ${form.role}` : 'Set your target role'}{form?.market ? ` · ${form.market}` : ''}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setActiveModule('aichat')} style={btnStyle('secondary')}>🤖 Ask AI Coach</button>
+          <button onClick={() => setActiveModule('aichat')} style={btnStyle('secondary')}>Ask AI Coach</button>
           <button onClick={() => setActiveModule('simulate')} style={btnStyle('primary')}>Continue prep →</button>
         </div>
       </div>
 
-      {/* Metrics row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 16 }}>
-        <MetricCard value={atsScore > 0 ? atsScore : '—'} label="ATS score" color="#00D4FF"
-          delta={atsScore > 0 ? (atsScore >= 80 ? '✓ Strong' : '↑ Needs work') : 'No scans yet'}
-          deltaUp={atsScore >= 80} onClick={() => setActiveModule('scan')} />
-        <MetricCard value={readiness > 0 ? readiness : '—'} label="Interview readiness" color="#F5B340"
-          delta={readiness > 0 ? `${100 - readiness} pts to go` : 'No sessions yet'}
-          onClick={() => setActiveModule('simulate')} />
-        <MetricCard value={starCount} label="STAR stories" color="#FFB800"
-          delta={starCount >= 8 ? '✓ Solid bank' : `target: 8`}
-          deltaUp={starCount >= 8} onClick={() => setActiveModule('star')} />
-        <MetricCard value={trustScore > 0 ? trustScore : '—'} label="Trust score" color={trustScore >= 65 ? '#00E5A0' : '#FF6B6B'}
-          delta={trustScore >= 65 ? '✓ TrustMatch unlocked' : 'Verify creds → +50 pts'}
-          deltaUp={trustScore >= 65} onClick={() => setActiveModule('trustmatch')} />
-        <MetricCard value={jdCount} label="JDs analyzed" color="#8B7CF6"
-          delta={jdCount > 0 ? `${jdCount} role${jdCount !== 1 ? 's' : ''} scanned` : 'Scan a JD →'}
-          onClick={() => setActiveModule('jd')} />
+      {/* Hero: Readiness Arc + Streak */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 12, marginBottom: 12 }}>
+        <ReadinessArc readiness={readiness} aiInsight={aiInsight} setActiveModule={setActiveModule} />
+        <StreakBar activities={activities} topGap={topGap} />
       </div>
 
-      {/* AI Memory + Quick actions */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
-        <AiBubble>
-          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--lp-teal)', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 6, fontFamily: 'var(--lp-ffm)' }}>
-            AI Memory · live
-          </div>
-          <div style={{ marginBottom: 10 }}>{aiInsight}</div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button onClick={() => setActiveModule('simulate')} style={btnStyle('outline-sm')}>Start drill →</button>
-            <button onClick={() => setActiveModule('aichat')} style={btnStyle('ghost-sm')}>Ask AI why</button>
-          </div>
-        </AiBubble>
+      {/* Milestone strip */}
+      <div style={{ marginBottom: 12 }}>
+        <MilestoneStrip milestones={milestones} />
+      </div>
 
-        <div style={cardStyle}>
-          <SectionLabel>Jump back in</SectionLabel>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            {[
-              { label: '⚡ Scan resume vs new JD',          id: 'scan'     },
-              { label: '🧠 Continue interview prep',         id: 'simulate' },
-              { label: '⭐ Add a STAR story',                id: 'star'     },
-              { label: '✉️ Generate cover letter',           id: 'cover'    },
-              { label: '📊 Check skills gap',                id: 'skillsgap'},
-            ].map(a => (
-              <button key={a.id} onClick={() => setActiveModule(a.id)} style={btnStyle('full-secondary')}>
-                {a.label}
-              </button>
+      {/* AI Memory + Action items */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+        <AiMemoryPanel aiInsight={aiInsight} weeklyPlan={weeklyPlan} setActiveModule={setActiveModule} />
+        <ActionItems items={actionItems} setActiveModule={setActiveModule} />
+      </div>
+
+      {/* Activity feed — 2-column */}
+      <div style={cardStyle}>
+        <SectionLabel>Recent Activity</SectionLabel>
+        {activities.length === 0 ? (
+          <div style={{ fontSize: 12.5, color: 'var(--lp-text3)', padding: '12px 0' }}>
+            No activity yet — start with a resume scan.
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 28px' }}>
+            {[activities.slice(0, 3), activities.slice(3)].map((col, ci) => (
+              <div key={ci}>
+                {col.map((a, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: i < col.length - 1 ? '1px solid var(--lp-bdr)' : 'none' }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: ACT_COLORS[a.type], flexShrink: 0, marginTop: 5 }} />
+                    <div style={{ flex: 1, fontSize: 12.5, color: 'var(--lp-text)', lineHeight: 1.4 }}>{a.label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--lp-text3)', fontFamily: 'var(--lp-ffm)', flexShrink: 0, marginTop: 1 }}>{timeAgo(a.time)}</div>
+                  </div>
+                ))}
+              </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Progress + Activity */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
-        <div style={cardStyle}>
-          <SectionLabel>Platform progress</SectionLabel>
-          <ProgressRow label="Resume completeness"    value={atsScore}    color="#00D4FF" />
-          <ProgressRow label="Interview readiness"    value={readiness}   color="#F5B340" />
-          <ProgressRow label="STAR bank"              value={Math.min(100, starCount * 12)} color="#FFB800" />
-          <ProgressRow label="JDs analyzed"           value={Math.min(100, jdCount * 10)}  color="#FF6B9D" />
-          <ProgressRow label="Trust score"            value={trustScore}  color={trustScore >= 65 ? '#00E5A0' : '#FF6B6B'} />
-          <ProgressRow label="Cover letters"          value={Math.min(100, coverCount * 20)} color="#8B7CF6" />
-        </div>
-
-        <div style={cardStyle}>
-          <SectionLabel>Recent activity</SectionLabel>
-          {activities.length === 0 ? (
-            <div style={{ fontSize: 12.5, color: 'var(--lp-text3)', padding: '12px 0' }}>
-              No activity yet — start with a resume scan.
-            </div>
-          ) : (
-            activities.map((a, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: i < activities.length - 1 ? '1px solid var(--lp-bdr)' : 'none' }}>
-                <div style={{ width: 28, height: 28, borderRadius: 7, background: ACT_COLORS[a.type] + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>
-                  {ACT_ICONS[a.type]}
-                </div>
-                <div style={{ flex: 1, fontSize: 12.5, color: 'var(--lp-text)', lineHeight: 1.4 }}>{a.label}</div>
-                <div style={{ fontSize: 11, color: 'var(--lp-text3)', fontFamily: 'var(--lp-ffm)', flexShrink: 0, marginTop: 1 }}>{timeAgo(a.time)}</div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Comparison table */}
-      <div style={cardStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <SectionLabel>Why CareerAiHub vs 5 separate tools</SectionLabel>
-          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', background: 'linear-gradient(90deg,rgba(99,102,241,.18),rgba(236,72,153,.12))', color: '#8B7CF6', border: '1px solid rgba(139,124,246,.22)', borderRadius: 20, padding: '2px 8px', fontFamily: 'var(--lp-ffm)' }}>
-            Investor view
-          </span>
-        </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-            <thead>
-              <tr>
-                {['Feature', 'CareerAiHub', 'LinkedIn Premium', 'Resume.io', 'Interviewing.io', 'Levels.fyi'].map(h => (
-                  <th key={h} style={{ fontFamily: 'var(--lp-ffm)', fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--lp-text3)', textAlign: 'left', padding: '6px 10px', borderBottom: '1px solid var(--lp-bdr)' }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                ['AI resume rewriting',      '✓ Included',    '—',          '✓ Limited', '—',         '—'],
-                ['ATS scanning vs JD',       '✓ Unlimited',   '—',          '✓ Paid',    '—',         '—'],
-                ['AI interview coaching',    '✓ AI-scored',   '—',          '—',         '✓ Human',   '—'],
-                ['Salary benchmarking',      '✓ SEA-specific','✓ Limited',  '—',         '—',         '✓ US-only'],
-                ['Credential verification',  '✓ In dev',      '—',          '—',         '—',         '—'],
-                ['AI memory across sessions','✓ Full',        '—',          '—',         '—',         '—'],
-                ['Monthly cost',             'SGD 24',        '~SGD 54',    '~SGD 34',   '~SGD 54',   '~SGD 27'],
-              ].map((row, ri) => (
-                <tr key={ri} style={{ borderBottom: '1px solid rgba(255,255,255,.03)' }}>
-                  {row.map((cell, ci) => (
-                    <td key={ci} style={{ padding: '8px 10px', color: ci === 0 ? 'var(--lp-text)' : ci === 1 ? (cell.startsWith('✓') ? '#00E5A0' : 'var(--lp-teal)') : cell === '—' ? 'var(--lp-text3)' : 'var(--lp-text2)', fontWeight: ci === 0 ? 500 : 400, verticalAlign: 'top' }}>
-                      {cell}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        )}
       </div>
 
     </div>
@@ -304,11 +353,11 @@ const cardStyle = {
 };
 
 function btnStyle(variant) {
-  const base = { fontFamily: 'var(--lp-ff, DM Sans, sans-serif)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 7, fontWeight: 600, fontSize: 12, transition: 'all .14s', border: 'none', whiteSpace: 'nowrap' };
+  const base = { fontFamily: 'var(--lp-ff)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 7, fontWeight: 600, fontSize: 12, transition: 'all .14s', border: 'none', whiteSpace: 'nowrap' };
   if (variant === 'primary')        return { ...base, background: 'var(--lp-teal, #00D4FF)', color: '#000', padding: '8px 16px' };
   if (variant === 'secondary')      return { ...base, background: 'var(--lp-bg3)', color: 'var(--lp-text)', border: '1px solid var(--lp-bdr2)', padding: '8px 14px' };
   if (variant === 'outline-sm')     return { ...base, background: 'transparent', color: 'var(--lp-teal)', border: '1px solid rgba(0,212,255,.25)', padding: '5px 12px', fontSize: 11 };
   if (variant === 'ghost-sm')       return { ...base, background: 'var(--lp-bg3)', color: 'var(--lp-text2)', border: '1px solid var(--lp-bdr)', padding: '5px 12px', fontSize: 11 };
-  if (variant === 'full-secondary') return { ...base, background: 'var(--lp-bg3)', color: 'var(--lp-text2)', border: '1px solid var(--lp-bdr)', padding: '8px 12px', width: '100%', justifyContent: 'flex-start', fontSize: 12.5 };
+  if (variant === 'full-secondary') return { ...base, background: 'var(--lp-bg3)', color: 'var(--lp-text2)', border: '1px solid var(--lp-bdr)', padding: '7px 12px', width: '100%', justifyContent: 'flex-start', fontSize: 12 };
   return base;
 }

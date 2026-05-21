@@ -5,15 +5,15 @@ import { GlowBar } from '../../components/OriginalFeatures';
 import { GetReadyTabStrip } from '../Landing/LandingPage';
 import '../../styles/featurePage.css';
 
-export default function WeaknessRadar({ scanResult, memory, setActiveModule, onStudyPlan }) {
+export default function WeaknessRadar({ scanResult, memory, setActiveModule, onStudyPlan, embedded }) {
   const clamp = v => Math.max(10, Math.min(99, Math.round(v)));
   const latestHistory = memory?.scanHistory?.[0];
   const effectiveResult = scanResult || latestHistory?.result;
-  
+
   if (!effectiveResult) {
     return (
       <div className="fp-wrap" style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-        <GetReadyTabStrip activeModuleId="radar" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />
+        {!embedded && <GetReadyTabStrip activeModuleId="radar" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />}
         <div style={{ textAlign: "center", padding: 60 }}>
           <div style={{ fontSize: 60, marginBottom: 20 }}>📡</div>
           <div style={{ color: C.text, fontWeight: 900, fontSize: 18, marginBottom: 8 }}>Radar is offline</div>
@@ -42,7 +42,7 @@ export default function WeaknessRadar({ scanResult, memory, setActiveModule, onS
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      <GetReadyTabStrip activeModuleId="radar" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />
+      {!embedded && <GetReadyTabStrip activeModuleId="radar" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />}
       <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 24 }}>
       <div>
         <div style={{ color: C.text, fontWeight: 900, fontSize: 24 }}>Weakness Radar</div>

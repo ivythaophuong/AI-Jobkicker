@@ -1,8 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import mammoth from 'mammoth';
 import { sb } from './lib/supabase';
+import { callLLM, extractJSON } from './lib/ai.jsx';
 import { C, MODULES } from './styles/theme';
 import { Badge, Btn, Card, Spinner } from './components/CommonUI';
 import { useMemory } from './hooks/useMemory';
+
+const _ab2b64 = (buf) => {
+  let b = ''; const bytes = new Uint8Array(buf);
+  for (let i = 0; i < bytes.byteLength; i++) b += String.fromCharCode(bytes[i]);
+  return btoa(b);
+};
+const _formatParsedResume = (p) => {
+  const s = [];
+  if (p.personalInfo?.fullName) s.push(p.personalInfo.fullName);
+  if (p.summary) s.push('\n' + p.summary);
+  if (p.experience?.length) {
+    s.push('\n\nEXPERIENCE');
+    p.experience.forEach(e => {
+      s.push(`${e.position} at ${e.company} (${e.startDate} – ${e.endDate})`);
+      (e.description || []).forEach(d => s.push('• ' + d));
+    });
+  }
+  if (p.education?.length) {
+    s.push('\n\nEDUCATION');
+    p.education.forEach(e => s.push(`${e.degree} — ${e.school} ${e.year || ''}`));
+  }
+  if (p.skills?.length) {
+    s.push('\n\nSKILLS');
+    p.skills.forEach(sk => s.push(`${sk.category}: ${(sk.items || []).join(', ')}`));
+  }
+  return s.join('\n');
+};
+const RESUME_EXTRACT_PROMPT = `Extract this resume and return ONLY raw JSON (no markdown, start with {): {"personalInfo":{"fullName":"","email":"","phone":"","location":""},"summary":"","experience":[{"company":"","position":"","startDate":"","endDate":"","description":[]}],"education":[{"school":"","degree":"","year":""}],"skills":[{"category":"","items":[]}]}`;
 
 // ── Feature Modules ──────────────────────────────────────────────────────────
 import ResumeScan from './features/ResumeScan/ResumeScan';
@@ -18,6 +48,8 @@ import JobSearch from './features/JobSearch/JobSearch';
 import MemoryDashboard from './features/MemoryDashboard/MemoryDashboard';
 import ATSBuilder from './features/ATSBuilder/ATSBuilder';
 import TrustMatch from './features/TrustMatch/TrustMatch';
+import InterviewCoach from './features/InterviewCoach/InterviewCoach';
+import VerifyCreds from './features/VerifyCreds/VerifyCreds';
 import PrivacyPolicy from './features/Legal/PrivacyPolicy';
 import TermsOfService from './features/Legal/TermsOfService';
 import LandingPage, { GuestNav, AppHubNav, LogoMark, StudyPlanModal, GetReadyTabStrip } from './features/Landing/LandingPage';
@@ -38,8 +70,9 @@ import EmployerPortal from './features/EmployerPortal/EmployerPortal';
 function App() {
   const [setupDone, setSetupDone] = useState(true);
   const [form, setForm] = useState({ role: "", industry: "", level: "Senior", market: "Singapore", urgency: "7 days" });
+  const profileSyncRef = useRef(null);
   const [user, setUser] = useState(null);
-  const [activeModule, _setActiveModule] = useState("jobs");
+  const [activeModule, _setActiveModule] = useState("dashboard");
 
   const navigate = (moduleId) => {
     window.history.pushState({ module: moduleId, showLanding: false }, '', `?tab=${moduleId}`);
@@ -58,6 +91,7 @@ function App() {
   const [grModalTab, setGrModalTab] = useState('dashboard');
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
+  const [resumeParsing, setResumeParsing] = useState(false);
   const { memory, updateMemory, isSyncing } = useMemory(user, isRestoring, setIsRestoring, setRestoreError);
   
   // State is now fully managed by useMemory relational sync
@@ -75,7 +109,7 @@ function App() {
       if (!state || state.showLanding) {
         setShowLanding(true);
       } else {
-        _setActiveModule(state.module || 'jobs');
+        _setActiveModule(state.module || 'dashboard');
         setShowLanding(false);
       }
     };
@@ -86,30 +120,70 @@ function App() {
   // Restore session
   useEffect(() => {
     const raw = localStorage.getItem("supabase.auth.token");
-    if (raw) {
-      try {
-        const data = JSON.parse(raw);
-        const session = data.currentSession;
-        if (session) {
-          const userObj = session.user;
-          const meta = userObj.user_metadata || {};
-          setUser({
-            id: userObj.id,
-            email: userObj.email,
-            name: meta.full_name || userObj.email?.split("@")[0] || "User",
-            token: session.access_token,
-            role: meta.role || 'candidate',
-            company: meta.company || null,
-          });
-          setIsRecruiter(meta.role === 'recruiter');
-          setIsRestoring(true); // Trigger composite fetch on session restore
-          setSetupDone(true);
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw);
+      const session = data.currentSession;
+      if (!session) return;
+
+      // Reject expired tokens before restoring — avoids silent 401s on all DB calls
+      const [, payload] = (session.access_token || '').split('.');
+      if (payload) {
+        const { exp } = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+        if (exp && Date.now() / 1000 > exp) {
+          // Try refresh token if available
+          const refresh = session.refresh_token;
+          if (refresh) {
+            sb.refreshToken(refresh).then(newSession => {
+              const updated = { currentSession: { ...session, access_token: newSession.access_token, refresh_token: newSession.refresh_token } };
+              localStorage.setItem("supabase.auth.token", JSON.stringify(updated));
+              // Re-trigger restore with new token by reloading (simplest recovery path)
+              window.location.reload();
+            }).catch(() => {
+              localStorage.removeItem("supabase.auth.token");
+            });
+          } else {
+            localStorage.removeItem("supabase.auth.token");
+          }
+          return;
         }
-      } catch (e) {
-        console.error("Session restore failed", e);
-        setIsRestoring(false);
       }
+
+      const userObj = session.user;
+      const meta = userObj.user_metadata || {};
+      const restoredUser = {
+        id: userObj.id,
+        email: userObj.email,
+        name: meta.full_name || userObj.email?.split("@")[0] || "User",
+        token: session.access_token,
+        role: meta.role || 'candidate',
+        company: meta.company || null,
+      };
+      setUser(restoredUser);
+      setIsRecruiter(meta.role === 'recruiter');
+      loadProfile(restoredUser);
+      setIsRestoring(true);
+      setSetupDone(true);
+    } catch (e) {
+      console.error("Session restore failed", e);
+      setIsRestoring(false);
     }
+  }, []);
+
+  const loadProfile = useCallback(async (userObj) => {
+    try {
+      const rows = await sb.select('profiles', { id: `eq.${userObj.id}` }, userObj.token);
+      const p = rows?.[0];
+      if (p) {
+        setForm(prev => ({
+          ...prev,
+          role:     p.role     || prev.role,
+          industry: p.industry || prev.industry,
+          level:    p.level    || prev.level,
+          market:   p.market   || prev.market,
+        }));
+      }
+    } catch { /* non-fatal */ }
   }, []);
 
   const login = (session) => {
@@ -126,6 +200,7 @@ function App() {
     setUser(newUser);
     setIsRecruiter(meta.role === 'recruiter');
     localStorage.setItem("supabase.auth.token", JSON.stringify({ currentSession: session }));
+    loadProfile(newUser);
     setIsRestoring(true); // Trigger composite fetch
     setAuthModal(null);
     setSetupDone(true);
@@ -156,6 +231,26 @@ function App() {
     return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
+  // Persist form to profiles table (debounced 1s after last change)
+  useEffect(() => {
+    if (!user?.id || !user?.token || !form.role) return;
+    if (profileSyncRef.current) clearTimeout(profileSyncRef.current);
+    profileSyncRef.current = setTimeout(async () => {
+      try {
+        await sb.upsert('profiles', {
+          id: user.id,
+          email: user.email,
+          role: form.role,
+          industry: form.industry,
+          level: form.level,
+          market: form.market,
+          updated_at: new Date().toISOString(),
+        }, user.token);
+      } catch { /* non-fatal */ }
+    }, 1000);
+    return () => { if (profileSyncRef.current) clearTimeout(profileSyncRef.current); };
+  }, [form.role, form.industry, form.level, form.market, user]);
+
   const renderActiveModule = () => {
     const props = {
       resumeText, setResumeText, scanResult, setScanResult,
@@ -171,7 +266,7 @@ function App() {
       case "score":    return <ReadinessScore {...props} />;
       case "jd":       return <JDAnalyzer {...props} />;
       case "star":     return <STARBuilder {...props} />;
-      case "simulate": return <HiringManagerSim {...props} />;
+      case "simulate": return <InterviewCoach {...props} />;
       case "salary":   return <SalaryCoach {...props} />;
       case "cover":    return <CoverLetterGen {...props} />;
       case "market":   return <MarketIntel {...props} />;
@@ -179,6 +274,7 @@ function App() {
       case "memory":   return <MemoryDashboard {...props} />;
       case "ats":        return <ATSBuilder {...props} />;
       case "trustmatch": return <TrustMatch {...props} />;
+      case "verify":     return <VerifyCreds {...props} />;
       case "dashboard":  return <Dashboard {...props} />;
       case "skillsgap":  return <SkillsGap {...props} />;
       case "roadmap":    return <CareerRoadmap {...props} />;
@@ -244,16 +340,37 @@ function App() {
               
               {resumeText === null ? (
                 <div style={{ border: `2px dashed ${C.border}`, borderRadius: 12, padding: 24, textAlign: "center", cursor: "pointer" }} onClick={() => document.getElementById('setup-file').click()}>
-                  <input type="file" id="setup-file" hidden onChange={async (e) => {
+                  <input type="file" id="setup-file" accept=".pdf,.docx" hidden onChange={async (e) => {
                     const file = e.target.files[0];
-                    if (file) {
-                      setResumeText("Parsing file..."); 
-                      setResumeText(`Content of ${file.name} (simulated)`);
+                    if (!file) return;
+                    setResumeParsing(true);
+                    try {
+                      let text = '';
+                      if (file.name.toLowerCase().endsWith('.docx')) {
+                        const ab = await file.arrayBuffer();
+                        const { value } = await mammoth.extractRawText({ arrayBuffer: ab });
+                        text = value;
+                      } else {
+                        const ab = await file.arrayBuffer();
+                        const b64 = _ab2b64(ab);
+                        const raw = await callLLM([{ role: 'user', content: RESUME_EXTRACT_PROMPT }], 3000, b64);
+                        const parsed = extractJSON(raw);
+                        text = parsed.error ? '' : _formatParsedResume(parsed);
+                      }
+                      if (text.trim()) {
+                        setResumeText(text);
+                      } else {
+                        showToast('Could not extract text — try a .docx file or paste your resume below.', 'error');
+                      }
+                    } catch {
+                      showToast('Could not read this file. Try a .docx or paste your resume below.', 'error');
+                    } finally {
+                      setResumeParsing(false);
                     }
                   }} />
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>📄</div>
-                  <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>Upload your Resume (PDF/DOCX)</div>
-                  <div style={{ color: C.muted, fontSize: 11, marginTop: 4 }}>We extract your full career history automatically</div>
+                  <div style={{ fontSize: 24, marginBottom: 8 }}>{resumeParsing ? '⏳' : '📄'}</div>
+                  <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{resumeParsing ? 'Extracting resume…' : 'Upload your Resume (PDF/DOCX)'}</div>
+                  <div style={{ color: C.muted, fontSize: 11, marginTop: 4 }}>{resumeParsing ? 'This may take a few seconds' : 'We extract your full career history automatically'}</div>
                 </div>
               ) : (
                 <textarea 
@@ -266,7 +383,7 @@ function App() {
               )}
             </div>
 
-            <Btn onClick={() => setSetupDone(true)} disabled={!form.role.trim() || (resumeText === null ? false : !resumeText?.trim())} color={C.accent} dark style={{ width: "100%", fontSize: 14 }}>⚡ Scan my resume to begin →</Btn>
+            <Btn onClick={() => setSetupDone(true)} disabled={!form.role.trim() || resumeParsing || (resumeText !== null && !resumeText?.trim())} color={C.accent} dark style={{ width: "100%", fontSize: 14 }}>{resumeParsing ? 'Extracting resume…' : 'Get started →'}</Btn>
 
             <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 24 }}>
               {!user ? (

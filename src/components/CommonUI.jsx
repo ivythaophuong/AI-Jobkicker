@@ -1,5 +1,6 @@
 import React from 'react';
 import { C } from '../styles/theme';
+import { OrbitSpinner } from './OrbitMark';
 
 export const Card = ({ children, glow, style, animate, onClick }) => (
   <div
@@ -64,9 +65,9 @@ export const Btn = ({ children, onClick, disabled, color, dark, style }) => (
   </button>
 );
 
-export const Spinner = ({ label }) => (
+export const Spinner = ({ label, size = 32 }) => (
   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: 20 }}>
-    <div className="spinner" />
+    <OrbitSpinner size={size} />
     {label && <div style={{ color: C.muted, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>{label}</div>}
   </div>
 );

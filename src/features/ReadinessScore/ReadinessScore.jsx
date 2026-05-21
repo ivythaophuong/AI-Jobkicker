@@ -5,14 +5,14 @@ import { AnimatedScore } from '../../components/OriginalFeatures';
 import { GetReadyTabStrip } from '../Landing/LandingPage';
 import '../../styles/featurePage.css';
 
-export default function ReadinessScore({ scanResult, memory, setActiveModule, onStudyPlan }) {
+export default function ReadinessScore({ scanResult, memory, setActiveModule, onStudyPlan, embedded }) {
   const latestHistory = memory?.scanHistory?.[0];
   const effectiveResult = scanResult || latestHistory?.result;
 
   if (!effectiveResult) {
     return (
       <div className="fp-wrap" style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-        <GetReadyTabStrip activeModuleId="score" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />
+        {!embedded && <GetReadyTabStrip activeModuleId="score" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />}
         <div style={{ textAlign: "center", padding: 60 }}>
           <div style={{ fontSize: 60, marginBottom: 20 }}>📊</div>
           <div style={{ color: C.text, fontWeight: 900, fontSize: 18, marginBottom: 8 }}>Readiness Calculation Offline</div>
@@ -29,7 +29,7 @@ export default function ReadinessScore({ scanResult, memory, setActiveModule, on
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      <GetReadyTabStrip activeModuleId="score" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />
+      {!embedded && <GetReadyTabStrip activeModuleId="score" onNavigate={setActiveModule} onStudyPlan={onStudyPlan || (() => {})} />}
       <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 24 }}>
       <div>
         <div style={{ color: C.text, fontWeight: 900, fontSize: 24 }}>Market Readiness Score</div>

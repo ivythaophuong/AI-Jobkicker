@@ -869,9 +869,400 @@ function ResultsView({ oldText, newText, newHtml, oldScore, newScore, oldParams,
   );
 }
 
+// ── Resume Builder Tab Bar ────────────────────────────────────────────────────
+const RB_TABS = [
+  { id: 'parse',   label: 'Upload & Parse'    },
+  { id: 'rewrite', label: 'AI Bullet Rewrite' },
+  { id: 'editor',  label: 'Live Editor'       },
+  { id: 'history', label: 'Version History'   },
+];
+
+function ResumeBuilderTabBar({ active, onTab }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 4,
+      padding: '0 24px', borderBottom: '1px solid var(--lp-bdr)',
+      background: 'var(--lp-bg3)', overflowX: 'auto', scrollbarWidth: 'none',
+    }}>
+      {RB_TABS.map(t => (
+        <button
+          key={t.id}
+          onClick={() => onTab(t.id)}
+          style={{
+            padding: '12px 16px', fontSize: 13, fontWeight: active === t.id ? 700 : 500,
+            color: active === t.id ? 'var(--lp-teal)' : 'var(--lp-text3)',
+            background: 'transparent', border: 'none',
+            borderBottom: `2px solid ${active === t.id ? 'var(--lp-teal)' : 'transparent'}`,
+            cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: 'var(--lp-ff)',
+            transition: 'all .15s',
+          }}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── Upload & Parse Tab ────────────────────────────────────────────────────────
+function UploadAndParseTab({ user, memory }) {
+  const inputRef      = useRef(null);
+  const [dragOver, setDragOver]       = useState(false);
+  const [linkedIn, setLinkedIn]       = useState('');
+  const [loading, setLoading]         = useState(false);
+  const [rawText, setRawText]         = useState('');
+  const [profile, setProfile]         = useState(null);
+  const [error, setError]             = useState('');
+
+  const parseResume = async (text) => {
+    setLoading(true); setProfile(null); setError('');
+    try {
+      const raw = await callLLM([{ role: 'user', content:
+        `Parse this resume and extract structured profile data.
+Resume text:
+${text.slice(0, 4000)}
+
+Return ONLY raw JSON (no markdown, start with {):
+{
+  "targetRole": "most recent or target role title",
+  "experience": "X years",
+  "topSkills": ["skill1","skill2","skill3"],
+  "market": "city / region",
+  "atsScore": 67,
+  "workExperience": [{"title":"job title","company":"company name","period":"date range","duration":"X years"}],
+  "education": [{"degree":"degree name","institution":"school","period":"years","gpa":"if present"}],
+  "skills": ["skill1","skill2","skill3","skill4","skill5","skill6","skill7","skill8"]
+}` }], 1000);
+      const parsed = extractJSON(raw);
+      if (!parsed.error) setProfile(parsed);
+      else setError('Could not parse resume — try a different file.');
+    } catch {
+      setError('Parse failed — check your API key.');
+    }
+    setLoading(false);
+  };
+
+  const handleFile = async (file) => {
+    setError('');
+    try {
+      const ab = await file.arrayBuffer();
+      let text = '';
+      if (file.name.toLowerCase().endsWith('.docx')) {
+        const { value } = await mammoth.extractRawText({ arrayBuffer: ab });
+        text = value;
+      } else {
+        text = new TextDecoder().decode(ab);
+      }
+      setRawText(text);
+      await parseResume(text);
+    } catch {
+      setError('Could not read file — use PDF (text-based), DOCX, or TXT.');
+    }
+  };
+
+  const atsColor = profile?.atsScore
+    ? profile.atsScore >= 80 ? '#00E5A0' : profile.atsScore >= 60 ? '#FFB84D' : '#FF5A5A'
+    : 'var(--lp-text3)';
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, minHeight: 500 }}>
+      {/* Left */}
+      <div style={{ borderRight: '1px solid var(--lp-bdr)', padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
+          Import Resume
+        </div>
+
+        {/* Drop zone */}
+        <div
+          style={{
+            border: `2px dashed ${dragOver ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`,
+            borderRadius: 10, padding: '28px 20px', textAlign: 'center',
+            cursor: 'pointer', transition: 'all .15s',
+            background: dragOver ? 'rgba(0,212,255,.04)' : 'transparent',
+          }}
+          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+          onClick={() => inputRef.current?.click()}
+        >
+          <div style={{ color: 'var(--lp-text2)', fontSize: 13, marginBottom: 6 }}>
+            Drop your PDF or{' '}
+            <span style={{ color: 'var(--lp-teal)', fontWeight: 700, cursor: 'pointer' }}>browse files</span>
+          </div>
+          <div style={{ color: 'var(--lp-text3)', fontSize: 11 }}>PDF · DOCX · TXT accepted</div>
+          <input ref={inputRef} type="file" accept=".pdf,.docx,.txt" style={{ display: 'none' }}
+            onChange={e => { if (e.target.files[0]) handleFile(e.target.files[0]); }} />
+        </div>
+
+        <div style={{ textAlign: 'center', color: 'var(--lp-text3)', fontSize: 12 }}>or</div>
+
+        {/* LinkedIn URL */}
+        <input
+          value={linkedIn}
+          onChange={e => setLinkedIn(e.target.value)}
+          placeholder="https://linkedin.com/in/yourprofile"
+          style={{
+            width: '100%', background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)',
+            borderRadius: 8, color: 'var(--lp-text)', padding: '10px 12px',
+            fontSize: 13, outline: 'none', boxSizing: 'border-box',
+          }}
+        />
+        <button
+          onClick={() => linkedIn && parseResume(`LinkedIn profile: ${linkedIn}`)}
+          disabled={loading || !linkedIn}
+          style={{
+            width: '100%', padding: '12px 0',
+            background: loading ? 'var(--lp-bdr)' : 'var(--lp-teal)',
+            color: loading ? 'var(--lp-text3)' : '#000',
+            border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800,
+            cursor: loading || !linkedIn ? 'default' : 'pointer',
+          }}
+        >
+          {loading ? 'Parsing…' : 'Parse and build profile →'}
+        </button>
+
+        {error && (
+          <div style={{ color: '#FF5A5A', fontSize: 12, padding: '8px 12px', background: 'rgba(255,90,90,.08)', borderRadius: 8, border: '1px solid rgba(255,90,90,.2)' }}>
+            {error}
+          </div>
+        )}
+
+        {/* Profile Extracted table */}
+        {profile && (
+          <div style={{ background: 'var(--lp-bg2)', borderRadius: 10, border: '1px solid var(--lp-bdr)', overflow: 'hidden' }}>
+            <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--lp-bdr)', color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
+              Profile Extracted
+            </div>
+            {[
+              { k: 'Target role',  v: profile.targetRole  },
+              { k: 'Experience',   v: profile.experience  },
+              { k: 'Top skills',   v: (profile.topSkills || []).join(', ') },
+              { k: 'Market',       v: profile.market      },
+              { k: 'ATS score',    v: profile.atsScore ? `${profile.atsScore}/100` : '—', color: atsColor },
+            ].map(row => (
+              <div key={row.k} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid var(--lp-bdr2, rgba(255,255,255,.03))' }}>
+                <span style={{ color: 'var(--lp-text3)', fontSize: 12 }}>{row.k}</span>
+                <span style={{ color: row.color || 'var(--lp-text)', fontSize: 12, fontWeight: 600, textAlign: 'right', maxWidth: '60%' }}>{row.v || '—'}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Right — AI Parse Preview */}
+      <div style={{ padding: 24 }}>
+        <div style={{ color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>
+          AI Parse Preview
+        </div>
+
+        {loading && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, gap: 12, color: 'var(--lp-text3)', fontSize: 13 }}>
+            <OrbitSpinner size={40} />
+            Parsing resume…
+          </div>
+        )}
+
+        {!loading && !profile && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--lp-text3)', gap: 8, opacity: .5 }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+            </svg>
+            <div style={{ fontSize: 12 }}>Upload a resume to see the AI parse preview</div>
+          </div>
+        )}
+
+        {!loading && profile && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Work Experience */}
+            {profile.workExperience?.length > 0 && (
+              <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--lp-bdr)', color: 'var(--lp-text3)', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
+                  Work Experience ({profile.workExperience.length})
+                </div>
+                {profile.workExperience.slice(0, 2).map((w, i) => (
+                  <div key={i} style={{ padding: '12px 14px', borderBottom: i < Math.min(profile.workExperience.length, 2) - 1 ? '1px solid var(--lp-bdr)' : 'none' }}>
+                    <div style={{ color: 'var(--lp-text)', fontSize: 13, fontWeight: 700 }}>{w.title} · {w.company}</div>
+                    <div style={{ color: 'var(--lp-text3)', fontSize: 11, marginTop: 2 }}>{w.period} · {w.duration}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Education */}
+            {profile.education?.length > 0 && (
+              <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--lp-bdr)', color: 'var(--lp-text3)', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
+                  Education
+                </div>
+                {profile.education.slice(0, 1).map((e, i) => (
+                  <div key={i} style={{ padding: '12px 14px' }}>
+                    <div style={{ color: 'var(--lp-text)', fontSize: 13, fontWeight: 700 }}>{e.degree} · {e.institution}</div>
+                    <div style={{ color: 'var(--lp-text3)', fontSize: 11, marginTop: 2 }}>{e.period}{e.gpa ? ` · GPA ${e.gpa}` : ''}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Skills */}
+            {profile.skills?.length > 0 && (
+              <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 10, padding: 14 }}>
+                <div style={{ color: 'var(--lp-text3)', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
+                  Skills Detected ({profile.skills.length})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {profile.skills.map((s, i) => (
+                    <span key={i} style={{
+                      background: i < 3 ? 'rgba(0,212,255,.15)' : 'var(--lp-bg3)',
+                      border: `1px solid ${i < 3 ? 'rgba(0,212,255,.3)' : 'var(--lp-bdr)'}`,
+                      color: i < 3 ? 'var(--lp-teal)' : 'var(--lp-text2)',
+                      borderRadius: 5, padding: '3px 9px', fontSize: 11, fontWeight: 600,
+                    }}>{s}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* CTA */}
+            <button
+              style={{
+                width: '100%', padding: '12px 0',
+                background: 'var(--lp-teal)', color: '#000',
+                border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer',
+              }}
+            >
+              Rewrite bullets with AI →
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── AI Bullet Rewrite Tab ─────────────────────────────────────────────────────
+function BulletRewriteTab() {
+  const [bullets, setBullets]   = useState('');
+  const [context, setContext]   = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [rewrites, setRewrites] = useState([]);
+
+  const rewrite = async () => {
+    if (!bullets.trim()) return;
+    setLoading(true); setRewrites([]);
+    try {
+      const raw = await callLLM([{ role: 'user', content:
+        `Rewrite these resume bullets to be stronger, more quantified, and ATS-optimised.
+Context/role: ${context || 'general'}
+Bullets:
+${bullets}
+
+Return ONLY raw JSON array (no markdown, start with [):
+[{"before":"original bullet","after":"rewritten bullet with numbers and strong verbs"}]
+Rewrite every bullet. Never use placeholders.` }], 1000);
+      const parsed = extractJSON(raw);
+      if (Array.isArray(parsed)) setRewrites(parsed);
+    } catch { /* silent */ }
+    setLoading(false);
+  };
+
+  const inp = {
+    width: '100%', background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)',
+    borderRadius: 8, color: 'var(--lp-text)', padding: '10px 12px',
+    fontSize: 13, outline: 'none', boxSizing: 'border-box', resize: 'vertical', lineHeight: 1.6,
+  };
+
+  return (
+    <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 760 }}>
+      <div style={{ color: 'var(--lp-text)', fontWeight: 700, fontSize: 15 }}>AI Bullet Rewrite</div>
+      <div style={{ color: 'var(--lp-text3)', fontSize: 12 }}>
+        Paste weak bullets — AI rewrites them with numbers, strong action verbs, and ATS keywords.
+      </div>
+
+      <div>
+        <div style={{ color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Target role / context</div>
+        <input value={context} onChange={e => setContext(e.target.value)}
+          placeholder="e.g. Senior Product Manager" style={{ ...inp, resize: 'none', minHeight: 'auto' }} />
+      </div>
+
+      <div>
+        <div style={{ color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Your bullets (one per line)</div>
+        <textarea value={bullets} onChange={e => setBullets(e.target.value)}
+          placeholder={"Helped drive product roadmap\nWorked with teams on deliverables\nAssisted with customer research"}
+          style={{ ...inp, minHeight: 120 }} />
+      </div>
+
+      <button onClick={rewrite} disabled={loading || !bullets.trim()}
+        style={{
+          padding: '12px 24px', background: loading ? 'var(--lp-bdr)' : 'var(--lp-teal)',
+          color: loading ? 'var(--lp-text3)' : '#000', border: 'none', borderRadius: 8,
+          fontSize: 13, fontWeight: 800, cursor: loading ? 'default' : 'pointer', width: 'fit-content',
+        }}>
+        {loading ? 'Rewriting…' : 'Rewrite with AI →'}
+      </button>
+
+      {rewrites.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {rewrites.map((r, i) => (
+            <div key={i} style={{ background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 10, overflow: 'hidden' }}>
+              <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--lp-bdr)', color: 'var(--lp-text3)', fontSize: 12, fontStyle: 'italic' }}>
+                {r.before}
+              </div>
+              <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ color: 'var(--lp-teal)', fontSize: 16 }}>→</span>
+                <span style={{ color: 'var(--lp-text)', fontSize: 13, fontWeight: 600, flex: 1 }}>{r.after}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Version History Tab ───────────────────────────────────────────────────────
+function VersionHistoryTab({ memory }) {
+  const versions = memory?.resumeVersions || [];
+
+  return (
+    <div style={{ padding: 24 }}>
+      <div style={{ color: 'var(--lp-text)', fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Version History</div>
+      <div style={{ color: 'var(--lp-text3)', fontSize: 12, marginBottom: 20 }}>Saved snapshots of your resume after each AI rebuild.</div>
+
+      {versions.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: 48, color: 'var(--lp-text3)', fontSize: 13, opacity: .6 }}>
+          No versions saved yet. Build an ATS-optimised resume in the Live Editor to create your first version.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {versions.map((v, i) => (
+            <div key={i} style={{
+              background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)',
+              borderRadius: 10, padding: '14px 16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <div>
+                <div style={{ color: 'var(--lp-text)', fontSize: 13, fontWeight: 600 }}>Version {versions.length - i}</div>
+                <div style={{ color: 'var(--lp-text3)', fontSize: 11, marginTop: 2 }}>
+                  {v.date ? new Date(v.date).toLocaleDateString() : '—'} · ATS {v.score || '—'}/100
+                </div>
+              </div>
+              <button style={{
+                background: 'transparent', border: '1px solid var(--lp-bdr)',
+                color: 'var(--lp-text2)', borderRadius: 6, padding: '5px 12px',
+                fontSize: 11, fontWeight: 600, cursor: 'pointer',
+              }}>Restore</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main ATSBuilder ────────────────────────────────────────────────────────────
 const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
   const hasSavedResume = !!memory?.scanPdfBase64;
+  const [mainTab, setMainTab] = useState('parse');
   const [phase, setPhase] = useState(hasSavedResume ? 'scanning' : 'upload'); // upload | scanning | kanban | building | results
   const [scanStep, setScanStep] = useState(SCAN_STEPS[0]);
   const [error, setError] = useState(null);
@@ -953,6 +1344,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
         b64
       );
       setResumeTextState(extractedText.trim());
+      if (updateMemory) updateMemory(m => ({ ...m, resumeText: extractedText.trim() }));
 
       // Step 2: scan for ATS gaps using the extracted text
       const raw = await callLLM(
@@ -970,6 +1362,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
     setPhase('scanning');
     setScanStep(SCAN_STEPS[0]);
     setResumeTextState(text);
+    if (updateMemory) updateMemory(m => ({ ...m, resumeText: text }));
     const t = stepTimer(setScanStep);
     try {
       const raw = await callLLM(
@@ -1001,7 +1394,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
     setPhase('kanban');
     if (updateMemory) {
       updateMemory(
-        m => ({ scanHistory: [{ score: parsed.atsScore, date: new Date().toISOString() }, ...(m.scanHistory || [])].slice(-20) }),
+        m => ({ scanHistory: [{ score: parsed.atsScore, date: new Date().toISOString() }, ...(m.scanHistory || [])].slice(0, 20) }),
         { table: 'resume_scans', data: { credibility_score: parsed.atsScore ?? 0, metrics_found: parsed.parameters ? Object.keys(parsed.parameters).length : 0, summary: parsed.summary || '', issues: parsed.gaps || [], questions: parsed.interrogationQuestions || [] } }
       );
     }
@@ -1080,7 +1473,28 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div className="atb">
-      {phase === 'upload' && (
+      {/* Page header + tab bar */}
+      <div style={{ padding: '16px 24px 0', borderBottom: '1px solid var(--lp-bdr)' }}>
+        <div style={{ color: 'var(--lp-text)', fontWeight: 900, fontSize: 22 }}>Resume Builder</div>
+        <div style={{ color: 'var(--lp-text3)', fontSize: 13, marginTop: 2, marginBottom: 0 }}>
+          Your resume is at ATS{memory?.lastAtsScore ? ` ${memory.lastAtsScore}/100` : ' —'}.
+          Upload, parse, rewrite bullets, and rebuild to 90+.
+        </div>
+        <ResumeBuilderTabBar active={mainTab} onTab={setMainTab} />
+      </div>
+
+      {/* Tab routing */}
+      {mainTab === 'parse' && (
+        <UploadAndParseTab user={user} memory={memory} />
+      )}
+      {mainTab === 'rewrite' && (
+        <BulletRewriteTab />
+      )}
+      {mainTab === 'history' && (
+        <VersionHistoryTab memory={memory} />
+      )}
+
+      {mainTab === 'editor' && phase === 'upload' && (
         <UploadPhase
           onFile={handleFile}
           hasScanResume={!!memory?.scanPdfBase64}
@@ -1090,11 +1504,11 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
         />
       )}
 
-      {phase === 'scanning' && (
+      {mainTab === 'editor' && phase === 'scanning' && (
         <LoadingPhase label="Scanning your resume…" step={scanStep} variant="teal" />
       )}
 
-      {phase === 'building' && (
+      {mainTab === 'editor' && phase === 'building' && (
         <LoadingPhase
           label="Building your ATS-optimised resume…"
           step="AI is rewriting your content with the requested edits"
@@ -1102,7 +1516,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
         />
       )}
 
-      {phase === 'kanban' && (
+      {mainTab === 'editor' && phase === 'kanban' && (
         <>
           {error && (
             <div className="atb-error">
@@ -1190,7 +1604,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
         </>
       )}
 
-      {phase === 'results' && buildResult && (
+      {mainTab === 'editor' && phase === 'results' && buildResult && (
         <ResultsView
           oldText={resumeText}
           newText={buildResult.newText}
