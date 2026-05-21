@@ -650,7 +650,7 @@ function App() {
       ) : (
         /* Guest / landing layout */
         <>
-          {!showLanding && (
+          {!showLanding && setupDone && (
             <>
               <GuestNav onSignIn={() => setAuthModal('login')} onJoin={() => setAuthModal('register')} onHome={() => setShowLanding(true)} />
               <AppHubNav activeModule={activeModule} onNavigate={navigate} />
