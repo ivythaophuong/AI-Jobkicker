@@ -56,16 +56,19 @@ EDITS TO APPLY:
 ${edits}
 
 OUTPUT REQUIREMENTS:
-- Return ONLY a complete HTML document. No markdown, no code fences, no explanation.
-- Start your response with: <!DOCTYPE html>
-- Use this exact CSS in a <style> tag inside <head>: ${css}
+- Return ONLY a complete HTML document. No markdown, no code fences, no explanation before or after.
+- Your response must start immediately with: <!DOCTYPE html>
+- Use this exact CSS (copy verbatim) in a <style> tag inside <head>: ${css}
+- Do NOT add any <script> tags, external stylesheets, @import rules, Google Fonts links, or external image src attributes.
+- Do NOT use inline style="" attributes — rely on the provided CSS classes only.
 - HTML structure to use in <body>:
   - <h1> for candidate name
   - <p class="contact"> for contact info (email · phone · location · LinkedIn)
   - <h2> for each section heading (EXPERIENCE, EDUCATION, SKILLS, etc.)
   - For each job: <div class="entry"><div class="entry-header"><span class="role">Title</span><span class="period">Dates</span></div><p class="org">Company</p><ul><li>bullet</li></ul></div>
   - <p class="skills"> for skills section content
-- Do NOT include any placeholder text, comments, or instructions in the output.`;
+- Do NOT include any placeholder text, TODO comments, or meta-instructions in the HTML output.
+- The document must render a complete, readable resume with all sections filled in.`;
 }
 
 export function stripHtmlToText(html) {

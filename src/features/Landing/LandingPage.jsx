@@ -4871,7 +4871,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
 
             {/* Brand */}
             <div>
-              <a href="#" style={{display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '16px'}}>
+              <a href="#hero" style={{display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '16px'}}>
                 <LogoMark size={28} />
                 <div>
                   <div style={{fontWeight: '700', fontSize: '15px', color: 'var(--ink)', letterSpacing: '-.02em'}}>CareerAiHub</div>
@@ -4880,9 +4880,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
               </a>
               <p style={{fontSize: '12.5px', color: 'var(--ink3)', lineHeight: '1.7', maxWidth: '240px', fontWeight: '300'}}>AI-powered career acceleration. Built in Singapore.</p>
               <div style={{display: 'flex', gap: '10px', marginTop: '18px'}}>
-                <a href="#" style={{width: '30px', height: '30px', borderRadius: '8px', border: '1px solid var(--border2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', textDecoration: 'none', color: 'var(--ink3)', transition: '.2s'}} title="LinkedIn">in</a>
-                <a href="#" style={{width: '30px', height: '30px', borderRadius: '8px', border: '1px solid var(--border2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', textDecoration: 'none', color: 'var(--ink3)', transition: '.2s'}} title="X/Twitter">𝕏</a>
-                <a href="#" style={{width: '30px', height: '30px', borderRadius: '8px', border: '1px solid var(--border2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', textDecoration: 'none', color: 'var(--ink3)', transition: '.2s'}} title="GitHub">⌨</a>
+                <a href="https://www.linkedin.com/company/careeraihub" target="_blank" rel="noopener noreferrer" style={{width: '30px', height: '30px', borderRadius: '8px', border: '1px solid var(--border2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', textDecoration: 'none', color: 'var(--ink3)', transition: '.2s'}} title="LinkedIn">in</a>
               </div>
             </div>
 
@@ -4902,11 +4900,9 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
             <div>
               <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8.5px', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: '14px'}}>Company</div>
               <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-                <a href="#" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>About</a>
-                <a href="#" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Blog</a>
-                <a href="#" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Careers</a>
-                <a href="#" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Press</a>
                 <a href="mailto:hello@careeraihub.com" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Contact</a>
+                <a href="mailto:hello@careeraihub.com" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Careers</a>
+                <a href="mailto:press@careeraihub.com" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Press</a>
               </div>
             </div>
 
@@ -4915,8 +4911,8 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
               <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8.5px', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: '14px'}}>Legal</div>
               <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
                 <a href="#privacy" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Privacy Policy</a>
-                <a href="#" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Terms of Service</a>
-                <a href="#" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Cookie Policy</a>
+                <a href="#" onClick={e => { e.preventDefault(); fnRef.current.openLegal?.('tos'); }} style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s', cursor: 'pointer'}}>Terms of Service</a>
+                <a href="#" onClick={e => { e.preventDefault(); fnRef.current.openLegal?.('privacy'); }} style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s', cursor: 'pointer'}}>Cookie Policy</a>
                 <a href="#" onClick={(e) => {e.preventDefault(); fnRef.current.cookiePrefs?.();}} style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Cookie Preferences</a>
                 <a href="#faq" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>FAQ</a>
                 <a href="mailto:security@careeraihub.com" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Security</a>

@@ -212,7 +212,7 @@ function ActionItems({ items, setActiveModule }) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export default function Dashboard({ memory, form, user, setActiveModule }) {
+export default function Dashboard({ memory, form, user, setActiveModule, resumeText }) {
   const [trustScore, setTrustScore] = useState(0);
 
   useEffect(() => {
@@ -298,6 +298,19 @@ export default function Dashboard({ memory, form, user, setActiveModule }) {
           <button onClick={() => setActiveModule('simulate')} style={btnStyle('primary')}>Continue prep →</button>
         </div>
       </div>
+
+      {/* Resume upload CTA — shown until first scan */}
+      {!resumeText && (!memory.scanHistory || memory.scanHistory.length === 0) && (
+        <div style={{ marginBottom: 16, background: 'rgba(0,212,255,.05)', border: '1px solid rgba(0,212,255,.2)', borderRadius: 10, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 4 }}>Upload your resume to unlock everything</div>
+            <div style={{ fontSize: 11.5, color: 'var(--lp-text2)', lineHeight: 1.5 }}>Your ATS score, skills gap analysis, readiness score, and AI coaching all activate after your first resume scan.</div>
+          </div>
+          <button onClick={() => setActiveModule('ats')} style={{ ...btnStyle('primary'), flexShrink: 0, padding: '9px 18px', fontSize: 13 }}>
+            Scan my resume →
+          </button>
+        </div>
+      )}
 
       {/* Hero: Readiness Arc + Streak */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 12, marginBottom: 12 }}>

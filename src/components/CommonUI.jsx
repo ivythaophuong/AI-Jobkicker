@@ -80,3 +80,18 @@ export const EmptyState = ({ icon, title, desc, cta, onCta, ctaColor = C.accent 
     {cta && <Btn onClick={onCta} color={ctaColor} dark style={{ margin: "0 auto" }}>{cta}</Btn>}
   </div>
 );
+
+export const NextStepBanner = ({ message, cta, onClick, onDismiss }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: `${C.green}12`, border: `1px solid ${C.green}40`, borderRadius: 10, padding: '12px 16px', marginBottom: 16 }}>
+    <div style={{ fontSize: 16, flexShrink: 0 }}>✓</div>
+    <div style={{ flex: 1, fontSize: 12.5, color: C.text, lineHeight: 1.5 }}>{message}</div>
+    {cta && onClick && (
+      <button onClick={onClick} style={{ background: C.green, border: 'none', color: '#000', borderRadius: 6, padding: '6px 14px', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, whiteSpace: 'nowrap' }}>
+        {cta}
+      </button>
+    )}
+    {onDismiss && (
+      <button onClick={onDismiss} style={{ background: 'transparent', border: 'none', color: C.muted, cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px', flexShrink: 0 }}>×</button>
+    )}
+  </div>
+);

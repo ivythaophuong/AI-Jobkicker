@@ -83,14 +83,14 @@ function initials(name) {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
-export default function AppSidebar({ activeModule, onNavigate, user, onLogout }) {
+export default function AppSidebar({ activeModule, onNavigate, user, onLogout, collapsed, onToggle }) {
   const allItems   = NAV_GROUPS.flatMap(g => g.items);
   const mobileItems = allItems.filter(i => MOBILE_ITEMS.includes(i.id));
 
   return (
     <>
       {/* Desktop sidebar */}
-      <div className="app-sidebar">
+      <div className={`app-sidebar${collapsed ? ' collapsed' : ''}`}>
         {/* Logo */}
         <div className="app-sidebar-logo">
           <LogoMark size={26} />
@@ -111,15 +111,20 @@ export default function AppSidebar({ activeModule, onNavigate, user, onLogout })
                     key={item.id}
                     className={`app-sidebar-item${active ? ' active' : ''}`}
                     onClick={() => onNavigate(item.id)}
+                    title={collapsed ? item.label : undefined}
                   >
                     <span className="app-sidebar-icon">
                       <Icon id={item.id} size={15} color={active ? 'var(--lp-teal)' : 'var(--lp-text3)'} />
                     </span>
-                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
-                    {item.badge && (
-                      <span className={`app-sidebar-badge ${BADGE_CLASS[item.badge] || ''}`}>
-                        {BADGE_LABEL[item.badge]}
-                      </span>
+                    {!collapsed && (
+                      <>
+                        <span className="sni-lbl" style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
+                        {item.badge && (
+                          <span className={`app-sidebar-badge ${BADGE_CLASS[item.badge] || ''}`}>
+                            {BADGE_LABEL[item.badge]}
+                          </span>
+                        )}
+                      </>
                     )}
                   </button>
                 );
@@ -129,24 +134,53 @@ export default function AppSidebar({ activeModule, onNavigate, user, onLogout })
         </nav>
 
         {/* User bar */}
-        <div className="app-sidebar-user">
+        <div className="app-sidebar-user" title={collapsed ? (user?.name || 'User') : undefined}>
           <div className="app-sidebar-avatar">{initials(user?.name)}</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {user?.name || 'User'}
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--lp-text3)' }}>{user?.email?.split('@')[0]}</div>
-          </div>
-          <button
-            onClick={onLogout}
-            title="Sign out"
-            style={{ background: 'transparent', border: 'none', color: 'var(--lp-text3)', cursor: 'pointer', padding: 4, lineHeight: 1, flexShrink: 0, display: 'flex', alignItems: 'center' }}
-          >
-            <svg viewBox="0 0 16 16" width={14} height={14} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10 8H2M5 5l-3 3 3 3M8 4V3a1 1 0 011-1h4a1 1 0 011 1v10a1 1 0 01-1 1H9a1 1 0 01-1-1v-1"/>
-            </svg>
-          </button>
+          {!collapsed && (
+            <>
+              <div className="app-sidebar-user-text" style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {user?.name || 'User'}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--lp-text3)' }}>{user?.email?.split('@')[0]}</div>
+              </div>
+              <button
+                className="app-sidebar-logout"
+                onClick={onLogout}
+                title="Sign out"
+                style={{ background: 'transparent', border: 'none', color: 'var(--lp-text3)', cursor: 'pointer', padding: 4, lineHeight: 1, flexShrink: 0, display: 'flex', alignItems: 'center' }}
+              >
+                <svg viewBox="0 0 16 16" width={14} height={14} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 8H2M5 5l-3 3 3 3M8 4V3a1 1 0 011-1h4a1 1 0 011 1v10a1 1 0 01-1 1H9a1 1 0 01-1-1v-1"/>
+                </svg>
+              </button>
+            </>
+          )}
         </div>
+
+        {/* Collapse toggle */}
+        <button
+          onClick={onToggle}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: '100%', padding: '10px 0',
+            background: 'transparent', border: 'none',
+            borderTop: '1px solid var(--lp-bdr, rgba(0,212,255,.08))',
+            color: 'var(--lp-text3)', cursor: 'pointer',
+            flexShrink: 0,
+            transition: 'color 0.15s ease',
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = 'var(--lp-text)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'var(--lp-text3)'}
+        >
+          <svg viewBox="0 0 16 16" width={13} height={13} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+            {collapsed
+              ? <path d="M6 3l5 5-5 5"/>
+              : <path d="M10 3L5 8l5 5"/>
+            }
+          </svg>
+        </button>
       </div>
 
       {/* Mobile bottom nav */}

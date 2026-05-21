@@ -1,7 +1,9 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import mammoth from 'mammoth';
 import { callLLM, extractJSON } from '../../lib/ai.jsx';
+import { extractTextFromPdfFile } from '../../lib/resumeParser.js';
 import { OrbitSpinner } from '../../components/OrbitMark';
+import { NextStepBanner } from '../../components/CommonUI';
 import {
   SEVERITY_ORDER, CATEGORIES,
   genId, arrayBufferToBase64, computeLineDiff, sortGapsBySeverity, buildRebuildPrompt, stripHtmlToText,
@@ -309,6 +311,7 @@ const SCAN_PROMPT = `You are an expert ATS resume analyst. Analyse the resume be
 Return ONLY raw JSON (no markdown, no code blocks, start immediately with {):
 {"atsScore":0,"parameters":{"keywords":0,"impactMetrics":0,"formatting":0,"missingSections":0,"summaryHeadline":0},"gaps":[{"id":"g1","severity":"critical","category":"keywords","title":"Short gap title","description":"2-3 sentences — what is wrong and why it hurts ATS","section":"Resume section this applies to","aiSuggestion":"Specific actionable fix with example text"}]}
 Rules: atsScore 0-100; parameter values 0-100; severity one of critical|high|medium|low; category one of keywords|impact_metrics|formatting|missing_sections|summary_headline; generate 6-10 gaps sorted critical first; be hyper-specific to this exact resume.
+Score calibration: most real resumes score 25–65. A well-written resume with good keyword match scores 65–80. An excellent resume tailored to the JD with quantified impact, all keywords, clean formatting, and a strong summary scores 80–95. A near-perfect match scores 95–100. Do NOT artificially cap at 85 — if the resume genuinely deserves 90+, give it.
 
 RESUME:
 `;
@@ -340,15 +343,16 @@ function stepTimer(setScanStep) {
 }
 
 // ── Upload Phase ───────────────────────────────────────────────────────────────
-function UploadPhase({ onFile, hasScanResume, onUseScanResume, error, onClearError }) {
+function UploadPhase({ onFile, hasScanResume, onUseScanResume, error, onClearError, targetRole, onTargetRoleChange }) {
   const inputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
+  const roleReady = targetRole.trim().length > 0;
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (file) onFile(file);
+    if (file && roleReady) onFile(file);
   };
 
   return (
@@ -363,19 +367,36 @@ function UploadPhase({ onFile, hasScanResume, onUseScanResume, error, onClearErr
       <h1 className="atb-upload-h">Build a resume that beats ATS.</h1>
       <p className="atb-upload-p">Upload your resume. AI scans for gaps — you pick what to fix, it rebuilds and shows exactly what changed.</p>
 
+      {/* Target role input */}
+      <div style={{ marginBottom: 16, width: '100%', maxWidth: 480 }}>
+        <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--lp-text3)', textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: 'var(--lp-ffm)', marginBottom: 6 }}>
+          What role are you targeting? <span style={{ color: '#FF5A5A' }}>*</span>
+        </label>
+        <input
+          type="text"
+          value={targetRole}
+          onChange={e => onTargetRoleChange(e.target.value)}
+          placeholder="e.g. Senior Product Manager, Software Engineer"
+          style={{ width: '100%', background: 'var(--lp-bg2)', border: `1px solid ${roleReady ? 'rgba(0,212,255,.3)' : 'var(--lp-bdr)'}`, borderRadius: 8, padding: '9px 12px', color: 'var(--lp-text)', fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color .15s' }}
+        />
+        {!roleReady && <div style={{ fontSize: 10.5, color: 'var(--lp-text3)', marginTop: 5, fontFamily: 'var(--lp-ffm)' }}>Required — AI calibrates keyword matching to your target role.</div>}
+      </div>
+
       <div
-        className={`atb-upload-zone${dragOver ? ' drag-over' : ''}`}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        className={`atb-upload-zone${dragOver ? ' drag-over' : ''}${!roleReady ? ' disabled' : ''}`}
+        style={{ opacity: roleReady ? 1 : 0.5, cursor: roleReady ? 'pointer' : 'not-allowed' }}
+        onDragOver={(e) => { e.preventDefault(); if (roleReady) setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => roleReady && inputRef.current?.click()}
       >
         <div className="atb-upload-icon">📄</div>
-        <div className="atb-upload-title">Drop your resume here</div>
+        <div className="atb-upload-title">{roleReady ? 'Drop your resume here' : 'Enter your target role first'}</div>
         <div className="atb-upload-sub">PDF or DOCX · Click to browse</div>
         <button
           className="atb-upload-btn"
-          onClick={e => { e.stopPropagation(); inputRef.current?.click(); }}
+          disabled={!roleReady}
+          onClick={e => { e.stopPropagation(); if (roleReady) inputRef.current?.click(); }}
         >
           Browse files
         </button>
@@ -1260,12 +1281,14 @@ function VersionHistoryTab({ memory }) {
 }
 
 // ── Main ATSBuilder ────────────────────────────────────────────────────────────
-const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
+const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveModule }) => {
   const hasSavedResume = !!memory?.scanPdfBase64;
   const [mainTab, setMainTab] = useState('parse');
   const [phase, setPhase] = useState(hasSavedResume ? 'scanning' : 'upload'); // upload | scanning | kanban | building | results
   const [scanStep, setScanStep] = useState(SCAN_STEPS[0]);
   const [error, setError] = useState(null);
+  const [targetRole, setTargetRole] = useState(form?.role || '');
+  const [showNextStep, setShowNextStep] = useState(false);
 
   // Resume data
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -1312,7 +1335,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
       const ab = await file.arrayBuffer();
       const b64 = arrayBufferToBase64(ab);
       setPdfBase64(b64);
-      await runScanPdf(b64);
+      await runScanPdf(b64, file);
     } else {
       setPdfUrl(null);
       setPdfBase64(null);
@@ -1332,23 +1355,26 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
   };
 
   // ── Scan ─────────────────────────────────────────────────────────────────────
-  const runScanPdf = async (b64) => {
+  const runScanPdf = async (b64, fileRef) => {
     setPhase('scanning');
     setScanStep(SCAN_STEPS[0]);
     const t = stepTimer(setScanStep);
     try {
-      // Step 1: extract plain text from PDF (keeps scan JSON small and valid)
-      const extractedText = await callLLM(
-        [{ role: 'user', content: TEXT_EXTRACT_PROMPT }],
-        2000,
-        b64
-      );
+      // Step 1: extract plain text from PDF using pdfjs (no LLM cost)
+      let extractedText = '';
+      if (fileRef) {
+        try { extractedText = await extractTextFromPdfFile(fileRef); } catch (_) { /* fallback below */ }
+      }
+      if (!extractedText.trim()) {
+        extractedText = await callLLM([{ role: 'user', content: TEXT_EXTRACT_PROMPT }], 2000, b64);
+      }
       setResumeTextState(extractedText.trim());
-      if (updateMemory) updateMemory(m => ({ ...m, resumeText: extractedText.trim() }));
+      if (updateMemory) updateMemory(m => ({ ...m, resumeText: extractedText.trim(), scanPdfBase64: b64 }));
 
       // Step 2: scan for ATS gaps using the extracted text
+      const rolePrefix = targetRole.trim() ? `Target role: ${targetRole.trim()}\n\n` : '';
       const raw = await callLLM(
-        [{ role: 'user', content: SCAN_PROMPT + extractedText.trim() }],
+        [{ role: 'user', content: rolePrefix + SCAN_PROMPT + extractedText.trim() }],
         8000
       );
       processScanResult(raw);
@@ -1365,8 +1391,9 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
     if (updateMemory) updateMemory(m => ({ ...m, resumeText: text }));
     const t = stepTimer(setScanStep);
     try {
+      const rolePrefix = targetRole.trim() ? `Target role: ${targetRole.trim()}\n\n` : '';
       const raw = await callLLM(
-        [{ role: 'user', content: SCAN_PROMPT + text }],
+        [{ role: 'user', content: rolePrefix + SCAN_PROMPT + text }],
         8000
       );
       processScanResult(raw);
@@ -1381,6 +1408,11 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
     if (parsed.error) {
       setError('Could not parse scan results. Please try again.');
       setPhase('upload');
+      if (updateMemory) {
+        updateMemory(m => ({
+          scanHistory: [{ score: 0, date: new Date().toISOString(), status: 'failed' }, ...(m.scanHistory || [])].slice(0, 20),
+        }));
+      }
       return;
     }
     setAtsScore(parsed.atsScore ?? 0);
@@ -1392,6 +1424,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
     setDoneCards([]);
     setBuildResult(null);
     setPhase('kanban');
+    setShowNextStep(true);
     if (updateMemory) {
       updateMemory(
         m => ({ scanHistory: [{ score: parsed.atsScore, date: new Date().toISOString() }, ...(m.scanHistory || [])].slice(0, 20) }),
@@ -1501,6 +1534,8 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
           onUseScanResume={handleUseScanResume}
           error={error}
           onClearError={() => setError(null)}
+          targetRole={targetRole}
+          onTargetRoleChange={setTargetRole}
         />
       )}
 
@@ -1524,6 +1559,16 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
               <button onClick={() => setError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#ff5f6e', cursor: 'pointer', fontSize: 16 }}>×</button>
             </div>
           )}
+          {showNextStep && setActiveModule && (
+            <div style={{ padding: '0 16px', marginTop: 8 }}>
+              <NextStepBanner
+                message="Resume scanned. Next: build your STAR story bank so you're ready for behavioral interview questions."
+                cta="Build STAR Bank →"
+                onClick={() => { setShowNextStep(false); setActiveModule('star'); }}
+                onDismiss={() => setShowNextStep(false)}
+              />
+            </div>
+          )}
           <div className="atb-workspace">
             {/* Left: PDF / text preview */}
             <div className="atb-pdf-pane">
@@ -1543,6 +1588,17 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger }) => {
 
             {/* Right: Kanban */}
             <div className="atb-kanban-pane">
+              {/* ATS Score strip */}
+              {atsScore !== null && (
+                <div style={{ padding: '10px 14px', background: 'var(--lp-bg3)', borderBottom: '1px solid var(--lp-bdr)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--lp-text3)', textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: 'var(--lp-ffm)', flexShrink: 0 }}>ATS Score</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: atsScore >= 80 ? '#00E5A0' : atsScore >= 60 ? '#FFB84D' : '#FF5A5A', lineHeight: 1, flexShrink: 0 }}>{atsScore}</div>
+                  <div style={{ flex: 1, height: 6, background: 'var(--lp-bg4, rgba(255,255,255,.06))', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${atsScore}%`, background: atsScore >= 80 ? '#00E5A0' : atsScore >= 60 ? '#FFB84D' : '#FF5A5A', borderRadius: 3, transition: 'width 1s ease' }} />
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--lp-text3)', flexShrink: 0 }}>target <span style={{ color: '#00E5A0', fontWeight: 700 }}>85+</span></div>
+                </div>
+              )}
               <div className="atb-kanban-header">
                 <div>
                   <div className="atb-kanban-title">Gap Editor</div>

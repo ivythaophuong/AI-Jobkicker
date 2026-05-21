@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import mammoth from 'mammoth';
 import { sb } from './lib/supabase';
 import { callLLM, extractJSON } from './lib/ai.jsx';
+import { extractTextFromPdfFile } from './lib/resumeParser.js';
 import { C, MODULES } from './styles/theme';
 import { Badge, Btn, Card, Spinner } from './components/CommonUI';
 import { useMemory } from './hooks/useMemory';
@@ -68,7 +69,8 @@ import EmployerPortal from './features/EmployerPortal/EmployerPortal';
 
 // ── Main App Shell ───────────────────────────────────────────────────────────
 function App() {
-  const [setupDone, setSetupDone] = useState(true);
+  const [setupDone, setSetupDone] = useState(false);
+  const [onboardStep, setOnboardStep] = useState(1);
   const [form, setForm] = useState({ role: "", industry: "", level: "Senior", market: "Singapore", urgency: "7 days" });
   const profileSyncRef = useRef(null);
   const [user, setUser] = useState(null);
@@ -85,6 +87,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [toast, setToast] = useState(null);
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isRecruiter, setIsRecruiter] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
   const [grModalOpen, setGrModalOpen] = useState(false);
@@ -295,105 +298,183 @@ function App() {
     if (user && isRecruiter) return <EmployerPortal user={user} onLogout={logout} />;
 
     if (!setupDone) {
+      const INDUSTRIES = ['Software / Tech', 'Finance', 'Marketing', 'Healthcare', 'Education', 'Consulting', 'Other'];
+      const MARKETS    = ['Singapore', 'Southeast Asia', 'Global'];
+      const STEP_TITLES = [
+        { title: 'What role are you targeting?', sub: 'Powers your resume score, STAR prep, and coaching.' },
+        { title: 'Your market & industry', sub: 'We calibrate salaries, keywords, and benchmarks to your context.' },
+        { title: 'Add your resume', sub: 'Unlocks your ATS score, skills gap, and career roadmap.' },
+      ];
+      const handleSetupFile = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setResumeParsing(true);
+        try {
+          let text = '';
+          if (file.name.toLowerCase().endsWith('.docx')) {
+            const ab = await file.arrayBuffer();
+            const { value } = await mammoth.extractRawText({ arrayBuffer: ab });
+            text = value;
+          } else {
+            try {
+              text = await extractTextFromPdfFile(file);
+            } catch (_) {
+              const ab = await file.arrayBuffer();
+              const b64 = _ab2b64(ab);
+              const raw = await callLLM([{ role: 'user', content: RESUME_EXTRACT_PROMPT }], 3000, b64);
+              const parsed = extractJSON(raw);
+              text = parsed.error ? '' : _formatParsedResume(parsed);
+            }
+          }
+          if (text.trim()) {
+            setResumeText(text);
+          } else {
+            showToast('Could not extract text — try a .docx file or paste your resume below.', 'error');
+          }
+        } catch {
+          showToast('Could not read this file. Try a .docx or paste your resume below.', 'error');
+        } finally {
+          setResumeParsing(false);
+        }
+      };
+
       return (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px", maxWidth: 600, margin: "0 auto", animation: "fadeIn 0.5s ease" }}>
-          
-          {/* Logo (Onboarding version) */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px", maxWidth: 560, margin: "0 auto", animation: "fadeIn 0.5s ease" }}>
+
+          {/* Logo */}
           <div style={{ textAlign: "center", marginBottom: 32 }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
               <div style={{ width: 10, height: 10, borderRadius: "50%", background: C.accent, boxShadow: `0 0 15px ${C.accent}`, animation: "pulse 2s ease infinite" }} />
-              <span style={{ 
-                fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 26, letterSpacing: "-1px",
-                background: `linear-gradient(135deg, ${C.accent} 0%, #7B61FF 50%, ${C.pink} 100%)`,
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
-              }}>CareerAiHub</span>
+              <span style={{ fontFamily: "var(--font-display)", fontWeight: 900, fontSize: 26, letterSpacing: "-1px", background: `linear-gradient(135deg, ${C.accent} 0%, #7B61FF 50%, ${C.pink} 100%)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>CareerAiHub</span>
             </div>
             <div style={{ color: C.muted, fontSize: 13, letterSpacing: 1, textTransform: "uppercase" }}>The Career Acceleration OS</div>
           </div>
 
-          {/* Form Card */}
+          {/* Step indicator */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28 }}>
+            {[1, 2, 3].map(s => (
+              <React.Fragment key={s}>
+                <div style={{ width: s === onboardStep ? 28 : 20, height: 8, borderRadius: 4, background: s === onboardStep ? C.accent : s < onboardStep ? C.green : C.border, transition: "all 0.2s ease" }} />
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Card */}
           <div style={{ width: "100%", background: C.card, border: `1px solid ${C.accent}33`, borderRadius: 16, padding: 32, boxShadow: `0 0 40px ${C.accent}0D` }}>
             <div style={{ marginBottom: 24 }}>
-               <div style={{ color: C.text, fontWeight: 900, fontSize: 18, marginBottom: 4 }}>Build your personalized system</div>
-               <div style={{ color: C.muted, fontSize: 12 }}>Takes 30 seconds. Powers every AI module.</div>
-            </div>
-            <div style={{ marginBottom: 16 }}>
-              <label className="setup-label">Target Role</label>
-              <input 
-                className="setup-input" 
-                value={form.role} 
-                onChange={e => setForm(p => ({ ...p, role: e.target.value }))} 
-                placeholder="e.g. Senior Software Engineer, Product Lead" 
-              />
+              <div style={{ color: C.text, fontWeight: 900, fontSize: 18, marginBottom: 4 }}>{STEP_TITLES[onboardStep - 1].title}</div>
+              <div style={{ color: C.muted, fontSize: 12 }}>{STEP_TITLES[onboardStep - 1].sub}</div>
             </div>
 
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <label className="setup-label" style={{ marginBottom: 0 }}>Resume Content</label>
-                <button 
-                  onClick={() => setResumeText(resumeText === null ? "" : null)}
-                  style={{ background: "transparent", border: "none", color: C.accent, fontSize: 11, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
-                >
-                  {resumeText === null ? "OR PASTE TEXT" : "UPLOAD FILE INSTEAD"}
-                </button>
-              </div>
-              
-              {resumeText === null ? (
-                <div style={{ border: `2px dashed ${C.border}`, borderRadius: 12, padding: 24, textAlign: "center", cursor: "pointer" }} onClick={() => document.getElementById('setup-file').click()}>
-                  <input type="file" id="setup-file" accept=".pdf,.docx" hidden onChange={async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    setResumeParsing(true);
-                    try {
-                      let text = '';
-                      if (file.name.toLowerCase().endsWith('.docx')) {
-                        const ab = await file.arrayBuffer();
-                        const { value } = await mammoth.extractRawText({ arrayBuffer: ab });
-                        text = value;
-                      } else {
-                        const ab = await file.arrayBuffer();
-                        const b64 = _ab2b64(ab);
-                        const raw = await callLLM([{ role: 'user', content: RESUME_EXTRACT_PROMPT }], 3000, b64);
-                        const parsed = extractJSON(raw);
-                        text = parsed.error ? '' : _formatParsedResume(parsed);
-                      }
-                      if (text.trim()) {
-                        setResumeText(text);
-                      } else {
-                        showToast('Could not extract text — try a .docx file or paste your resume below.', 'error');
-                      }
-                    } catch {
-                      showToast('Could not read this file. Try a .docx or paste your resume below.', 'error');
-                    } finally {
-                      setResumeParsing(false);
-                    }
-                  }} />
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>{resumeParsing ? '⏳' : '📄'}</div>
-                  <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{resumeParsing ? 'Extracting resume…' : 'Upload your Resume (PDF/DOCX)'}</div>
-                  <div style={{ color: C.muted, fontSize: 11, marginTop: 4 }}>{resumeParsing ? 'This may take a few seconds' : 'We extract your full career history automatically'}</div>
-                </div>
-              ) : (
-                <textarea 
+            {/* Step 1 — Target Role */}
+            {onboardStep === 1 && (
+              <div style={{ marginBottom: 20 }}>
+                <label className="setup-label">Target Role</label>
+                <input
                   className="setup-input"
-                  style={{ minHeight: 120, resize: "vertical" }}
-                  value={typeof resumeText === 'string' ? resumeText : ""}
-                  onChange={e => setResumeText(e.target.value)}
-                  placeholder="Paste your full resume text here..."
+                  value={form.role}
+                  onChange={e => setForm(p => ({ ...p, role: e.target.value }))}
+                  placeholder="e.g. Senior Software Engineer, Product Lead"
+                  autoFocus
+                  onKeyDown={e => e.key === 'Enter' && form.role.trim() && setOnboardStep(2)}
                 />
+              </div>
+            )}
+
+            {/* Step 2 — Industry + Market */}
+            {onboardStep === 2 && (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  <label className="setup-label">Industry</label>
+                  <select
+                    className="setup-input"
+                    value={form.industry || ''}
+                    onChange={e => setForm(p => ({ ...p, industry: e.target.value }))}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <option value="">Select your industry…</option>
+                    {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
+                  </select>
+                </div>
+                <div style={{ marginBottom: 20 }}>
+                  <label className="setup-label">Target Market</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {MARKETS.map(m => (
+                      <button
+                        key={m}
+                        onClick={() => setForm(p => ({ ...p, market: m }))}
+                        style={{ flex: 1, padding: '8px 4px', borderRadius: 8, border: `1px solid ${form.market === m ? C.accent : C.border}`, background: form.market === m ? `${C.accent}15` : 'transparent', color: form.market === m ? C.accent : C.muted, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Step 3 — Resume */}
+            {onboardStep === 3 && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <label className="setup-label" style={{ marginBottom: 0 }}>Resume Content</label>
+                  <button
+                    onClick={() => setResumeText(resumeText === null ? "" : null)}
+                    style={{ background: "transparent", border: "none", color: C.accent, fontSize: 11, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
+                  >
+                    {resumeText === null ? "OR PASTE TEXT" : "UPLOAD FILE INSTEAD"}
+                  </button>
+                </div>
+                {resumeText === null ? (
+                  <div style={{ border: `2px dashed ${C.border}`, borderRadius: 12, padding: 24, textAlign: "center", cursor: "pointer" }} onClick={() => document.getElementById('setup-file').click()}>
+                    <input type="file" id="setup-file" accept=".pdf,.docx" hidden onChange={handleSetupFile} />
+                    <div style={{ fontSize: 24, marginBottom: 8 }}>{resumeParsing ? '⏳' : '📄'}</div>
+                    <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{resumeParsing ? 'Extracting resume…' : 'Upload your Resume (PDF/DOCX)'}</div>
+                    <div style={{ color: C.muted, fontSize: 11, marginTop: 4 }}>{resumeParsing ? 'This may take a few seconds' : 'We extract your full career history automatically'}</div>
+                  </div>
+                ) : (
+                  <textarea
+                    className="setup-input"
+                    style={{ minHeight: 120, resize: "vertical" }}
+                    value={typeof resumeText === 'string' ? resumeText : ""}
+                    onChange={e => setResumeText(e.target.value)}
+                    placeholder="Paste your full resume text here..."
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Navigation buttons */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              {onboardStep > 1 && (
+                <Btn onClick={() => setOnboardStep(s => s - 1)} color={C.border} style={{ flex: '0 0 auto', fontSize: 14, background: 'transparent', border: `1px solid ${C.border}` }}>← Back</Btn>
+              )}
+              {onboardStep < 3 ? (
+                <Btn
+                  onClick={() => setOnboardStep(s => s + 1)}
+                  disabled={onboardStep === 1 && !form.role.trim()}
+                  color={C.accent} dark
+                  style={{ flex: 1, fontSize: 14 }}
+                >Next →</Btn>
+              ) : (
+                <Btn
+                  onClick={() => setSetupDone(true)}
+                  disabled={resumeParsing || (resumeText !== null && !resumeText?.trim())}
+                  color={C.accent} dark
+                  style={{ flex: 1, fontSize: 14 }}
+                >{resumeParsing ? 'Extracting resume…' : 'Get started →'}</Btn>
               )}
             </div>
 
-            <Btn onClick={() => setSetupDone(true)} disabled={!form.role.trim() || resumeParsing || (resumeText !== null && !resumeText?.trim())} color={C.accent} dark style={{ width: "100%", fontSize: 14 }}>{resumeParsing ? 'Extracting resume…' : 'Get started →'}</Btn>
-
             <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 24 }}>
               {!user ? (
-                 <>
-                   <button onClick={() => setAuthModal("login")} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 13, cursor: "pointer" }}>Sign In</button>
-                   <span style={{ color: C.border }}>|</span>
-                   <button onClick={() => setAuthModal("register")} style={{ background: "transparent", border: "none", color: C.accent, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Create Account</button>
-                 </>
+                <>
+                  <button onClick={() => setAuthModal("login")} style={{ background: "transparent", border: "none", color: C.muted, fontSize: 13, cursor: "pointer" }}>Sign In</button>
+                  <span style={{ color: C.border }}>|</span>
+                  <button onClick={() => setAuthModal("register")} style={{ background: "transparent", border: "none", color: C.accent, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Create Account</button>
+                </>
               ) : (
-                 <div style={{ color: C.green, fontSize: 13, fontWeight: 700 }}>✓ Signed in as {user.name}</div>
+                <div style={{ color: C.green, fontSize: 13, fontWeight: 700 }}>✓ Signed in as {user.name}</div>
               )}
             </div>
           </div>
@@ -453,8 +534,10 @@ function App() {
             user={user}
             onLogout={logout}
             memory={memory}
+            collapsed={sidebarCollapsed}
+            onToggle={() => setSidebarCollapsed(c => !c)}
           />
-          <div className="app-sidebar-layout">
+          <div className={`app-sidebar-layout${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
             {/* Thin top bar: ⌘K + dark mode toggle */}
             <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--lp-bg)', borderBottom: '1px solid var(--lp-bdr)', padding: '0 20px', height: 44, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
               <button onClick={() => setDarkMode(d => !d)} title="Toggle theme" style={{ background: 'transparent', border: `1px solid var(--lp-bdr2)`, color: 'var(--lp-text2)', borderRadius: 6, padding: '3px 8px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', lineHeight: 1 }}>
