@@ -40,7 +40,7 @@ async function _callGemini(messages, maxTokens, pdfBase64) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts }],
-      generationConfig: { maxOutputTokens: maxTokens, temperature: 0.1 }
+      generationConfig: { maxOutputTokens: maxTokens, temperature: 0.1, thinkingConfig: { thinkingBudget: 0 } }
     })
   });
   if (res.status === 429) throw new Error('429: Gemini rate limit exceeded — wait and retry');
@@ -98,8 +98,12 @@ async function _callOpenAI(messages, maxTokens) {
 // ── extractJSON ──────────────────────────────────────────────────────────────
 export function extractJSON(str) {
   try {
-    // Strip markdown code fences (Gemini 2.5 wraps JSON in ```json ... ```)
-    const cleaned = str.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    // Strip markdown code fences — also handles Unicode invisible chars Gemini 2.5 sometimes prepends
+    const cleaned = str
+      .replace(/[​-‍⁠﻿]/g, '')  // strip zero-width / word-joiner chars
+      .replace(/`{1,3}json\s*/gi, '')                // ```json or `json variants
+      .replace(/`{1,3}\s*/g, '')                     // closing fences
+      .trim();
     const start = cleaned.indexOf('{');
     const end = cleaned.lastIndexOf('}');
     if (start === -1 || end === -1) {
