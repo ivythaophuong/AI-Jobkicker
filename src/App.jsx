@@ -95,6 +95,8 @@ function App() {
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
   const [resumeParsing, setResumeParsing] = useState(false);
+  const [resumeProfile, setResumeProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
   const { memory, updateMemory, isSyncing } = useMemory(user, isRestoring, setIsRestoring, setRestoreError);
   
   // State is now fully managed by useMemory relational sync
@@ -263,6 +265,7 @@ function App() {
     const props = {
       resumeText, setResumeText, scanResult, setScanResult,
       form, memory, updateMemory,
+      resumeProfile, profileLoading,
       onProTrigger: setProModal,
       user, setAuthModal, showToast, setActiveModule: navigate,
       onStudyPlan: (tab) => { setGrModalTab(tab); setGrModalOpen(true); },
@@ -558,24 +561,29 @@ function App() {
               ) : (
                 <Btn
                   onClick={async () => {
-                    setSetupDone(true);
                     const text = typeof resumeText === 'string' ? resumeText.trim() : '';
+                    setSetupDone(true);
                     if (!text) return;
-                    // async non-blocking — extract profile snapshot from resume
-                    (async () => {
-                      try {
-                        const prompt = `Extract a brief career profile from this resume. Return ONLY valid JSON (no markdown, no explanation): {"currentRole":"","yearsExp":0,"topSkills":[""],"headline":""}\n\nResume:\n${text.slice(0, 4000)}`;
-                        const raw = await callLLM([{ role: 'user', content: prompt }], 600);
-                        const snap = extractJSON(raw);
-                        if (snap && !snap.error) {
-                          updateMemory(m => ({ ...m, resumeProfile: snap }));
-                          if (!form.role.trim() && snap.currentRole) {
-                            setForm(p => ({ ...p, role: snap.currentRole }));
-                          }
-                          showToast(`✓ Resume analyzed — ${snap.topSkills?.length || 0} skills found. Run ATS scan to get your score.`, 'success');
+                    setProfileLoading(true);
+                    try {
+                      const prompt = `Extract a career profile from this resume. Return ONLY valid JSON, no markdown, no explanation:\n{"currentRole":"","yearsExp":0,"topSkills":[""],"headline":""}\n\nResume:\n${text.slice(0, 4000)}`;
+                      const raw = await callLLM([{ role: 'user', content: prompt }], 800);
+                      const snap = extractJSON(raw);
+                      if (snap && !snap.error) {
+                        setResumeProfile(snap);
+                        if (!form.role.trim() && snap.currentRole) {
+                          setForm(p => ({ ...p, role: snap.currentRole }));
                         }
-                      } catch { /* silent */ }
-                    })();
+                        showToast(`✓ Resume analyzed — ${snap.topSkills?.length || 0} skills found. Run ATS scan to get your score.`, 'success');
+                      } else {
+                        showToast('Resume uploaded. Paste a JD in ATS Scanner to get your score.', 'info');
+                      }
+                    } catch (err) {
+                      console.error('[profileExtract]', err);
+                      showToast('Resume saved. Run ATS scan to get started.', 'info');
+                    } finally {
+                      setProfileLoading(false);
+                    }
                   }}
                   disabled={resumeParsing || (resumeText !== null && !resumeText?.trim())}
                   color={C.accent} dark

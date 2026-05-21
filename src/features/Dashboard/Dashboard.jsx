@@ -212,7 +212,7 @@ function ActionItems({ items, setActiveModule }) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-export default function Dashboard({ memory, form, user, setActiveModule, resumeText }) {
+export default function Dashboard({ memory, form, user, setActiveModule, resumeText, resumeProfile, profileLoading }) {
   const [trustScore, setTrustScore] = useState(0);
 
   useEffect(() => {
@@ -309,61 +309,61 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
         </div>
       </div>
 
-      {/* No resume at all — upload CTA */}
-      {!resumeText && (!memory.scanHistory || memory.scanHistory.length === 0) && (
+      {/* No resume — upload CTA */}
+      {!resumeText && atsScore === 0 && (
         <div style={{ marginBottom: 16, background: 'rgba(0,212,255,.05)', border: '1px solid rgba(0,212,255,.2)', borderRadius: 10, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 200 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 4 }}>Upload your resume to unlock everything</div>
-            <div style={{ fontSize: 11.5, color: 'var(--lp-text2)', lineHeight: 1.5 }}>Your ATS score, skills gap analysis, readiness score, and AI coaching all activate after your first resume scan.</div>
+            <div style={{ fontSize: 11.5, color: 'var(--lp-text2)', lineHeight: 1.5 }}>Your ATS score, skills gap, readiness, and AI coaching all activate after your first scan.</div>
           </div>
-          <button onClick={() => setActiveModule('ats')} style={{ ...btnStyle('primary'), flexShrink: 0, padding: '9px 18px', fontSize: 13 }}>
-            Scan my resume →
-          </button>
+          <button onClick={() => setActiveModule('ats')} style={{ ...btnStyle('primary'), flexShrink: 0, padding: '9px 18px', fontSize: 13 }}>Scan my resume →</button>
         </div>
       )}
 
-      {/* Resume loaded but no ATS scan yet — profile snapshot + CTA */}
-      {resumeText && atsScore === 0 && memory.resumeProfile && (
+      {/* Resume exists, no scan yet — show profile or loading spinner */}
+      {resumeText && atsScore === 0 && (
         <div style={{ marginBottom: 16, background: 'rgba(0,212,255,.04)', border: '1px solid rgba(0,212,255,.18)', borderRadius: 12, padding: '16px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#00D4FF', fontFamily: 'var(--lp-ffm)' }}>📄 Resume Loaded</span>
-            <span style={{ fontSize: 10, color: 'var(--lp-text3)' }}>· AI extracted your profile</span>
-          </div>
-          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-            <div style={{ flex: 1, minWidth: 200 }}>
-              {memory.resumeProfile.currentRole && (
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 3 }}>{memory.resumeProfile.currentRole}</div>
-              )}
-              {memory.resumeProfile.yearsExp > 0 && (
-                <div style={{ fontSize: 12, color: 'var(--lp-text2)', marginBottom: 8 }}>{memory.resumeProfile.yearsExp} years experience</div>
-              )}
-              {memory.resumeProfile.topSkills?.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                  {memory.resumeProfile.topSkills.slice(0, 8).map(s => (
-                    <span key={s} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(0,212,255,.08)', border: '1px solid rgba(0,212,255,.2)', color: '#00D4FF', fontFamily: 'var(--lp-ffm)', fontWeight: 600 }}>{s}</span>
-                  ))}
+          {profileLoading ? (
+            /* Loading state */
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(0,212,255,.15)', borderTopColor: '#00D4FF', animation: 'spin 0.9s linear infinite', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 2 }}>Analyzing your resume…</div>
+                <div style={{ fontSize: 11.5, color: 'var(--lp-text2)' }}>Extracting your role, skills, and experience. Takes a few seconds.</div>
+              </div>
+            </div>
+          ) : resumeProfile ? (
+            /* Profile extracted */
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#00D4FF', fontFamily: 'var(--lp-ffm)' }}>📄 Resume analyzed</span>
+              </div>
+              <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1, minWidth: 180 }}>
+                  {resumeProfile.currentRole && <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 3 }}>{resumeProfile.currentRole}</div>}
+                  {resumeProfile.yearsExp > 0 && <div style={{ fontSize: 12, color: 'var(--lp-text2)', marginBottom: 8 }}>{resumeProfile.yearsExp} years experience</div>}
+                  {resumeProfile.topSkills?.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                      {resumeProfile.topSkills.slice(0, 8).map(s => (
+                        <span key={s} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(0,212,255,.08)', border: '1px solid rgba(0,212,255,.2)', color: '#00D4FF', fontFamily: 'var(--lp-ffm)', fontWeight: 600 }}>{s}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+                <button onClick={() => setActiveModule('ats')} style={{ ...btnStyle('primary'), flexShrink: 0, padding: '9px 18px', fontSize: 13, alignSelf: 'center' }}>Scan vs JD →</button>
+              </div>
+            </>
+          ) : (
+            /* Resume loaded, extract failed or skipped */
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <span style={{ fontSize: 20 }}>📄</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 2 }}>Resume uploaded</div>
+                <div style={{ fontSize: 11.5, color: 'var(--lp-text2)' }}>Paste a job description into ATS Scanner to get your match score.</div>
+              </div>
+              <button onClick={() => setActiveModule('ats')} style={{ ...btnStyle('primary'), flexShrink: 0, padding: '9px 18px', fontSize: 13 }}>Scan now →</button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0 }}>
-              <div style={{ fontSize: 11, color: 'var(--lp-text3)', lineHeight: 1.5 }}>Run ATS scan to get<br />your match score →</div>
-              <button onClick={() => setActiveModule('ats')} style={{ ...btnStyle('primary'), padding: '9px 18px', fontSize: 13 }}>
-                Scan now →
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Resume loaded, no profile yet (still analyzing) */}
-      {resumeText && atsScore === 0 && !memory.resumeProfile && (
-        <div style={{ marginBottom: 16, background: 'rgba(0,212,255,.04)', border: '1px solid rgba(0,212,255,.15)', borderRadius: 10, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ fontSize: 18 }}>📄</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 2 }}>Resume uploaded</div>
-            <div style={{ fontSize: 11.5, color: 'var(--lp-text2)' }}>Paste a job description into ATS Scanner to get your match score.</div>
-          </div>
-          <button onClick={() => setActiveModule('ats')} style={{ ...btnStyle('primary'), flexShrink: 0, padding: '9px 18px', fontSize: 13 }}>Scan now →</button>
+          )}
         </div>
       )}
 
