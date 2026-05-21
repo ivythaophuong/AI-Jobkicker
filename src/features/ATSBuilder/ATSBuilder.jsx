@@ -966,18 +966,22 @@ Return ONLY raw JSON (no markdown, start with {):
   const handleFile = async (file) => {
     setError('');
     try {
-      const ab = await file.arrayBuffer();
       let text = '';
       if (file.name.toLowerCase().endsWith('.docx')) {
+        const ab = await file.arrayBuffer();
         const { value } = await mammoth.extractRawText({ arrayBuffer: ab });
         text = value;
+      } else if (file.name.toLowerCase().endsWith('.pdf')) {
+        text = await extractTextFromPdfFile(file);
       } else {
+        const ab = await file.arrayBuffer();
         text = new TextDecoder().decode(ab);
       }
+      if (!text.trim()) { setError('Could not extract text — try a DOCX or paste your resume.'); return; }
       setRawText(text);
       await parseResume(text);
-    } catch {
-      setError('Could not read file — use PDF (text-based), DOCX, or TXT.');
+    } catch (err) {
+      setError('Could not read file — try a DOCX or paste your resume below.');
     }
   };
 
@@ -1015,28 +1019,30 @@ Return ONLY raw JSON (no markdown, start with {):
             onChange={e => { if (e.target.files[0]) handleFile(e.target.files[0]); }} />
         </div>
 
-        <div style={{ textAlign: 'center', color: 'var(--lp-text3)', fontSize: 12 }}>or</div>
-
-        {/* LinkedIn URL */}
-        <input
-          value={linkedIn}
-          onChange={e => setLinkedIn(e.target.value)}
-          placeholder="https://linkedin.com/in/yourprofile"
+        {/* Paste fallback */}
+        <div style={{ textAlign: 'center', color: 'var(--lp-text3)', fontSize: 12 }}>or paste resume text</div>
+        <textarea
+          value={rawText}
+          onChange={e => { setRawText(e.target.value); setProfile(null); setError(''); }}
+          placeholder="Paste your resume text here..."
           style={{
-            width: '100%', background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)',
+            width: '100%', boxSizing: 'border-box', minHeight: 100, resize: 'vertical',
+            background: 'rgba(0,212,255,0.03)', border: '1px solid var(--lp-bdr)',
             borderRadius: 8, color: 'var(--lp-text)', padding: '10px 12px',
-            fontSize: 13, outline: 'none', boxSizing: 'border-box',
+            fontSize: 13, outline: 'none', fontFamily: 'inherit', lineHeight: 1.5,
           }}
+          onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.4)'}
+          onBlur={e => e.target.style.borderColor = 'var(--lp-bdr)'}
         />
         <button
-          onClick={() => linkedIn && parseResume(`LinkedIn profile: ${linkedIn}`)}
-          disabled={loading || !linkedIn}
+          onClick={() => rawText.trim() && parseResume(rawText)}
+          disabled={loading || !rawText.trim()}
           style={{
             width: '100%', padding: '12px 0',
-            background: loading ? 'var(--lp-bdr)' : 'var(--lp-teal)',
-            color: loading ? 'var(--lp-text3)' : '#000',
+            background: loading || !rawText.trim() ? 'var(--lp-bdr)' : 'var(--lp-teal)',
+            color: loading || !rawText.trim() ? 'var(--lp-text3)' : '#000',
             border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800,
-            cursor: loading || !linkedIn ? 'default' : 'pointer',
+            cursor: loading || !rawText.trim() ? 'default' : 'pointer',
           }}
         >
           {loading ? 'Parsing…' : 'Parse and build profile →'}
