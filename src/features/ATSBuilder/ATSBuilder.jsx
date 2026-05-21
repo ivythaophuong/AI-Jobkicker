@@ -926,14 +926,16 @@ function ResumeBuilderTabBar({ active, onTab }) {
 }
 
 // ── Upload & Parse Tab ────────────────────────────────────────────────────────
-function UploadAndParseTab({ user, memory }) {
-  const inputRef      = useRef(null);
-  const [dragOver, setDragOver]       = useState(false);
-  const [linkedIn, setLinkedIn]       = useState('');
-  const [loading, setLoading]         = useState(false);
-  const [rawText, setRawText]         = useState('');
-  const [profile, setProfile]         = useState(null);
-  const [error, setError]             = useState('');
+function UploadAndParseTab({ user, memory, resumeText: globalResumeText }) {
+  const inputRef = useRef(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [loading, setLoading]   = useState(false);
+  const [rawText, setRawText]   = useState(globalResumeText || '');
+  const [fileInfo, setFileInfo] = useState(
+    globalResumeText ? { name: 'resume (from memory)', words: globalResumeText.trim().split(/\s+/).length } : null
+  );
+  const [profile, setProfile]   = useState(null);
+  const [error, setError]       = useState('');
 
   const parseResume = async (text) => {
     setLoading(true); setProfile(null); setError('');
@@ -957,14 +959,19 @@ Return ONLY raw JSON (no markdown, start with {):
       const parsed = extractJSON(raw);
       if (!parsed.error) setProfile(parsed);
       else setError('Could not parse resume — try a different file.');
-    } catch {
-      setError('Parse failed — check your API key.');
+    } catch (err) {
+      console.error('[parseResume]', err);
+      const msg = err.message || '';
+      if (msg.includes('429') || msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('rate'))
+        setError('API rate limit hit — wait 30 seconds and try again.');
+      else
+        setError(`Parse failed: ${msg}`);
     }
     setLoading(false);
   };
 
   const handleFile = async (file) => {
-    setError('');
+    setError(''); setFileInfo(null); setProfile(null);
     try {
       let text = '';
       if (file.name.toLowerCase().endsWith('.docx')) {
@@ -978,6 +985,8 @@ Return ONLY raw JSON (no markdown, start with {):
         text = new TextDecoder().decode(ab);
       }
       if (!text.trim()) { setError('Could not extract text — try a DOCX or paste your resume.'); return; }
+      const words = text.trim().split(/\s+/).length;
+      setFileInfo({ name: file.name, words });
       setRawText(text);
       await parseResume(text);
     } catch (err) {
@@ -992,48 +1001,87 @@ Return ONLY raw JSON (no markdown, start with {):
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, minHeight: 500 }}>
       {/* Left */}
-      <div style={{ borderRight: '1px solid var(--lp-bdr)', padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ borderRight: '1px solid var(--lp-bdr)', padding: 24, display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
         <div style={{ color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
           Import Resume
         </div>
 
-        {/* Drop zone */}
+        {/* Drop zone — success state when file loaded, upload prompt otherwise */}
         <div
           style={{
-            border: `2px dashed ${dragOver ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`,
-            borderRadius: 10, padding: '28px 20px', textAlign: 'center',
-            cursor: 'pointer', transition: 'all .15s',
-            background: dragOver ? 'rgba(0,212,255,.04)' : 'transparent',
+            border: `2px dashed ${fileInfo ? '#00E5A0' : dragOver ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`,
+            borderRadius: 10, padding: '24px 20px', textAlign: 'center',
+            cursor: fileInfo ? 'default' : 'pointer', transition: 'all .15s',
+            background: fileInfo ? 'rgba(0,229,160,.05)' : dragOver ? 'rgba(0,212,255,.04)' : 'transparent',
           }}
-          onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+          onDragOver={e => { if (!fileInfo) { e.preventDefault(); setDragOver(true); } }}
           onDragLeave={() => setDragOver(false)}
           onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
-          onClick={() => inputRef.current?.click()}
+          onClick={() => { if (!fileInfo) inputRef.current?.click(); }}
         >
-          <div style={{ color: 'var(--lp-text2)', fontSize: 13, marginBottom: 6 }}>
-            Drop your PDF or{' '}
-            <span style={{ color: 'var(--lp-teal)', fontWeight: 700, cursor: 'pointer' }}>browse files</span>
-          </div>
-          <div style={{ color: 'var(--lp-text3)', fontSize: 11 }}>PDF · DOCX · TXT accepted</div>
           <input ref={inputRef} type="file" accept=".pdf,.docx,.txt" style={{ display: 'none' }}
             onChange={e => { if (e.target.files[0]) handleFile(e.target.files[0]); }} />
+
+          {fileInfo ? (
+            <>
+              <div style={{ color: '#00E5A0', fontWeight: 700, fontSize: 13, marginBottom: 4 }}>
+                ✓ {fileInfo.name}
+              </div>
+              <div style={{ color: 'var(--lp-text3)', fontSize: 11 }}>
+                {fileInfo.words.toLocaleString()} words · extracted
+              </div>
+              <button
+                onClick={e => { e.stopPropagation(); setFileInfo(null); setRawText(''); setProfile(null); inputRef.current?.click(); }}
+                style={{ marginTop: 8, background: 'none', border: '1px solid rgba(255,255,255,.12)', borderRadius: 6, color: 'var(--lp-text3)', fontSize: 10, padding: '3px 10px', cursor: 'pointer' }}
+              >
+                Replace file
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={{ color: 'var(--lp-text2)', fontSize: 13, marginBottom: 6 }}>
+                Drop your PDF or{' '}
+                <span style={{ color: 'var(--lp-teal)', fontWeight: 700 }}>browse files</span>
+              </div>
+              <div style={{ color: 'var(--lp-text3)', fontSize: 11 }}>PDF · DOCX · TXT accepted</div>
+            </>
+          )}
         </div>
 
-        {/* Paste fallback */}
-        <div style={{ textAlign: 'center', color: 'var(--lp-text3)', fontSize: 12 }}>or paste resume text</div>
-        <textarea
-          value={rawText}
-          onChange={e => { setRawText(e.target.value); setProfile(null); setError(''); }}
-          placeholder="Paste your resume text here..."
-          style={{
-            width: '100%', boxSizing: 'border-box', minHeight: 100, resize: 'vertical',
-            background: 'rgba(0,212,255,0.03)', border: '1px solid var(--lp-bdr)',
-            borderRadius: 8, color: 'var(--lp-text)', padding: '10px 12px',
-            fontSize: 13, outline: 'none', fontFamily: 'inherit', lineHeight: 1.5,
-          }}
-          onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.4)'}
-          onBlur={e => e.target.style.borderColor = 'var(--lp-bdr)'}
-        />
+        {/* After upload: text preview (read-only). Before upload: paste textarea */}
+        {fileInfo && rawText ? (
+          <div style={{ position: 'relative' }}>
+            <div style={{ fontSize: 10, color: 'var(--lp-text3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+              Extracted Text Preview
+            </div>
+            <div style={{
+              maxHeight: 160, overflowY: 'auto', background: 'rgba(255,255,255,.03)',
+              border: '1px solid var(--lp-bdr)', borderRadius: 8, padding: '10px 12px',
+              fontSize: 11.5, color: 'var(--lp-text2)', lineHeight: 1.6, whiteSpace: 'pre-wrap',
+              fontFamily: 'var(--lp-ffm, monospace)',
+            }}>
+              {rawText.slice(0, 800)}{rawText.length > 800 ? '…' : ''}
+            </div>
+          </div>
+        ) : !fileInfo ? (
+          <>
+            <div style={{ textAlign: 'center', color: 'var(--lp-text3)', fontSize: 12 }}>or paste resume text</div>
+            <textarea
+              value={rawText}
+              onChange={e => { setRawText(e.target.value); setProfile(null); setError(''); }}
+              placeholder="Paste your resume text here..."
+              style={{
+                width: '100%', boxSizing: 'border-box', minHeight: 120, resize: 'vertical',
+                background: 'rgba(0,212,255,0.03)', border: '1px solid var(--lp-bdr)',
+                borderRadius: 8, color: 'var(--lp-text)', padding: '10px 12px',
+                fontSize: 13, outline: 'none', fontFamily: 'inherit', lineHeight: 1.5,
+              }}
+              onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.4)'}
+              onBlur={e => e.target.style.borderColor = 'var(--lp-bdr)'}
+            />
+          </>
+        ) : null}
+
         <button
           onClick={() => rawText.trim() && parseResume(rawText)}
           disabled={loading || !rawText.trim()}
@@ -1045,7 +1093,7 @@ Return ONLY raw JSON (no markdown, start with {):
             cursor: loading || !rawText.trim() ? 'default' : 'pointer',
           }}
         >
-          {loading ? 'Parsing…' : 'Parse and build profile →'}
+          {loading ? 'Parsing…' : profile ? 'Re-parse →' : 'Parse and build profile →'}
         </button>
 
         {error && (
@@ -1287,7 +1335,7 @@ function VersionHistoryTab({ memory }) {
 }
 
 // ── Main ATSBuilder ────────────────────────────────────────────────────────────
-const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveModule }) => {
+const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveModule, resumeText: globalResume }) => {
   const hasSavedResume = !!memory?.scanPdfBase64;
   const [mainTab, setMainTab] = useState('parse');
   const [phase, setPhase] = useState(hasSavedResume ? 'scanning' : 'upload'); // upload | scanning | kanban | building | results
@@ -1529,7 +1577,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
 
       {/* Tab routing */}
       {mainTab === 'parse' && (
-        <UploadAndParseTab user={user} memory={memory} />
+        <UploadAndParseTab user={user} memory={memory} resumeText={globalResume} />
       )}
       {mainTab === 'rewrite' && (
         <BulletRewriteTab />

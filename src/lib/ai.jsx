@@ -34,6 +34,7 @@ async function _callGemini(messages, maxTokens, pdfBase64) {
       generationConfig: { maxOutputTokens: maxTokens, temperature: 0.1 }
     })
   });
+  if (res.status === 429) throw new Error('429: Gemini rate limit exceeded — wait and retry');
   const data = await res.json();
   if (data.error) throw new Error(data.error.message || 'Gemini call failed');
   if (!data.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error('Unexpected Gemini response format');
