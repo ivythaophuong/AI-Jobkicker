@@ -309,7 +309,7 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
         </div>
       </div>
 
-      {/* Resume upload CTA — shown until first scan */}
+      {/* No resume at all — upload CTA */}
       {!resumeText && (!memory.scanHistory || memory.scanHistory.length === 0) && (
         <div style={{ marginBottom: 16, background: 'rgba(0,212,255,.05)', border: '1px solid rgba(0,212,255,.2)', borderRadius: 10, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 200 }}>
@@ -319,6 +319,51 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
           <button onClick={() => setActiveModule('ats')} style={{ ...btnStyle('primary'), flexShrink: 0, padding: '9px 18px', fontSize: 13 }}>
             Scan my resume →
           </button>
+        </div>
+      )}
+
+      {/* Resume loaded but no ATS scan yet — profile snapshot + CTA */}
+      {resumeText && atsScore === 0 && memory.resumeProfile && (
+        <div style={{ marginBottom: 16, background: 'rgba(0,212,255,.04)', border: '1px solid rgba(0,212,255,.18)', borderRadius: 12, padding: '16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#00D4FF', fontFamily: 'var(--lp-ffm)' }}>📄 Resume Loaded</span>
+            <span style={{ fontSize: 10, color: 'var(--lp-text3)' }}>· AI extracted your profile</span>
+          </div>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              {memory.resumeProfile.currentRole && (
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 3 }}>{memory.resumeProfile.currentRole}</div>
+              )}
+              {memory.resumeProfile.yearsExp > 0 && (
+                <div style={{ fontSize: 12, color: 'var(--lp-text2)', marginBottom: 8 }}>{memory.resumeProfile.yearsExp} years experience</div>
+              )}
+              {memory.resumeProfile.topSkills?.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                  {memory.resumeProfile.topSkills.slice(0, 8).map(s => (
+                    <span key={s} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(0,212,255,.08)', border: '1px solid rgba(0,212,255,.2)', color: '#00D4FF', fontFamily: 'var(--lp-ffm)', fontWeight: 600 }}>{s}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0 }}>
+              <div style={{ fontSize: 11, color: 'var(--lp-text3)', lineHeight: 1.5 }}>Run ATS scan to get<br />your match score →</div>
+              <button onClick={() => setActiveModule('ats')} style={{ ...btnStyle('primary'), padding: '9px 18px', fontSize: 13 }}>
+                Scan now →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resume loaded, no profile yet (still analyzing) */}
+      {resumeText && atsScore === 0 && !memory.resumeProfile && (
+        <div style={{ marginBottom: 16, background: 'rgba(0,212,255,.04)', border: '1px solid rgba(0,212,255,.15)', borderRadius: 10, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span style={{ fontSize: 18 }}>📄</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 2 }}>Resume uploaded</div>
+            <div style={{ fontSize: 11.5, color: 'var(--lp-text2)' }}>Paste a job description into ATS Scanner to get your match score.</div>
+          </div>
+          <button onClick={() => setActiveModule('ats')} style={{ ...btnStyle('primary'), flexShrink: 0, padding: '9px 18px', fontSize: 13 }}>Scan now →</button>
         </div>
       )}
 

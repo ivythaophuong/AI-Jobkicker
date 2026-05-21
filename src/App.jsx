@@ -515,19 +515,29 @@ function App() {
                   </button>
                 </div>
                 {resumeText === null ? (
-                  <div style={{ border: `2px dashed ${C.border}`, borderRadius: 12, padding: 24, textAlign: "center", cursor: "pointer" }} onClick={() => document.getElementById('setup-file').click()}>
+                  <div style={{ border: `2px dashed rgba(0,212,255,0.2)`, borderRadius: 12, padding: 24, textAlign: "center", cursor: "pointer", background: 'rgba(0,212,255,0.03)', transition: 'border-color 0.2s' }} onClick={() => document.getElementById('setup-file').click()}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.45)'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.2)'}
+                  >
                     <input type="file" id="setup-file" accept=".pdf,.docx" hidden onChange={handleSetupFile} />
-                    <div style={{ fontSize: 24, marginBottom: 8 }}>{resumeParsing ? '⏳' : '📄'}</div>
-                    <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{resumeParsing ? 'Extracting resume…' : 'Upload your Resume (PDF/DOCX)'}</div>
-                    <div style={{ color: C.muted, fontSize: 11, marginTop: 4 }}>{resumeParsing ? 'This may take a few seconds' : 'We extract your full career history automatically'}</div>
+                    <div style={{ fontSize: 28, marginBottom: 8 }}>{resumeParsing ? '⏳' : '📄'}</div>
+                    <div style={{ color: C.text, fontWeight: 700, fontSize: 14 }}>{resumeParsing ? 'Extracting resume…' : 'Upload Resume (PDF or DOCX)'}</div>
+                    <div style={{ color: C.muted, fontSize: 11, marginTop: 4 }}>{resumeParsing ? 'This may take a few seconds' : 'Click to browse or drag & drop'}</div>
                   </div>
                 ) : (
                   <textarea
-                    className="setup-input"
-                    style={{ minHeight: 120, resize: "vertical" }}
                     value={typeof resumeText === 'string' ? resumeText : ""}
                     onChange={e => setResumeText(e.target.value)}
                     placeholder="Paste your full resume text here..."
+                    style={{
+                      width: '100%', boxSizing: 'border-box', minHeight: 140, resize: 'vertical',
+                      background: 'rgba(0,212,255,0.03)', border: '1.5px solid rgba(0,212,255,0.15)',
+                      borderRadius: 10, color: C.text, padding: '12px 14px', fontSize: 13,
+                      fontFamily: 'inherit', outline: 'none', lineHeight: 1.6,
+                      transition: 'border-color 0.2s',
+                    }}
+                    onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.45)'}
+                    onBlur={e => e.target.style.borderColor = 'rgba(0,212,255,0.15)'}
                   />
                 )}
               </div>
@@ -547,7 +557,26 @@ function App() {
                 >Next →</Btn>
               ) : (
                 <Btn
-                  onClick={() => setSetupDone(true)}
+                  onClick={async () => {
+                    setSetupDone(true);
+                    const text = typeof resumeText === 'string' ? resumeText.trim() : '';
+                    if (!text) return;
+                    // async non-blocking — extract profile snapshot from resume
+                    (async () => {
+                      try {
+                        const prompt = `Extract a brief career profile from this resume. Return ONLY valid JSON (no markdown, no explanation): {"currentRole":"","yearsExp":0,"topSkills":[""],"headline":""}\n\nResume:\n${text.slice(0, 4000)}`;
+                        const raw = await callLLM([{ role: 'user', content: prompt }], 600);
+                        const snap = extractJSON(raw);
+                        if (snap && !snap.error) {
+                          updateMemory(m => ({ ...m, resumeProfile: snap }));
+                          if (!form.role.trim() && snap.currentRole) {
+                            setForm(p => ({ ...p, role: snap.currentRole }));
+                          }
+                          showToast(`✓ Resume analyzed — ${snap.topSkills?.length || 0} skills found. Run ATS scan to get your score.`, 'success');
+                        }
+                      } catch { /* silent */ }
+                    })();
+                  }}
                   disabled={resumeParsing || (resumeText !== null && !resumeText?.trim())}
                   color={C.accent} dark
                   style={{ flex: 1, fontSize: 14 }}
