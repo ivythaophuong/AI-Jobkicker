@@ -1297,6 +1297,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
 
   // Scan scores
   const [atsScore, setAtsScore] = useState(null);
+  const [prevScore, setPrevScore] = useState(null);
   const [parameters, setParameters] = useState(null);
 
   // Kanban columns
@@ -1415,7 +1416,11 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
       }
       return;
     }
-    setAtsScore(parsed.atsScore ?? 0);
+    const newScore = parsed.atsScore ?? 0;
+    // Capture previous score before writing new entry
+    const lastScore = memory?.scanHistory?.find(s => s.status !== 'failed')?.score ?? null;
+    setPrevScore(lastScore);
+    setAtsScore(newScore);
     setParameters(parsed.parameters ?? {});
     const sorted = sortGapsBySeverity(parsed.gaps || [])
       .map(g => ({ ...g, id: g.id || genId(), userNotes: '', aiSuggestion: g.aiSuggestion || '' }));
@@ -1589,16 +1594,27 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
             {/* Right: Kanban */}
             <div className="atb-kanban-pane">
               {/* ATS Score strip */}
-              {atsScore !== null && (
-                <div style={{ padding: '10px 14px', background: 'var(--lp-bg3)', borderBottom: '1px solid var(--lp-bdr)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--lp-text3)', textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: 'var(--lp-ffm)', flexShrink: 0 }}>ATS Score</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: atsScore >= 80 ? '#00E5A0' : atsScore >= 60 ? '#FFB84D' : '#FF5A5A', lineHeight: 1, flexShrink: 0 }}>{atsScore}</div>
-                  <div style={{ flex: 1, height: 6, background: 'var(--lp-bg4, rgba(255,255,255,.06))', borderRadius: 3, overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${atsScore}%`, background: atsScore >= 80 ? '#00E5A0' : atsScore >= 60 ? '#FFB84D' : '#FF5A5A', borderRadius: 3, transition: 'width 1s ease' }} />
+              {atsScore !== null && (() => {
+                const scoreColor = atsScore >= 80 ? '#00E5A0' : atsScore >= 60 ? '#FFB84D' : '#FF5A5A';
+                const delta = prevScore !== null ? atsScore - prevScore : null;
+                const deltaColor = delta > 0 ? '#00E5A0' : delta < 0 ? '#FF5A5A' : '#FFB84D';
+                const deltaLabel = delta > 0 ? `↑ +${delta}` : delta < 0 ? `↓ ${delta}` : '→ no change';
+                return (
+                  <div style={{ padding: '10px 14px', background: 'var(--lp-bg3)', borderBottom: '1px solid var(--lp-bdr)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--lp-text3)', textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: 'var(--lp-ffm)', flexShrink: 0 }}>ATS Score</div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: scoreColor, lineHeight: 1, flexShrink: 0 }}>{atsScore}</div>
+                    {delta !== null && (
+                      <div style={{ fontSize: 11, fontWeight: 700, color: deltaColor, fontFamily: 'var(--lp-ffm)', flexShrink: 0, background: deltaColor + '15', border: `1px solid ${deltaColor}33`, borderRadius: 5, padding: '2px 7px' }}>
+                        {deltaLabel} vs last scan
+                      </div>
+                    )}
+                    <div style={{ flex: 1, height: 6, background: 'var(--lp-bg4, rgba(255,255,255,.06))', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${atsScore}%`, background: scoreColor, borderRadius: 3, transition: 'width 1s ease' }} />
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--lp-text3)', flexShrink: 0 }}>target <span style={{ color: '#00E5A0', fontWeight: 700 }}>85+</span></div>
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--lp-text3)', flexShrink: 0 }}>target <span style={{ color: '#00E5A0', fontWeight: 700 }}>85+</span></div>
-                </div>
-              )}
+                );
+              })()}
               <div className="atb-kanban-header">
                 <div>
                   <div className="atb-kanban-title">Gap Editor</div>

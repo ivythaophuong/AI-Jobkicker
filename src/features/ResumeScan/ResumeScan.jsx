@@ -247,16 +247,19 @@ function deriveProgBars(result) {
 }
 
 // ── ATS Scanner main view (matches reference: no tabs, left card + right results) ──
-function JDMatchTab({ resumeText, form, setActiveModule, updateMemory }) {
+function JDMatchTab({ resumeText, form, setActiveModule, updateMemory, memory }) {
   const [jd, setJd]           = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult]   = useState(null);
+  const [prevMatchScore, setPrevMatchScore] = useState(null);
 
   const resumeCtx = resumeText
     ? (typeof resumeText === 'string' ? resumeText : resumeText.content || '') : '';
 
   const scan = async () => {
     if (!jd.trim()) return;
+    const lastAnalysis = (memory?.jdAnalyses || []).find(a => a.matchScore > 0);
+    setPrevMatchScore(lastAnalysis?.matchScore ?? null);
     setLoading(true); setResult(null);
     try {
       const raw = await callLLM([{ role: 'user', content:
@@ -388,6 +391,16 @@ Return ONLY raw JSON (no markdown, start with {):
                 <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 52, fontWeight: 900, color: scoreColor, lineHeight: 1 }}>
                   {result.matchScore}<span style={{ fontSize: 20, color: 'var(--lp-text3)', fontWeight: 500 }}>/100</span>
                 </div>
+                {prevMatchScore !== null && (() => {
+                  const delta = result.matchScore - prevMatchScore;
+                  if (delta === 0) return <div style={{ fontSize: 11, color: 'var(--lp-text3)', marginTop: 4 }}>→ no change vs last scan</div>;
+                  const up = delta > 0;
+                  return (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: up ? 'rgba(0,229,160,0.12)' : 'rgba(255,90,90,0.12)', border: `1px solid ${up ? 'rgba(0,229,160,0.3)' : 'rgba(255,90,90,0.3)'}`, borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700, color: up ? '#00E5A0' : '#FF5A5A', marginTop: 6 }}>
+                      {up ? `↑ +${delta}` : `↓ ${delta}`} vs last scan
+                    </div>
+                  );
+                })()}
                 <div style={{ fontSize: 12.5, color: 'var(--lp-text2)', marginTop: 6 }}>{result.verdict}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -584,7 +597,7 @@ export default function ResumeScan({ resumeText, setResumeText, scanResult, setS
         </div>
       </div>
 
-      <JDMatchTab resumeText={resumeText} form={form} setActiveModule={setActiveModule} updateMemory={updateMemory} />
+      <JDMatchTab resumeText={resumeText} form={form} setActiveModule={setActiveModule} updateMemory={updateMemory} memory={memory} />
 
       {/* Deep Scan legacy — kept for reference only, not rendered */}
       {false && (

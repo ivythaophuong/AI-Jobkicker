@@ -222,7 +222,10 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
       .catch(() => {});
   }, [user]);
 
-  const atsScore   = memory.scanHistory?.[0]?.score ?? 0;
+  const validScans = (memory.scanHistory || []).filter(s => s.status !== 'failed' && s.score > 0);
+  const atsScore   = validScans[0]?.score ?? 0;
+  const prevAtsScore = validScans[1]?.score ?? null;
+  const atsDelta   = prevAtsScore !== null ? atsScore - prevAtsScore : null;
   const readiness  = memory.mockSessions?.[0]?.avgScore ?? 0;
   const starCount  = memory.starBank?.length ?? 0;
   const jdCount    = memory.jdAnalyses?.length ?? 0;
@@ -241,13 +244,16 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
 
   const aiInsight = useMemo(() => {
     const gaps = [];
-    if (atsScore < 70)   gaps.push(`ATS score ${atsScore}/100 — paste a JD to close keyword gaps`);
+    if (atsScore < 70)   gaps.push(`ATS score ${atsScore}/100${atsDelta !== null ? ` (${atsDelta > 0 ? '+' : ''}${atsDelta} vs last scan)` : ''} — paste a JD to close keyword gaps`);
     if (starCount < 3)   gaps.push(`${starCount} STAR ${starCount === 1 ? 'story' : 'stories'} saved — aim for 8+`);
     if (readiness < 70)  gaps.push(`interview readiness ${readiness}/100 — run a mock session`);
     if (trustScore < 65) gaps.push(`trust score ${trustScore}/100 — verify credentials`);
-    if (gaps.length === 0) return 'Profile looks strong. Keep running mock sessions to stay sharp.';
+    if (gaps.length === 0) {
+      if (atsDelta > 0) return `ATS score improved +${atsDelta} pts since last scan. Keep running mock sessions to stay sharp.`;
+      return 'Profile looks strong. Keep running mock sessions to stay sharp.';
+    }
     return `Top priority: ${gaps[0]}.${gaps[1] ? ` Also: ${gaps[1]}.` : ''}`;
-  }, [atsScore, starCount, readiness, trustScore]);
+  }, [atsScore, atsDelta, starCount, readiness, trustScore]);
 
   const weeklyPlan = useMemo(() => {
     const steps = [];
@@ -267,8 +273,12 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
     jdCount < 3     && { label: 'Analyze More JDs',   why: `${jdCount} JD${jdCount !== 1 ? 's' : ''} scanned — tailor prep to each role`, color: '#00E5A0', id: 'jd'        },
   ].filter(Boolean).slice(0, 4), [atsScore, starCount, readiness, trustScore, jdCount]);
 
+  const atsDeltaLabel = atsDelta !== null
+    ? atsDelta > 0 ? `↑ +${atsDelta} since last scan` : atsDelta < 0 ? `↓ ${atsDelta} since last scan` : '→ no change'
+    : atsScore >= 80 ? '✓ Strong' : atsScore > 0 ? 'Rescan to track progress' : 'No scans yet';
+
   const milestones = [
-    { iconLabel: 'ATS Score',   value: atsScore > 0 ? atsScore : '—',    label: 'Resume ATS',        delta: atsScore >= 80 ? '✓ Strong' : atsScore > 0 ? '↑ Improve' : 'No scans yet',              color: '#00D4FF', pct: atsScore,                        onClick: () => setActiveModule('scan')       },
+    { iconLabel: 'ATS Score',   value: atsScore > 0 ? atsScore : '—',    label: 'Resume ATS',        delta: atsDeltaLabel,              color: '#00D4FF', pct: atsScore,                        onClick: () => setActiveModule('scan')       },
     { iconLabel: 'Readiness',   value: readiness > 0 ? readiness : '—',  label: 'Interview prep',    delta: readiness > 0 ? `${100 - readiness} pts to go` : 'Start a session',                      color: '#FFB84D', pct: readiness,                       onClick: () => setActiveModule('simulate')   },
     { iconLabel: 'STAR Bank',   value: starCount,                         label: 'Stories saved',     delta: starCount >= 8 ? '✓ Solid bank' : `target: 8`,                                            color: '#FFB800', pct: Math.min(100, starCount * 12.5), onClick: () => setActiveModule('star')       },
     { iconLabel: 'Trust Score', value: trustScore > 0 ? trustScore : '—', label: 'Verified profile', delta: trustScore >= 65 ? '✓ TrustMatch on' : 'Verify → unlock',                                 color: trustScore >= 65 ? '#00E5A0' : '#FF5A5A', pct: trustScore, onClick: () => setActiveModule('trustmatch') },
