@@ -184,6 +184,7 @@ function App() {
           industry: p.industry || prev.industry,
           level:    p.level    || prev.level,
           market:   p.market   || prev.market,
+          urgency:  p.urgency  || prev.urgency,
         }));
       }
     } catch { /* non-fatal */ }
@@ -247,12 +248,13 @@ function App() {
           industry: form.industry,
           level: form.level,
           market: form.market,
+          urgency: form.urgency,
           updated_at: new Date().toISOString(),
         }, user.token);
       } catch { /* non-fatal */ }
     }, 1000);
     return () => { if (profileSyncRef.current) clearTimeout(profileSyncRef.current); };
-  }, [form.role, form.industry, form.level, form.market, user]);
+  }, [form.role, form.industry, form.level, form.market, form.urgency, user]);
 
   const renderActiveModule = () => {
     const props = {
@@ -300,9 +302,11 @@ function App() {
     if (!setupDone) {
       const INDUSTRIES = ['Software / Tech', 'Finance', 'Marketing', 'Healthcare', 'Education', 'Consulting', 'Other'];
       const MARKETS    = ['Singapore', 'Southeast Asia', 'Global'];
+      const LEVELS     = ['Intern', 'Junior', 'Mid', 'Senior', 'Lead / Staff', 'Director+'];
+      const URGENCIES  = ['This week', '1 month', '3 months', 'Exploring'];
       const STEP_TITLES = [
         { title: 'What role are you targeting?', sub: 'Powers your resume score, STAR prep, and coaching.' },
-        { title: 'Your market & industry', sub: 'We calibrate salaries, keywords, and benchmarks to your context.' },
+        { title: 'Your context', sub: 'We calibrate salaries, keywords, and urgency to your situation.' },
         { title: 'Add your resume', sub: 'Unlocks your ATS score, skills gap, and career roadmap.' },
       ];
       const handleSetupFile = async (e) => {
@@ -381,22 +385,35 @@ function App() {
               </div>
             )}
 
-            {/* Step 2 — Industry + Market */}
+            {/* Step 2 — Industry + Market + Level + Urgency */}
             {onboardStep === 2 && (
               <>
-                <div style={{ marginBottom: 16 }}>
-                  <label className="setup-label">Industry</label>
-                  <select
-                    className="setup-input"
-                    value={form.industry || ''}
-                    onChange={e => setForm(p => ({ ...p, industry: e.target.value }))}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <option value="">Select your industry…</option>
-                    {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
-                  </select>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                  <div>
+                    <label className="setup-label">Industry</label>
+                    <select
+                      className="setup-input"
+                      value={form.industry || ''}
+                      onChange={e => setForm(p => ({ ...p, industry: e.target.value }))}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <option value="">Select…</option>
+                      {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="setup-label">Experience Level</label>
+                    <select
+                      className="setup-input"
+                      value={form.level || 'Senior'}
+                      onChange={e => setForm(p => ({ ...p, level: e.target.value }))}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                  </div>
                 </div>
-                <div style={{ marginBottom: 20 }}>
+                <div style={{ marginBottom: 14 }}>
                   <label className="setup-label">Target Market</label>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {MARKETS.map(m => (
@@ -406,6 +423,20 @@ function App() {
                         style={{ flex: 1, padding: '8px 4px', borderRadius: 8, border: `1px solid ${form.market === m ? C.accent : C.border}`, background: form.market === m ? `${C.accent}15` : 'transparent', color: form.market === m ? C.accent : C.muted, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
                       >
                         {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ marginBottom: 20 }}>
+                  <label className="setup-label">Job Search Timeline</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {URGENCIES.map(u => (
+                      <button
+                        key={u}
+                        onClick={() => setForm(p => ({ ...p, urgency: u }))}
+                        style={{ flex: 1, padding: '8px 4px', borderRadius: 8, border: `1px solid ${form.urgency === u ? '#FFB84D' : C.border}`, background: form.urgency === u ? 'rgba(255,184,77,.12)' : 'transparent', color: form.urgency === u ? '#FFB84D' : C.muted, fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', lineHeight: 1.3, textAlign: 'center' }}
+                      >
+                        {u}
                       </button>
                     ))}
                   </div>
