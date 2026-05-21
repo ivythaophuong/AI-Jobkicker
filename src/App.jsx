@@ -173,7 +173,7 @@ function App() {
     }
   }, []);
 
-  const loadProfile = useCallback(async (userObj) => {
+  const loadProfile = useCallback(async (userObj, { fromLogin = false } = {}) => {
     try {
       const rows = await sb.select('profiles', { id: `eq.${userObj.id}` }, userObj.token);
       const p = rows?.[0];
@@ -186,8 +186,12 @@ function App() {
           market:   p.market   || prev.market,
           urgency:  p.urgency  || prev.urgency,
         }));
+        if (fromLogin && p.role) setSetupDone(true);
       }
-    } catch { /* non-fatal */ }
+      // fromLogin + no profile row = new user, leave setupDone=false → onboarding shows
+    } catch {
+      // If profile load fails for a login, don't block the user — show onboarding
+    }
   }, []);
 
   const login = (session) => {
@@ -204,12 +208,11 @@ function App() {
     setUser(newUser);
     setIsRecruiter(meta.role === 'recruiter');
     localStorage.setItem("supabase.auth.token", JSON.stringify({ currentSession: session }));
-    loadProfile(newUser);
+    loadProfile(newUser, { fromLogin: true });
     setIsRestoring(true); // Trigger composite fetch
     setAuthModal(null);
-    setSetupDone(true);
     _setActiveModule('dashboard');
-    showToast("✓ Welcome back!", "success");
+    showToast("✓ Welcome!", "success");
   };
 
   const logout = () => {

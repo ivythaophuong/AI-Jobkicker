@@ -3758,7 +3758,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
     const $=id=>document.getElementById(id);
     const wait=ms=>new Promise(r=>setTimeout(r,ms));
     function cu(el,target,dur,sfx=''){let cur=0,step=target/(dur/16);const iv=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=Math.round(cur)+sfx;if(cur>=target)clearInterval(iv);},16);}
-    function typeIn(el,text,speed=22){return new Promise(res=>{let i=0;el.textContent='';const cur=document.createElement('span');cur.className='tcursor';cur.style.color='inherit';el.appendChild(cur);const iv=setInterval(()=>{if(i<text.length){el.insertBefore(document.createTextNode(text[i]),cur);i++;}else{clearInterval(iv);cur.remove();res();}},speed);});}
+    function typeIn(el,text,speed=22){return new Promise(res=>{let i=0;el.textContent='';const cur=document.createElement('span');cur.className='tcursor';cur.style.color='inherit';el.appendChild(cur);const iv=setInterval(()=>{if(!el.isConnected||cur.parentNode!==el){clearInterval(iv);res();return;}if(i<text.length){el.insertBefore(document.createTextNode(text[i]),cur);i++;}else{clearInterval(iv);cur.remove();res();}},speed);});}
 
     /* ATS MODAL */
     fnRef.current.openATSDemo = function(){$('atsModalBg').classList.add('open');document.body.style.overflow='hidden';setTimeout(wRunScan,500);}
@@ -3794,7 +3794,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
     const $d=id=>document.getElementById(id);
     const waitD=ms=>new Promise(r=>setTimeout(r,ms));
     function cuD(el,target,dur){let s=0,step=target/(dur/16);const iv=setInterval(()=>{s=Math.min(s+step,target);el.textContent=Math.round(s);if(s>=target)clearInterval(iv);},16);}
-    async function typeInD(el,txt,spd){const cur=document.createElement('span');cur.className='d-cursor2';el.textContent='';el.appendChild(cur);await new Promise(res=>{let i=0;const iv=setInterval(()=>{if(i<txt.length){el.insertBefore(document.createTextNode(txt[i]),cur);i++;}else{clearInterval(iv);cur.remove();res();}},spd||18);});}
+    async function typeInD(el,txt,spd){const cur=document.createElement('span');cur.className='d-cursor2';el.textContent='';el.appendChild(cur);await new Promise(res=>{let i=0;const iv=setInterval(()=>{if(!el.isConnected||cur.parentNode!==el){clearInterval(iv);res();return;}if(i<txt.length){el.insertBefore(document.createTextNode(txt[i]),cur);i++;}else{clearInterval(iv);cur.remove();res();}},spd||18);});}
 
     /* STAGE CARD DATA */
     const STAGES=[

@@ -1418,7 +1418,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
     }
     const newScore = parsed.atsScore ?? 0;
     // Capture previous score before writing new entry
-    const lastScore = memory?.scanHistory?.find(s => s.status !== 'failed')?.score ?? null;
+    const lastScore = memory?.scanHistory?.find(s => s.status !== 'failed' && s.score > 0)?.score ?? null;
     setPrevScore(lastScore);
     setAtsScore(newScore);
     setParameters(parsed.parameters ?? {});
