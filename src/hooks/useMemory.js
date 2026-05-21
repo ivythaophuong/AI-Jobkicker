@@ -4,7 +4,9 @@ import { sb } from '../lib/supabase';
 // ── Production-Grade Relational Memory Hook ──────────────────────────────────
 export function useMemory(user, isRestoring, setIsRestoring, setRestoreError) {
   const [memory, setMemory] = useState({});
+  const memoryRef = useRef({}); // Synchronous mirror of memory — avoids React batching race on setState updater
   const syncLockedRef = useRef(true); // Atomic lock to prevent race conditions during initial load
+  const pendingRef = useRef(null); // Queued write blocked by lock — flushed after boot
   const [isSyncing, setIsSyncing] = useState(false);
 
   // 1. COMPOSITE FETCH: Load from all relational tables with isolation
@@ -74,8 +76,27 @@ export function useMemory(user, isRestoring, setIsRestoring, setRestoreError) {
           negotiationPractice: practice?.length ? practice.length : (base.negotiationPractice || 0),
           insights: insights?.length ? insights : (base.insights || []),
         };
-        setMemory(compositeMap);
+        // Merge with any in-flight state set while locked (e.g. onboarding resume upload before boot finished)
+        const merged = {
+          ...compositeMap,
+          resumeText: compositeMap.resumeText || memoryRef.current.resumeText,
+        };
+        memoryRef.current = merged;
+        setMemory(merged);
         syncLockedRef.current = false; // Release lock for UI edits
+
+        // Flush any write that was queued while boot was in progress
+        if (pendingRef.current) {
+          const pending = pendingRef.current;
+          pendingRef.current = null;
+          try {
+            await sb.upsert("user_memory", { user_id: user.id, data: pending, updated_at: new Date().toISOString() }, user.token);
+            console.log("[Sync] Pending writes flushed after boot.");
+          } catch (e) {
+            console.error("[Sync] Pending flush error:", e.message);
+          }
+        }
+
         setIsRestoring(false);
         console.log("[useMemory] Refactor Boot Complete. Memory state live.");
       } catch (e) {
@@ -88,11 +109,10 @@ export function useMemory(user, isRestoring, setIsRestoring, setRestoreError) {
 
   // 3. TARGETED UPDATE: Specific persistence logic
   const updateMemory = async (updater, relational = null) => {
-    let nextState;
-    setMemory(prev => {
-      nextState = typeof updater === 'function' ? updater(prev) : { ...prev, ...updater };
-      return nextState;
-    });
+    // Compute nextState synchronously from memoryRef — avoids undefined from React's async batching
+    const nextState = typeof updater === 'function' ? updater(memoryRef.current) : { ...memoryRef.current, ...updater };
+    memoryRef.current = nextState; // Update ref immediately so subsequent calls stack correctly
+    setMemory(nextState);
 
     if (user && !syncLockedRef.current) {
       setIsSyncing(true);
@@ -101,18 +121,11 @@ export function useMemory(user, isRestoring, setIsRestoring, setRestoreError) {
           console.log(`[Sync] Relational Push: ${relational.table}`);
           await sb.insert(relational.table, { ...relational.data, user_id: user.id }, user.token);
         }
-        
-        const syncPayload = { 
-          user_id: user.id, 
-          data: nextState, 
-          updated_at: new Date().toISOString() 
-        };
-        
-        await sb.upsert("user_memory", syncPayload, user.token);
+
+        await sb.upsert("user_memory", { user_id: user.id, data: nextState, updated_at: new Date().toISOString() }, user.token);
         console.log("[Sync] Memory Object Updated Successfully");
       } catch (e) {
         console.error("[Sync] CRITICAL PERSISTENCE ERROR:", e.message);
-        // Fallback: If relational failed, ensure it's at least in the JSON blob next time
         try {
            await sb.upsert("user_memory", { user_id: user.id, data: nextState }, user.token);
         } catch (inner) { console.error("[Sync] Total Persistence Blackout:", inner.message); }
@@ -120,7 +133,8 @@ export function useMemory(user, isRestoring, setIsRestoring, setRestoreError) {
         setIsSyncing(false);
       }
     } else if (syncLockedRef.current) {
-      console.warn("[Sync] Persistence Blocked: Boot in progress.");
+      console.warn("[Sync] Persistence Blocked: Boot in progress. Write queued.");
+      pendingRef.current = nextState; // Will be flushed when loadAll() completes
     }
   };
 

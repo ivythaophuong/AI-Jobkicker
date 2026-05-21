@@ -95,15 +95,28 @@ function App() {
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState(false);
   const [resumeParsing, setResumeParsing] = useState(false);
-  const [resumeProfile, setResumeProfile] = useState(null);
+  const [resumeProfile, _setResumeProfile] = useState(() => {
+    try { const s = localStorage.getItem('careerai_profile'); return s ? JSON.parse(s) : null; } catch { return null; }
+  });
+  const setResumeProfile = (val) => {
+    if (val) localStorage.setItem('careerai_profile', JSON.stringify(val));
+    else localStorage.removeItem('careerai_profile');
+    _setResumeProfile(val);
+  };
   const [profileLoading, setProfileLoading] = useState(false);
   const { memory, updateMemory, isSyncing } = useMemory(user, isRestoring, setIsRestoring, setRestoreError);
   
   // State is now fully managed by useMemory relational sync
-  const resumeText = memory.resumeText || null;
+  // localStorage used as resilient fallback — survives refreshes even if Supabase write is delayed
+  const resumeKey = user?.id ? `careerai_rt_${user.id}` : 'careerai_rt_guest';
+  const resumeText = memory.resumeText || localStorage.getItem(resumeKey) || null;
   const scanResult = memory.scanResult || null;
 
-  const setResumeText = (val) => updateMemory(m => ({ ...m, resumeText: val }));
+  const setResumeText = (val) => {
+    if (val) localStorage.setItem(resumeKey, val);
+    else localStorage.removeItem(resumeKey);
+    updateMemory(m => ({ ...m, resumeText: val }));
+  };
   const setScanResult = (val) => updateMemory(m => ({ ...m, scanResult: val }));
 
   // Browser history support
