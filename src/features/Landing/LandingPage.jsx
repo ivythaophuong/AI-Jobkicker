@@ -4305,6 +4305,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
           <a href="#faq">FAQ</a>
         </div>
         <div className="nav-cta">
+          <button onClick={() => setAuthModal("register")} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 100, color: 'var(--ink2)', padding: '9px 20px', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', letterSpacing: '0.01em' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.color = 'var(--ink)'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'var(--ink2)'; }}>For Employers</button>
           <button className="btn-primary" onClick={() => setAuthModal("register")}>Get Early Access →</button>
           <button className="nav-hamburger" id="navHamburger" aria-label="Menu" onClick={() => fnRef.current.toggleMobileNav?.()}><span></span><span></span><span></span></button>
         </div>
@@ -4331,6 +4332,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
             <div className="hero-actions">
               <button className="btn-hero" onClick={() => setAuthModal("register")}>Get Early Access →</button>
               <button className="btn-watch" onClick={() => fnRef.current.openATSDemo?.()}><span className="btn-watch-ic">▶</span> Watch Demo</button>
+              <button className="btn-watch" onClick={() => setAuthModal("register")} style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'var(--ink3)', fontSize: 13 }}>🏢 For Employers →</button>
             </div>
             <div className="hero-stats">
               <div className="hero-stat"><div className="val">10+</div><div className="lbl">Modules Live</div></div>
@@ -4362,9 +4364,9 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
                   </div>
                   {/* Animated score ring */}
                   <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flexShrink: '0'}}>
-                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', color: 'var(--ink3)', letterSpacing: '.04em'}}>Verification Clarity Score</div>
-                    <div style={{position: 'relative', width: '60px', height: '60px'}}>
-                      <svg viewBox="0 0 72 72" width="60" height="60" style={{position: 'absolute', top: '0', left: '0'}}>
+                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', color: 'var(--ink2)', letterSpacing: '.04em'}}>Clarity Score</div>
+                    <div style={{position: 'relative', width: '68px', height: '68px'}}>
+                      <svg viewBox="0 0 72 72" width="68" height="68" style={{position: 'absolute', top: '0', left: '0'}}>
                         <circle cx="36" cy="36" r="30" fill="none" stroke="var(--surf2)" strokeWidth="5"/>
                         <circle cx="36" cy="36" r="30" fill="none" stroke="var(--c1)" strokeWidth="5"
                           strokeDasharray="188.5" strokeDashoffset="188.5"
@@ -4372,11 +4374,11 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
                           id="hcRingArc" style={{transition: 'stroke-dashoffset 2s cubic-bezier(.22,1,.36,1)'}}/>
                       </svg>
                       <div style={{position: 'absolute', inset: '0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
-                        <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '16px', fontWeight: '700', color: 'var(--ink)', lineHeight: '1'}} id="hcScoreNum">0</div>
-                        <div style={{fontSize: '8px', color: 'var(--ink3)', fontFamily: '\'DM Mono\',monospace'}}>VCS</div>
+                        <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '20px', fontWeight: '800', color: 'var(--ink)', lineHeight: '1'}} id="hcScoreNum">0</div>
+                        <div style={{fontSize: '9px', color: 'var(--ink2)', fontFamily: '\'DM Mono\',monospace', marginTop: '2px'}}>VCS</div>
                       </div>
                     </div>
-                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', color: 'var(--c1)', opacity: '0'}} id="hcScoreLbl">···</div>
+                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', fontWeight: '600', color: 'var(--c1)', opacity: '0'}} id="hcScoreLbl">···</div>
                   </div>
                 </div>
 

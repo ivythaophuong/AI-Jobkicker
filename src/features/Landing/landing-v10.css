@@ -79,12 +79,12 @@
 .trust-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad)}
 .tc-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .tc-badge{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.14em;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:rgba(30,201,138,.08);color:var(--c1);border:1px solid rgba(30,201,138,.2)}
-.tc-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,rgba(99,102,241,.3),rgba(236,72,153,.2));border:2px solid var(--borderA);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--ink);flex-shrink:0}
+.tc-avatar{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,rgba(99,102,241,.35),rgba(236,72,153,.25));border:2px solid var(--borderA);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:var(--ink);flex-shrink:0}
 .tc-info{flex:1}
-.tc-name{font-weight:600;font-size:14px;color:var(--ink)}
-.tc-role{font-size:11px;color:var(--ink3)}
-.tc-skills{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
-.tc-skill{font-size:9px;padding:2px 7px;border-radius:4px;background:var(--surf2);color:var(--ink3);border:1px solid var(--border);font-family:'DM Mono',monospace}
+.tc-name{font-weight:800;font-size:18px;color:var(--ink);letter-spacing:-.02em;line-height:1.1}
+.tc-role{font-size:13px;color:var(--ink2);font-weight:500;margin-top:2px;letter-spacing:.01em}
+.tc-skills{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.tc-skill{font-size:9px;padding:1px 6px;border-radius:20px;background:rgba(255,255,255,.04);color:var(--ink3);border:none;font-family:'DM Mono',monospace;letter-spacing:.04em}
 .tc-score-ring{width:64px;height:64px;flex-shrink:0;border-radius:50%;background:conic-gradient(#1ec98a 0deg 331deg,var(--surf2) 331deg);display:flex;align-items:center;justify-content:center;position:relative}
 .tc-score-inner{width:52px;height:52px;background:var(--surf);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .tc-score-num{font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:var(--ink);line-height:1}
