@@ -1,7 +1,7 @@
 import React from 'react';
 
-const PROVIDER = import.meta.env.VITE_LLM_PROVIDER || 'gemini';
-const MODEL    = import.meta.env.VITE_LLM_MODEL    || 'gemini-1.5-flash';
+const PROVIDER = import.meta.env.VITE_LLM_PROVIDER || 'anthropic';
+const MODEL    = import.meta.env.VITE_LLM_MODEL    || 'claude-3-5-sonnet-20241022';
 const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
 const OPENAI_KEY    = import.meta.env.VITE_OPENAI_API_KEY;
 const GEMINI_KEY    = import.meta.env.VITE_GEMINI_API_KEY;

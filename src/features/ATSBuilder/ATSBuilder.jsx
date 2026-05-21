@@ -1048,22 +1048,8 @@ Return ONLY raw JSON (no markdown, start with {):
           )}
         </div>
 
-        {/* After upload: text preview (read-only). Before upload: paste textarea */}
-        {fileInfo && rawText ? (
-          <div style={{ position: 'relative' }}>
-            <div style={{ fontSize: 10, color: 'var(--lp-text3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
-              Extracted Text Preview
-            </div>
-            <div style={{
-              maxHeight: 160, overflowY: 'auto', background: 'rgba(255,255,255,.03)',
-              border: '1px solid var(--lp-bdr)', borderRadius: 8, padding: '10px 12px',
-              fontSize: 11.5, color: 'var(--lp-text2)', lineHeight: 1.6, whiteSpace: 'pre-wrap',
-              fontFamily: 'var(--lp-ffm, monospace)',
-            }}>
-              {rawText.slice(0, 800)}{rawText.length > 800 ? '…' : ''}
-            </div>
-          </div>
-        ) : !fileInfo ? (
+        {/* Paste textarea — only shown when no file loaded */}
+        {!fileInfo ? (
           <>
             <div style={{ textAlign: 'center', color: 'var(--lp-text3)', fontSize: 12 }}>or paste resume text</div>
             <textarea
