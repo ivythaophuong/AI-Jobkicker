@@ -926,7 +926,7 @@ function ResumeBuilderTabBar({ active, onTab }) {
 }
 
 // ── Upload & Parse Tab ────────────────────────────────────────────────────────
-function UploadAndParseTab({ user, memory, resumeText: globalResumeText }) {
+function UploadAndParseTab({ user, memory, resumeText: globalResumeText, initialProfile, onResumeExtracted, onPdfUploaded, onProfileParsed }) {
   const inputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [loading, setLoading]   = useState(false);
@@ -934,7 +934,7 @@ function UploadAndParseTab({ user, memory, resumeText: globalResumeText }) {
   const [fileInfo, setFileInfo] = useState(
     globalResumeText ? { name: 'resume (from memory)', words: globalResumeText.trim().split(/\s+/).length } : null
   );
-  const [profile, setProfile]   = useState(null);
+  const [profile, setProfile]   = useState(initialProfile || null);
   const [error, setError]       = useState('');
 
   const parseResume = async (text) => {
@@ -957,8 +957,12 @@ Return ONLY raw JSON (no markdown, start with {):
   "skills": ["skill1","skill2","skill3","skill4","skill5","skill6","skill7","skill8"]
 }` }], 1000);
       const parsed = extractJSON(raw);
-      if (!parsed.error) setProfile(parsed);
-      else setError('Could not parse resume — try a different file.');
+      if (!parsed.error) {
+        setProfile(parsed);
+        if (onProfileParsed) onProfileParsed(parsed);
+      } else {
+        setError('Could not parse resume — try a different file.');
+      }
     } catch (err) {
       console.error('[parseResume]', err);
       const msg = (err.message || '').toLowerCase();
@@ -981,6 +985,10 @@ Return ONLY raw JSON (no markdown, start with {):
         const { value } = await mammoth.extractRawText({ arrayBuffer: ab });
         text = value;
       } else if (file.name.toLowerCase().endsWith('.pdf')) {
+        const ab = await file.arrayBuffer();
+        // Store base64 for memory persistence — also feeds Live Editor without re-upload
+        const b64 = arrayBufferToBase64(ab);
+        if (onPdfUploaded) onPdfUploaded(b64);
         text = await extractTextFromPdfFile(file);
       } else {
         const ab = await file.arrayBuffer();
@@ -990,6 +998,7 @@ Return ONLY raw JSON (no markdown, start with {):
       const words = text.trim().split(/\s+/).length;
       setFileInfo({ name: file.name, words });
       setRawText(text);
+      if (onResumeExtracted) onResumeExtracted(text);
       await parseResume(text);
     } catch (err) {
       setError('Could not read file — try a DOCX or paste your resume below.');
@@ -1071,7 +1080,7 @@ Return ONLY raw JSON (no markdown, start with {):
         ) : null}
 
         <button
-          onClick={() => rawText.trim() && parseResume(rawText)}
+          onClick={() => { if (rawText.trim()) { if (onResumeExtracted) onResumeExtracted(rawText); parseResume(rawText); } }}
           disabled={loading || !rawText.trim()}
           style={{
             width: '100%', padding: '12px 0',
@@ -1203,11 +1212,13 @@ Return ONLY raw JSON (no markdown, start with {):
 }
 
 // ── AI Bullet Rewrite Tab ─────────────────────────────────────────────────────
-function BulletRewriteTab() {
+function BulletRewriteTab({ resumeText: sharedResume, targetRole: sharedRole }) {
   const [bullets, setBullets]   = useState('');
-  const [context, setContext]   = useState('');
+  const [context, setContext]   = useState(sharedRole || '');
   const [loading, setLoading]   = useState(false);
   const [rewrites, setRewrites] = useState([]);
+
+  const resumeCtx = sharedResume ? sharedResume.slice(0, 2000) : null;
 
   const rewrite = async () => {
     if (!bullets.trim()) return;
@@ -1215,7 +1226,7 @@ function BulletRewriteTab() {
     try {
       const raw = await callLLM([{ role: 'user', content:
         `Rewrite these resume bullets to be stronger, more quantified, and ATS-optimised.
-Context/role: ${context || 'general'}
+Context/role: ${context || 'general'}${resumeCtx ? `\nResume context:\n${resumeCtx}` : ''}
 Bullets:
 ${bullets}
 
@@ -1240,6 +1251,13 @@ Rewrite every bullet. Never use placeholders.` }], 1000);
       <div style={{ color: 'var(--lp-text3)', fontSize: 12 }}>
         Paste weak bullets — AI rewrites them with numbers, strong action verbs, and ATS keywords.
       </div>
+
+      {sharedResume && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(0,229,160,.06)', border: '1px solid rgba(0,229,160,.2)', borderRadius: 8 }}>
+          <span style={{ color: '#00E5A0', fontSize: 13 }}>✓</span>
+          <span style={{ color: 'var(--lp-text2)', fontSize: 12 }}>Resume loaded from Upload & Parse — AI will use it as context for rewrites.</span>
+        </div>
+      )}
 
       <div>
         <div style={{ color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Target role / context</div>
@@ -1323,7 +1341,7 @@ function VersionHistoryTab({ memory }) {
 }
 
 // ── Main ATSBuilder ────────────────────────────────────────────────────────────
-const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveModule, resumeText: globalResume }) => {
+const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveModule, resumeText: globalResume, setResumeText: setGlobalResumeText }) => {
   const hasSavedResume = !!memory?.scanPdfBase64;
   const [mainTab, setMainTab] = useState('parse');
   const [phase, setPhase] = useState(hasSavedResume ? 'scanning' : 'upload'); // upload | scanning | kanban | building | results
@@ -1335,7 +1353,26 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
   // Resume data
   const [pdfUrl, setPdfUrl] = useState(null);
   const [pdfBase64, setPdfBase64] = useState(null);
-  const [resumeText, setResumeTextState] = useState('');
+  const [resumeText, setResumeTextState] = useState(globalResume || '');
+
+  // Called by UploadAndParseTab — shares text + persists to Supabase + localStorage
+  const handleResumeExtracted = (text) => {
+    setResumeTextState(text);
+    if (setGlobalResumeText) setGlobalResumeText(text);
+    else if (updateMemory) updateMemory(m => ({ ...m, resumeText: text }));
+  };
+
+  // Called by UploadAndParseTab when PDF uploaded — store b64 so Live Editor + re-login can restore PDF without re-upload
+  const handlePdfUploaded = (b64) => {
+    setPdfBase64(b64);
+    setPdfUrl(base64ToBlobUrl(b64));
+    if (updateMemory) updateMemory(m => ({ ...m, scanPdfBase64: b64 }));
+  };
+
+  // Called by UploadAndParseTab when parse succeeds — persist profile so re-login shows cards without re-parsing
+  const handleProfileParsed = (parsedProfile) => {
+    if (updateMemory) updateMemory(m => ({ ...m, parseProfile: parsedProfile }));
+  };
 
   // Scan scores
   const [atsScore, setAtsScore] = useState(null);
@@ -1355,6 +1392,11 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
 
   // Build result
   const [buildResult, setBuildResult] = useState(null);
+
+  // Sync globalResume into local state when memory loads after mount
+  useEffect(() => {
+    if (globalResume && !resumeText) setResumeTextState(globalResume);
+  }, [globalResume]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-scan on mount if a saved resume exists in memory
   useEffect(() => {
@@ -1565,10 +1607,18 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
 
       {/* Tab routing */}
       {mainTab === 'parse' && (
-        <UploadAndParseTab user={user} memory={memory} resumeText={globalResume} />
+        <UploadAndParseTab
+          user={user}
+          memory={memory}
+          resumeText={globalResume || resumeText}
+          initialProfile={memory?.parseProfile || null}
+          onResumeExtracted={handleResumeExtracted}
+          onPdfUploaded={handlePdfUploaded}
+          onProfileParsed={handleProfileParsed}
+        />
       )}
       {mainTab === 'rewrite' && (
-        <BulletRewriteTab />
+        <BulletRewriteTab resumeText={resumeText || globalResume} targetRole={targetRole || form?.role} />
       )}
       {mainTab === 'history' && (
         <VersionHistoryTab memory={memory} />
