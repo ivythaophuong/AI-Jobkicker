@@ -376,69 +376,124 @@ function App() {
             {/* Step 1 — Target Role */}
             {onboardStep === 1 && (
               <div style={{ marginBottom: 20 }}>
-                <label className="setup-label">Target Role</label>
-                <input
-                  className="setup-input"
-                  value={form.role}
-                  onChange={e => setForm(p => ({ ...p, role: e.target.value }))}
-                  placeholder="e.g. Senior Software Engineer, Product Lead"
-                  autoFocus
-                  onKeyDown={e => e.key === 'Enter' && form.role.trim() && setOnboardStep(2)}
-                />
+                {/* Search-style role input */}
+                <div style={{ position: 'relative', marginBottom: 16 }}>
+                  <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 17, pointerEvents: 'none', userSelect: 'none' }}>🎯</span>
+                  <input
+                    value={form.role}
+                    onChange={e => setForm(p => ({ ...p, role: e.target.value }))}
+                    placeholder="e.g. Senior Product Manager"
+                    autoFocus
+                    onKeyDown={e => e.key === 'Enter' && form.role.trim() && setOnboardStep(2)}
+                    style={{
+                      width: '100%', boxSizing: 'border-box',
+                      background: 'rgba(0,212,255,0.04)',
+                      border: `1.5px solid ${form.role.trim() ? C.accent + '55' : 'rgba(255,255,255,0.08)'}`,
+                      borderRadius: 12, padding: '15px 16px 15px 46px',
+                      fontSize: 15, color: C.text, fontFamily: 'inherit',
+                      outline: 'none', transition: 'border-color 0.2s, box-shadow 0.2s',
+                      boxShadow: form.role.trim() ? `0 0 24px ${C.accent}18` : 'none',
+                    }}
+                  />
+                </div>
+                {/* Role suggestion chips */}
+                <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, fontWeight: 700 }}>Popular roles</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                  {['Software Engineer', 'Product Manager', 'Data Analyst', 'UX Designer', 'Marketing Lead', 'Business Analyst', 'DevOps Engineer', 'Finance Analyst'].map(r => (
+                    <button key={r} onClick={() => setForm(p => ({ ...p, role: r }))}
+                      style={{
+                        background: form.role === r ? `${C.accent}18` : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${form.role === r ? C.accent + '55' : 'rgba(255,255,255,0.09)'}`,
+                        borderRadius: 20, padding: '5px 13px', fontSize: 11.5,
+                        color: form.role === r ? C.accent : C.muted,
+                        cursor: 'pointer', fontFamily: 'inherit',
+                        fontWeight: form.role === r ? 700 : 400,
+                        transition: 'all 0.15s',
+                      }}>
+                      {r}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Step 2 — Industry + Market + Level + Urgency */}
+            {/* Step 2 — Industry + Level + Market + Urgency */}
             {onboardStep === 2 && (
               <>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-                  <div>
-                    <label className="setup-label">Industry</label>
-                    <select
-                      className="setup-input"
-                      value={form.industry || ''}
-                      onChange={e => setForm(p => ({ ...p, industry: e.target.value }))}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <option value="">Select…</option>
-                      {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="setup-label">Experience Level</label>
-                    <select
-                      className="setup-input"
-                      value={form.level || 'Senior'}
-                      onChange={e => setForm(p => ({ ...p, level: e.target.value }))}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-                    </select>
+                {/* Industry chips */}
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 8 }}>Industry</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                    {INDUSTRIES.map(ind => (
+                      <button key={ind} onClick={() => setForm(p => ({ ...p, industry: ind }))}
+                        style={{
+                          background: form.industry === ind ? `${C.accent}18` : 'rgba(255,255,255,0.03)',
+                          border: `1px solid ${form.industry === ind ? C.accent + '55' : 'rgba(255,255,255,0.09)'}`,
+                          borderRadius: 20, padding: '5px 13px', fontSize: 11.5,
+                          color: form.industry === ind ? C.accent : C.muted,
+                          cursor: 'pointer', fontFamily: 'inherit',
+                          fontWeight: form.industry === ind ? 700 : 400,
+                          transition: 'all 0.15s',
+                        }}>
+                        {ind}
+                      </button>
+                    ))}
                   </div>
                 </div>
-                <div style={{ marginBottom: 14 }}>
-                  <label className="setup-label">Target Market</label>
+                {/* Experience level chips */}
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 8 }}>Experience Level</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                    {LEVELS.map(l => (
+                      <button key={l} onClick={() => setForm(p => ({ ...p, level: l }))}
+                        style={{
+                          background: form.level === l ? 'rgba(139,92,246,0.18)' : 'rgba(255,255,255,0.03)',
+                          border: `1px solid ${form.level === l ? '#8B5CF6aa' : 'rgba(255,255,255,0.09)'}`,
+                          borderRadius: 20, padding: '5px 13px', fontSize: 11.5,
+                          color: form.level === l ? '#B89EFF' : C.muted,
+                          cursor: 'pointer', fontFamily: 'inherit',
+                          fontWeight: form.level === l ? 700 : 400,
+                          transition: 'all 0.15s',
+                        }}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Target market chips */}
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 8 }}>Target Market</div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {MARKETS.map(m => (
-                      <button
-                        key={m}
-                        onClick={() => setForm(p => ({ ...p, market: m }))}
-                        style={{ flex: 1, padding: '8px 4px', borderRadius: 8, border: `1px solid ${form.market === m ? C.accent : C.border}`, background: form.market === m ? `${C.accent}15` : 'transparent', color: form.market === m ? C.accent : C.muted, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}
-                      >
+                      <button key={m} onClick={() => setForm(p => ({ ...p, market: m }))}
+                        style={{
+                          flex: 1, padding: '9px 4px', borderRadius: 10,
+                          border: `1px solid ${form.market === m ? C.accent + '55' : 'rgba(255,255,255,0.09)'}`,
+                          background: form.market === m ? `${C.accent}15` : 'rgba(255,255,255,0.03)',
+                          color: form.market === m ? C.accent : C.muted,
+                          fontSize: 11.5, fontWeight: form.market === m ? 700 : 400,
+                          cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+                        }}>
                         {m}
                       </button>
                     ))}
                   </div>
                 </div>
-                <div style={{ marginBottom: 20 }}>
-                  <label className="setup-label">Job Search Timeline</label>
+                {/* Timeline chips */}
+                <div style={{ marginBottom: 4 }}>
+                  <div style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 8 }}>Job Search Timeline</div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {URGENCIES.map(u => (
-                      <button
-                        key={u}
-                        onClick={() => setForm(p => ({ ...p, urgency: u }))}
-                        style={{ flex: 1, padding: '8px 4px', borderRadius: 8, border: `1px solid ${form.urgency === u ? '#FFB84D' : C.border}`, background: form.urgency === u ? 'rgba(255,184,77,.12)' : 'transparent', color: form.urgency === u ? '#FFB84D' : C.muted, fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', lineHeight: 1.3, textAlign: 'center' }}
-                      >
+                      <button key={u} onClick={() => setForm(p => ({ ...p, urgency: u }))}
+                        style={{
+                          flex: 1, padding: '9px 4px', borderRadius: 10,
+                          border: `1px solid ${form.urgency === u ? '#FFB84Daa' : 'rgba(255,255,255,0.09)'}`,
+                          background: form.urgency === u ? 'rgba(255,184,77,0.12)' : 'rgba(255,255,255,0.03)',
+                          color: form.urgency === u ? '#FFB84D' : C.muted,
+                          fontSize: 11, fontWeight: form.urgency === u ? 700 : 400,
+                          cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+                          lineHeight: 1.3, textAlign: 'center',
+                        }}>
                         {u}
                       </button>
                     ))}

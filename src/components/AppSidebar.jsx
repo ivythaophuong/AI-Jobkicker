@@ -148,11 +148,21 @@ export default function AppSidebar({ activeModule, onNavigate, user, onLogout, c
                 className="app-sidebar-logout"
                 onClick={onLogout}
                 title="Sign out"
-                style={{ background: 'transparent', border: 'none', color: 'var(--lp-text3)', cursor: 'pointer', padding: 4, lineHeight: 1, flexShrink: 0, display: 'flex', alignItems: 'center' }}
+                style={{
+                  background: 'rgba(255,71,87,0.08)', border: '1px solid rgba(255,71,87,0.2)',
+                  borderRadius: 7, color: '#FF6B7A', cursor: 'pointer',
+                  padding: '4px 9px', lineHeight: 1, flexShrink: 0,
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  fontSize: 10.5, fontWeight: 700, fontFamily: 'inherit',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,71,87,0.18)'; e.currentTarget.style.borderColor = 'rgba(255,71,87,0.5)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,71,87,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,71,87,0.2)'; }}
               >
-                <svg viewBox="0 0 16 16" width={14} height={14} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                <svg viewBox="0 0 16 16" width={12} height={12} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M10 8H2M5 5l-3 3 3 3M8 4V3a1 1 0 011-1h4a1 1 0 011 1v10a1 1 0 01-1 1H9a1 1 0 01-1-1v-1"/>
                 </svg>
+                Sign out
               </button>
             </>
           )}
