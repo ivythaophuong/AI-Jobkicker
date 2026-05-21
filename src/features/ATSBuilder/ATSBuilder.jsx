@@ -961,11 +961,13 @@ Return ONLY raw JSON (no markdown, start with {):
       else setError('Could not parse resume — try a different file.');
     } catch (err) {
       console.error('[parseResume]', err);
-      const msg = err.message || '';
-      if (msg.includes('429') || msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('rate'))
-        setError('API rate limit hit — wait 30 seconds and try again.');
+      const msg = (err.message || '').toLowerCase();
+      if (msg.includes('429') || msg.includes('quota') || msg.includes('rate limit'))
+        setError('Too many requests — wait 30 seconds and try again.');
+      else if (msg.includes('suspended') || msg.includes('permission denied') || msg.includes('403') || msg.includes('401') || msg.includes('api key'))
+        setError('AI service unavailable — contact support.');
       else
-        setError(`Parse failed: ${msg}`);
+        setError('Parse failed — try again or paste your resume text instead.');
     }
     setLoading(false);
   };
