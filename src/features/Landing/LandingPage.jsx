@@ -1529,7 +1529,7 @@ function S0Card1({ color: c, active }) {
     s(4140, () => { setB2({cls:'good',txt:'Delivered $2.4M feature on schedule, 12 stakeholders'}); anim(72,90,c); });
     s(4600, () => setTagVis(true));
     [4700,4810,4920,5030,5140,5250].forEach((ms,i)=>s(ms,()=>setKw(v=>{const n=[...v];n[i]=1;return n;})));
-    return () => ids.forEach(clearTimeout);
+    return () => ids.forEach(id => { clearTimeout(id); clearInterval(id); });
   }, [active]);
   return (
     <JnyCard step="Step 01" title="Upload → ATS scan → 38 to 91 in 90s" statusCls="run" statusTxt="⚡ Scanning">
@@ -1586,7 +1586,7 @@ function S0Card2({ color: c, active }) {
       s(620+i*150,()=>setVals(v=>{const n=[...v];n[i]=true;return n;}));
     });
     [0,1,2,3,4].forEach(i=>s(900+i*130,()=>setPills(p=>{const n=[...p];n[i]=1;return n;})));
-    return()=>ids.forEach(clearTimeout);
+    return()=>ids.forEach(id => { clearTimeout(id); clearInterval(id); });
   }, [active]);
   return (
     <JnyCard step="Step 02" title="JD Match · 94% — gap analysis" statusCls="run" statusTxt="⚡ 94%">
@@ -1665,7 +1665,7 @@ function S1Card1({ color: c, active }) {
     });
     s(1200,()=>setAiVis(true));
     s(1300,()=>{ let j=0; ivRef.current=setInterval(()=>{if(j<=aiMsg.length){setAiText(aiMsg.slice(0,j));j++;}else clearInterval(ivRef.current);},14); });
-    return()=>ids.forEach(clearTimeout);
+    return()=>{ ids.forEach(id => { clearTimeout(id); clearInterval(id); }); clearInterval(ivRef.current); };
   }, [active]);
   return (
     <JnyCard step="Step 01" title="Personalised readiness plan" statusCls="done" statusTxt="✓ Plan ready">
@@ -1708,7 +1708,7 @@ function S1Card2({ color: c, active }) {
     s(1700,()=>{ sVals.forEach((t,idx)=>{ s(idx*180,()=>{ let cur=0; const iv=setInterval(()=>{cur=Math.min(cur+1,t);setScores(v=>{const n=[...v];n[idx]=cur;return n;});if(cur>=t)clearInterval(iv);},16); ids.push(iv); }); }); });
     s(2600,()=>setFbVis(true));
     s(2700,()=>{ let j=0; fbIvRef.current=setInterval(()=>{if(j<=fbTxt.length){setFb(fbTxt.slice(0,j));j++;}else clearInterval(fbIvRef.current);},14); });
-    return()=>ids.forEach(clearTimeout);
+    return()=>ids.forEach(id => { clearTimeout(id); clearInterval(id); });
   }, [active]);
   return (
     <JnyCard step="Step 02" title="HM Simulator — mock interview" statusCls="live" statusTxt="● Live">
@@ -1737,7 +1737,7 @@ function S1Card3({ color: c, active }) {
   useEffect(() => {
     if (!active) { setVis([0,0,0]); return; }
     const ids=[0,1,2].map(i=>setTimeout(()=>setVis(v=>{const n=[...v];n[i]=1;return n;}),300+i*380));
-    return()=>ids.forEach(clearTimeout);
+    return()=>ids.forEach(id => { clearTimeout(id); clearInterval(id); });
   }, [active]);
   return (
     <JnyCard step="Step 03" title="STAR builder — story bank" statusCls="done" statusTxt="✓ 3 stories">
@@ -1773,7 +1773,7 @@ function S1Card4({ color: c, active }) {
     const s=(ms,fn)=>ids.push(setTimeout(fn,ms));
     pcts.forEach((p,i)=>{ s(i*180,()=>setBars(b=>{const n=[...b];n[i]=p;return n;})); s(600+i*180,()=>setValVis(v=>{const n=[...v];n[i]=1;return n;})); });
     s(1500,()=>setAnchorVis(true));
-    return()=>ids.forEach(clearTimeout);
+    return()=>ids.forEach(id => { clearTimeout(id); clearInterval(id); });
   }, [active]);
   return (
     <JnyCard step="Step 04" title="Salary coach — SGD market benchmarks" statusCls="done" statusTxt="✓ Benchmarked">
@@ -1813,7 +1813,7 @@ function S2Card1({ color: c, active }) {
     pcts.forEach((p,i)=>s(i*160,()=>setBars(b=>{const n=[...b];n[i]=p;return n;})));
     s(800,()=>setOfferVis(true));
     s(900,()=>{ let cur=0; const iv=setInterval(()=>{ cur=Math.min(cur+200,14000); setAncNum(cur); if(cur>=14000)clearInterval(iv); },16); ids.push(iv); });
-    return()=>ids.forEach(clearTimeout);
+    return()=>ids.forEach(id => { clearTimeout(id); clearInterval(id); });
   }, [active]);
   return (
     <JnyCard step="Step 01" title="Offer received · market benchmark" statusCls="run" statusTxt="⚡ Analysing">
@@ -1859,7 +1859,7 @@ function S2Card2({ color: c, active }) {
     s(2000,()=>setSteps(['done','done','act','']));
     s(2900,()=>setSteps(['done','done','done','act']));
     s(3700,()=>setSteps(['done','done','done','done']));
-    return()=>ids.forEach(clearTimeout);
+    return()=>ids.forEach(id => { clearTimeout(id); clearInterval(id); });
   }, [active]);
   return (
     <JnyCard step="Step 02" title="4-step negotiation script" statusCls="run" statusTxt="⚡ Active">
@@ -1892,7 +1892,7 @@ function S2Card3({ color: c, active }) {
     s(1250,()=>setLabel('✓ Accepted'));
     s(1630,()=>setUplift(true));
     [2230,2380,2530].forEach((ms,i)=>s(ms,()=>setPills(p=>{const n=[...p];n[i]=1;return n;})));
-    return()=>ids.forEach(clearTimeout);
+    return()=>ids.forEach(id => { clearTimeout(id); clearInterval(id); });
   }, [active]);
   return (
     <JnyCard step="Step 03" title="Deal closed · +SGD 3,500/mo" statusCls="done" statusTxt="✓ +33% uplift">
@@ -1934,7 +1934,7 @@ function S3Card1({ color: c, active }) {
     const s=(ms,fn)=>ids.push(setTimeout(fn,ms));
     [0,1,2,3].forEach(i=>{ s(460+i*460,()=>{ setChks(v=>{const n=[...v];n[i]=1;return n;}); s(150,()=>setBdgs(v=>{const n=[...v];n[i]=1;return n;})); }); });
     s(2200,()=>{ setCosVis(true); let n=0; const iv=setInterval(()=>{n=Math.min(n+2,88);setCosVal(n);if(n>=88)clearInterval(iv);},28); ids.push(iv); });
-    return()=>ids.forEach(clearTimeout);
+    return()=>ids.forEach(id => { clearTimeout(id); clearInterval(id); });
   }, [active]);
   return (
     <JnyCard step="Step 01" title="Credential verify · blockchain-backed" statusCls="done" statusTxt="✓ All verified">
@@ -1972,7 +1972,7 @@ function S3Card2({ color: c, active }) {
     let sc=0; const siv=setInterval(()=>{ sc=Math.min(sc+1.3,95); setRingPct(Math.round(sc)); if(sc>=95){clearInterval(siv);setConfVis(true);} },20); ids.push(siv);
     [100,50,20,5].forEach((tgt,i)=>ids.push(setTimeout(()=>setFBars(b=>{const n=[...b];n[i]=tgt;return n;}),i*280)));
     [0,1,2,3].forEach(i=>ids.push(setTimeout(()=>setCreds(v=>{const n=[...v];n[i]=1;return n;}),1200+i*200)));
-    return()=>ids.forEach(clearTimeout);
+    return()=>ids.forEach(id => { clearTimeout(id); clearInterval(id); });
   }, [active]);
   const deg=Math.round(ringPct/100*360);
   return (
@@ -2074,7 +2074,7 @@ function S3Card4({ color: c, active }) {
     let n=0; const iv=setInterval(()=>{n=Math.min(n+2,88);setTscore(n);if(n>=88)clearInterval(iv);},22); ids.push(iv);
     [400,700,1000].forEach((ms,i)=>ids.push(setTimeout(()=>setRows(v=>{const nv=[...v];nv[i]=1;return nv;}),ms)));
     [0,1,2,3].forEach(i=>ids.push(setTimeout(()=>setBadges(v=>{const nv=[...v];nv[i]=1;return nv;}),1400+i*280)));
-    return()=>ids.forEach(clearTimeout);
+    return()=>ids.forEach(id => { clearTimeout(id); clearInterval(id); });
   }, [active]);
   return (
     <JnyCard step="Step 04" title="TrustMatch profile · Trust Score 88" statusCls="done" statusTxt="✓ Top 8%">
