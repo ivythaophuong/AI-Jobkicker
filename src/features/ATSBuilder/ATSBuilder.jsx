@@ -955,7 +955,7 @@ Return ONLY raw JSON (no markdown, start with {):
   "workExperience": [{"title":"job title","company":"company name","period":"date range","duration":"X years"}],
   "education": [{"degree":"degree name","institution":"school","period":"years","gpa":"if present"}],
   "skills": ["skill1","skill2","skill3","skill4","skill5","skill6","skill7","skill8"]
-}` }], 1000);
+}` }], 4000);
       const parsed = extractJSON(raw);
       if (!parsed.error) {
         setProfile(parsed);
@@ -1232,7 +1232,7 @@ ${bullets}
 
 Return ONLY raw JSON array (no markdown, start with [):
 [{"before":"original bullet","after":"rewritten bullet with numbers and strong verbs"}]
-Rewrite every bullet. Never use placeholders.` }], 1000);
+Rewrite every bullet. Never use placeholders.` }], 4000);
       const parsed = extractJSON(raw);
       if (Array.isArray(parsed)) setRewrites(parsed);
     } catch { /* silent */ }
