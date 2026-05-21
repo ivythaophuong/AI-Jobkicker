@@ -304,13 +304,10 @@ export default function TrustMatch({ user, memory, updateMemory }) {
 
         {/* Skills */}
         {trustProfile?.skills?.length > 0 && (
-          <div>
-            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.09em', color: T.text3, marginBottom: 6 }}>Skills</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-              {trustProfile.skills.map(s => (
-                <span key={s} style={{ fontSize: 10, padding: '3px 8px', borderRadius: 5, background: T.tealDim, color: T.teal, border: `1px solid ${T.tealB}`, fontFamily: FFM }}>{s}</span>
-              ))}
-            </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            {trustProfile.skills.map(s => (
+              <span key={s} style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: T.tealDim, color: T.teal, border: `1px solid ${T.tealB}`, fontFamily: FFM }}>{s}</span>
+            ))}
           </div>
         )}
 

@@ -4300,24 +4300,18 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
           </div>
         </a>
         <div className="nav-links">
-          <a href="#howitworks">How It Works</a>
           <a href="#s1">For Candidates</a>
-          <a href="#for-recruiters">For Recruiters</a>
           <a href="#pricing">Pricing</a>
           <a href="#faq">FAQ</a>
         </div>
         <div className="nav-cta">
-          <button className="btn-ghost" onClick={() => fnRef.current.toggleRecruiter?.()}>Recruiter Access</button>
           <button className="btn-primary" onClick={() => setAuthModal("register")}>Get Early Access →</button>
           <button className="nav-hamburger" id="navHamburger" aria-label="Menu" onClick={() => fnRef.current.toggleMobileNav?.()}><span></span><span></span><span></span></button>
         </div>
       </nav>
       {/* MOBILE NAV */}
       <div className="mobile-nav" id="mobileNav">
-        <a href="#trust-gap" onClick={() => fnRef.current.closeMobileNav?.()}>Why CareerAiHub</a>
-        <a href="#howitworks" onClick={() => fnRef.current.closeMobileNav?.()}>How It Works</a>
-        <a href="#trustmatch" onClick={() => fnRef.current.closeMobileNav?.()}>TrustMatch</a>
-        <a href="#for-recruiters" onClick={() => fnRef.current.closeMobileNav?.()}>For Recruiters</a>
+        <a href="#s1" onClick={() => fnRef.current.closeMobileNav?.()}>For Candidates</a>
         <a href="#pricing" onClick={() => fnRef.current.closeMobileNav?.()}>Pricing</a>
         <a href="#testimonials" onClick={() => fnRef.current.closeMobileNav?.()}>Stories</a>
         <a href="#faq" onClick={() => fnRef.current.closeMobileNav?.()}>FAQ</a>
@@ -4459,206 +4453,6 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
         </div>
       </div>
 
-      {/* TRUST GAP */}
-      <section id="trust-gap">
-        <div className="wrap">
-          <div className="tg-eyebrow">The Trust Gap</div>
-          <h2 className="tg-headline">95% of candidates filtered out<br /><span className="broken">before a human ever reads.</span></h2>
-          <p className="tg-sub">Recruiters wade through 250–1,000 applications per role. Only 10% are qualified. Neither side wins — until now.</p>
-
-          <div className="tg-grid">
-
-            {/* CARD 1: Candidates */}
-            <div className="tg-panel tg-c">
-              <div className="tg-panel-title">
-                <div className="tg-panel-ic">👤</div>For Candidates
-              </div>
-              {/* Pain */}
-              <div className="tg-pain">
-                <div className="tg-pain-item"><div className="tg-pain-x">✕</div>AI-generated resumes look identical</div>
-                <div className="tg-pain-item"><div className="tg-pain-x">✕</div>No replies from applications</div>
-                <div className="tg-pain-item"><div className="tg-pain-x">✕</div>No verified proof of skill</div>
-                <div className="tg-pain-item"><div className="tg-pain-x">✕</div>Invisible to the right recruiters</div>
-              </div>
-              {/* Divider + fix */}
-              <div className="tg-divider"></div>
-              <div className="tg-fix-label">CareerAiHub fixes this</div>
-              <div className="tg-fix">
-                <div className="tg-fix-item"><div className="tg-fix-check">✓</div>ATS-optimised resume in 90 seconds</div>
-                <div className="tg-fix-item"><div className="tg-fix-check">✓</div>Blockchain-verified credential proof</div>
-                <div className="tg-fix-item"><div className="tg-fix-check">✓</div>TrustMatch surfaces you to recruiters</div>
-                <div className="tg-fix-item"><div className="tg-fix-check">✓</div>AI coaching before every interview</div>
-              </div>
-              <div style={{display: 'flex', flexWrap: 'wrap', gap: '3px', marginTop: '12px'}}>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.18)'}}>🇸🇬 Singpass</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.18)'}}>🎓 OpenCerts</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(139,130,240,.07)', color: 'var(--c2)', border: '1px solid rgba(139,130,240,.18)'}}>🏅 Credly</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(99,102,241,.07)', color: 'var(--g1)', border: '1px solid rgba(99,102,241,.18)'}}>⚖️ MOM COMPASS</span>
-              </div>
-            </div>
-
-            {/* BRIDGE: animated logo */}
-            <div className="tg-center">
-              <div className="tg-logo-bridge">
-                <svg width="64" height="64" viewBox="0 0 100 100" fill="none" className="tg-orbit-svg">
-                  <defs>
-                    <linearGradient id="tg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#6366F1"/>
-                      <stop offset="55%" stopColor="#EC4899"/>
-                      <stop offset="100%" stopColor="#F59E0B"/>
-                    </linearGradient>
-                    <path id="tg-path" d="M 8 50 a 42 18 0 1 0 84 0 a 42 18 0 1 0 -84 0 Z"/>
-                  </defs>
-                  <g style={{transformOrigin: '50px 50px', animation: 'orbit-spin-cw 16s linear infinite'}}>
-                    <ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(-28 50 50)" stroke="url(#tg-grad)" strokeWidth="2" fill="none" opacity="0.35"/>
-                  </g>
-                  <g style={{transformOrigin: '50px 50px', animation: 'orbit-spin-ccw 16s linear infinite'}}>
-                    <ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(28 50 50)" stroke="url(#tg-grad)" strokeWidth="2" fill="none" opacity="0.35"/>
-                  </g>
-                  <circle cx="50" cy="50" r="13" fill="url(#tg-grad)"/>
-                  <g transform="rotate(-28 50 50)">
-                    <circle r="4.5" fill="url(#tg-grad)"><animateMotion dur="16s" repeatCount="indefinite"><mpath href="#tg-path"/></animateMotion></circle>
-                    <circle r="3.5" fill="url(#tg-grad)"><animateMotion dur="16s" repeatCount="indefinite" begin="-7s"><mpath href="#tg-path"/></animateMotion></circle>
-                  </g>
-                  <g transform="rotate(28 50 50)">
-                    <circle r="4" fill="url(#tg-grad)"><animateMotion dur="16s" repeatCount="indefinite" begin="-3s"><mpath href="#tg-path"/></animateMotion></circle>
-                  </g>
-                </svg>
-                <div className="tg-bridge-text">CareerAiHub<span>closes the gap</span></div>
-              </div>
-            </div>
-
-            {/* CARD 2: Recruiters */}
-            <div className="tg-panel tg-r">
-              <div className="tg-panel-title">
-                <div className="tg-panel-ic">🏢</div>For Recruiters
-              </div>
-              {/* Pain */}
-              <div className="tg-pain">
-                <div className="tg-pain-item"><div className="tg-pain-x">✕</div>Too many irrelevant applications</div>
-                <div className="tg-pain-item"><div className="tg-pain-x">✕</div>Fake experience is everywhere</div>
-                <div className="tg-pain-item"><div className="tg-pain-x">✕</div>Difficult screening &amp; verification</div>
-                <div className="tg-pain-item"><div className="tg-pain-x">✕</div>Hiring decisions feel uncertain</div>
-              </div>
-              {/* Divider + fix */}
-              <div className="tg-divider"></div>
-              <div className="tg-fix-label">CareerAiHub fixes this</div>
-              <div className="tg-fix">
-                <div className="tg-fix-item"><div className="tg-fix-check">✓</div>Verified-only candidate pool</div>
-                <div className="tg-fix-item"><div className="tg-fix-check">✓</div>Verification Clarity Score replaces guesswork</div>
-                <div className="tg-fix-item"><div className="tg-fix-check">✓</div>95% match engine — ranked shortlists</div>
-                <div className="tg-fix-item"><div className="tg-fix-check">✓</div>0% fake credentials, blockchain-anchored</div>
-              </div>
-              <div style={{display: 'flex', flexWrap: 'wrap', gap: '3px', marginTop: '12px'}}>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.18)'}}>🇸🇬 Singpass</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.18)'}}>🎓 OpenCerts</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(139,130,240,.07)', color: 'var(--c2)', border: '1px solid rgba(139,130,240,.18)'}}>🏅 Credly</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(99,102,241,.07)', color: 'var(--g1)', border: '1px solid rgba(99,102,241,.18)'}}>⚖️ MOM COMPASS</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-      <section id="howitworks" style={{padding: '100px 0', position: 'relative', overflow: 'hidden', background: 'var(--bg2)', borderTop: '1px solid var(--border)'}}>
-        <div style={{position: 'absolute', inset: '0', background: 'radial-gradient(ellipse 60% 50% at 50% 50%,rgba(99,102,241,.04),transparent 70%)', pointerEvents: 'none'}}></div>
-        <div className="wrap">
-
-          {/* Header */}
-          <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--c1)', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center', marginBottom: '14px'}}>
-            <span style={{width: '24px', height: '1px', background: 'rgba(30,201,138,.3)', display: 'block'}}></span>How It Works<span style={{width: '24px', height: '1px', background: 'rgba(30,201,138,.3)', display: 'block'}}></span>
-          </div>
-          <h2 style={{fontFamily: '\'Instrument Serif\',serif', fontSize: 'clamp(30px,3.8vw,52px)', lineHeight: '1.06', letterSpacing: '-1.5px', textAlign: 'center', marginBottom: '8px'}}>One system. <span style={{background: 'var(--grad)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>Three stages.</span> From invisible to <em style={{color: 'var(--c1)'}}>verified.</em></h2>
-          <p style={{textAlign: 'center', fontSize: '13px', color: 'var(--ink2)', marginBottom: '48px', fontWeight: '300', maxWidth: '500px', marginLeft: 'auto', marginRight: 'auto'}}>Build your identity. Verify your credentials. Improve your readiness. Get matched to the right roles.</p>
-
-          {/* 4-step horizontal cards */}
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0', background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '18px', overflow: 'hidden'}}>
-
-            {/* CARD 1: BUILD */}
-            <div style={{padding: '28px 24px', borderRight: '1px solid var(--border)', transition: 'background .2s', display: 'flex', flexDirection: 'column'}}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px'}}>
-                <div style={{fontSize: '20px'}}>✍️</div>
-                <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--c1)', fontWeight: '600'}}>Build</div>
-              </div>
-              <div style={{fontSize: '13px', fontWeight: '700', color: 'var(--ink)', marginBottom: '6px', lineHeight: '1.3'}}>Create a career identity recruiters can actually understand.</div>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', color: 'var(--ink3)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '10px'}}>AI resume builder · ATS optimisation · Cover letter gen</div>
-              <div style={{fontSize: '11.5px', color: 'var(--ink2)', lineHeight: '1.7', fontWeight: '300', marginBottom: '16px', flex: '1'}}>Paste a job description. AI injects exact keywords, rewrites weak bullets, and generates a personalised cover letter. Done in 90 seconds.</div>
-              <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.2)', alignSelf: 'flex-start'}}>38 → 91 ATS score</span>
-            </div>
-
-            {/* CARD 2: VERIFY */}
-            <div style={{padding: '28px 24px', borderRight: '1px solid var(--border)', transition: 'background .2s', display: 'flex', flexDirection: 'column'}}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px'}}>
-                <div style={{fontSize: '20px'}}>🛡️</div>
-                <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--c2)', fontWeight: '600'}}>Verify</div>
-              </div>
-              <div style={{fontSize: '13px', fontWeight: '700', color: 'var(--ink)', marginBottom: '6px', lineHeight: '1.3'}}>Turn your resume into verified proof of capability.</div>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', color: 'var(--ink3)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '10px'}}>Degree verify · Skills verify · Work verify · On-chain</div>
-              <div style={{fontSize: '11.5px', color: 'var(--ink2)', lineHeight: '1.7', fontWeight: '300', marginBottom: '14px', flex: '1'}}>Connect Singpass, OpenCerts, or Credly. Every credential is cryptographically hashed on-chain — tamper-proof, instantly verifiable by recruiters. Done in under 4 minutes.</div>
-              <div style={{display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '12px'}}>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.2)'}}>🇸🇬 Singpass</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.2)'}}>🎓 OpenCerts</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(139,130,240,.07)', color: 'var(--c2)', border: '1px solid rgba(139,130,240,.2)'}}>🏅 Credly</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(99,102,241,.07)', color: 'var(--g1)', border: '1px solid rgba(99,102,241,.2)'}}>⚖️ MOM COMPASS</span>
-              </div>
-              <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(139,130,240,.07)', color: 'var(--c2)', border: '1px solid rgba(139,130,240,.2)', alignSelf: 'flex-start'}}>≤ 4 min · blockchain-anchored</span>
-            </div>
-
-            {/* CARD 3: IMPROVE */}
-            <div style={{padding: '28px 24px', borderRight: '1px solid var(--border)', transition: 'background .2s', display: 'flex', flexDirection: 'column'}}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px'}}>
-                <div style={{fontSize: '20px'}}>📈</div>
-                <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--c3)', fontWeight: '600'}}>Improve</div>
-              </div>
-              <div style={{fontSize: '13px', fontWeight: '700', color: 'var(--ink)', marginBottom: '6px', lineHeight: '1.3'}}>Train with AI pressure before the real interview.</div>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', color: 'var(--ink3)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '10px'}}>HM Simulator · STAR Builder · Salary Coach · Readiness scoring</div>
-              <div style={{fontSize: '11.5px', color: 'var(--ink2)', lineHeight: '1.7', fontWeight: '300', marginBottom: '14px', flex: '1'}}>AI hiring manager runs pressure rounds, targets your weakest dimension first, and scores your readiness. Don't walk in below 88/100.</div>
-              {/* 4 dimension pills */}
-              <div style={{display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '12px'}}>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(240,168,50,.07)', color: 'var(--c3)', border: '1px solid rgba(240,168,50,.2)'}}>HM Simulator</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(240,168,50,.07)', color: 'var(--c3)', border: '1px solid rgba(240,168,50,.2)'}}>STAR Builder</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(240,168,50,.07)', color: 'var(--c3)', border: '1px solid rgba(240,168,50,.2)'}}>Salary Coach</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(240,168,50,.07)', color: 'var(--c3)', border: '1px solid rgba(240,168,50,.2)'}}>Readiness scoring</span>
-              </div>
-              <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(240,168,50,.07)', color: 'var(--c3)', border: '1px solid rgba(240,168,50,.2)', alignSelf: 'flex-start'}}>88/100 readiness target</span>
-            </div>
-
-            {/* CARD 4: GET MATCHED */}
-            <div style={{padding: '28px 24px', transition: 'background .2s', display: 'flex', flexDirection: 'column'}}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px'}}>
-                <div style={{fontSize: '20px'}}>🎯</div>
-                <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--c4)', fontWeight: '600'}}>Get Matched</div>
-              </div>
-              <div style={{fontSize: '13px', fontWeight: '700', color: 'var(--ink)', marginBottom: '6px', lineHeight: '1.3'}}>Stop applying cold. Let verified roles find you.</div>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', color: 'var(--ink3)', letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: '10px'}}>TrustMatch marketplace · TrustChat · VCS unlock</div>
-              <div style={{fontSize: '11.5px', color: 'var(--ink2)', lineHeight: '1.7', fontWeight: '300', marginBottom: '14px', flex: '1'}}>Verification Clarity Score 80+ unlocks TrustMatch. Recruiters see your full verified proof before the first message — no cold applying, no black hole.</div>
-              <div style={{display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '12px'}}>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.2)'}}>🇸🇬 Singpass</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.2)'}}>🎓 OpenCerts</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(139,130,240,.07)', color: 'var(--c2)', border: '1px solid rgba(139,130,240,.2)'}}>🏅 Credly</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7.5px', padding: '3px 8px', borderRadius: '20px', background: 'rgba(99,102,241,.07)', color: 'var(--g1)', border: '1px solid rgba(99,102,241,.2)'}}>⚖️ MOM COMPASS</span>
-              </div>
-              <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(232,92,128,.07)', color: 'var(--c4)', border: '1px solid rgba(232,92,128,.2)', alignSelf: 'flex-start'}}>avg 9 days to shortlist</span>
-            </div>
-
-          </div>
-
-          {/* Stats strip + CTA */}
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '14px', overflow: 'hidden', maxWidth: '780px', margin: '28px auto 32px'}}>
-            <div style={{padding: '16px 20px', textAlign: 'center', borderRight: '1px solid var(--border)'}}><div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '19px', fontWeight: '700', color: 'var(--ink)', marginBottom: '3px'}}>2,714</div><div style={{fontSize: '8px', color: 'var(--ink3)', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: '\'DM Mono\',monospace'}}>Verified profiles</div></div>
-            <div style={{padding: '16px 20px', textAlign: 'center', borderRight: '1px solid var(--border)'}}><div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '19px', fontWeight: '700', color: 'var(--ink)', marginBottom: '3px'}}>9 days</div><div style={{fontSize: '8px', color: 'var(--ink3)', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: '\'DM Mono\',monospace'}}>Avg to shortlist</div></div>
-            <div style={{padding: '16px 20px', textAlign: 'center', borderRight: '1px solid var(--border)'}}><div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '19px', fontWeight: '700', color: 'var(--ink)', marginBottom: '3px'}}>+SGD 8k</div><div style={{fontSize: '8px', color: 'var(--ink3)', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: '\'DM Mono\',monospace'}}>Avg salary uplift</div></div>
-            <div style={{padding: '16px 20px', textAlign: 'center'}}><div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '19px', fontWeight: '700', color: 'var(--ink)', marginBottom: '3px'}}>0%</div><div style={{fontSize: '8px', color: 'var(--ink3)', textTransform: 'uppercase', letterSpacing: '1px', fontFamily: '\'DM Mono\',monospace'}}>Fake credentials</div></div>
-          </div>
-
-          <p style={{textAlign: 'center', fontSize: '12px', color: 'var(--ink3)', fontFamily: '\'DM Mono\',monospace', letterSpacing: '.04em', marginBottom: '32px'}}>✦ AI Memory Flywheel — every session teaches our models more about you, so coaching, matching, and scoring get sharper over time.</p>
-
-          <div style={{textAlign: 'center'}}>
-            <button style={{display: 'inline-flex', alignItems: 'center', gap: '9px', background: 'var(--grad)', color: '#fff', padding: '14px 30px', borderRadius: '100px', fontSize: '14px', fontWeight: '600', textDecoration: 'none', boxShadow: '0 0 36px rgba(99,102,241,.3)'}} onClick={() => setAuthModal("register")}>Get Early Access →</button>
-          </div>
-
-        </div>
-      </section>
       <div className="snav-wrap">
         <nav className="snav" id="snav">
           <div className="snav-track"></div>
@@ -4987,121 +4781,6 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════ */}
-      {/* RECRUITER TRIGGER (always visible) */}
-      {/* ═══════════════════════════════════════════════ */}
-      <section className="recruiter-trigger-section" id="recruiter-trigger">
-        <div className="wrap">
-          <div className="recruiter-trigger-eyebrow">For Recruiters &amp; Hiring Committees</div>
-          <h2 className="recruiter-trigger-headline">Pre-verified candidates.<br /><em>Before you spend a dollar.</em></h2>
-          <p className="recruiter-trigger-sub">Save 10–15 days of BGC. Zero resume spam. COMPASS-aligned profiles, ready to shortlist.</p>
-          <button className="recruiter-toggle-btn" id="recruiterToggleBtn" onClick={() => fnRef.current.toggleRecruiter?.()}>
-            View Recruiter Intelligence <span className="btn-arrow">↓</span>
-          </button>
-          <div className="recruiter-hint"><span></span>Expand to see VCS breakdown &amp; compliance tools<span></span></div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════ */}
-      {/* FOR RECRUITERS (hidden by default) */}
-      {/* ═══════════════════════════════════════════════ */}
-      <section id="for-recruiters" style={{padding: '96px 0', background: 'var(--bg2)', borderTop: '1px solid var(--border)', position: 'relative', overflow: 'hidden'}}>
-        <div style={{position: 'absolute', inset: '0', background: 'radial-gradient(ellipse 55% 50% at 80% 50%,rgba(139,130,240,.05),transparent 70%)', pointerEvents: 'none'}}></div>
-        <div className="wrap">
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '72px', alignItems: 'start'}}>
-
-            {/* Left copy */}
-            <div>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--c2)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px'}}><span style={{width: '20px', height: '1px', background: 'rgba(139,130,240,.4)', display: 'block'}}></span>For Recruiters &amp; Hiring Committees</div>
-              <h2 style={{fontFamily: '\'Instrument Serif\',serif', fontSize: 'clamp(28px,3vw,44px)', lineHeight: '1.08', letterSpacing: '-1.5px', marginBottom: '16px'}}>The verification is <em style={{color: 'var(--c2)'}}>already done</em><br />before you ever meet them.</h2>
-              <p style={{fontSize: '14px', color: 'var(--ink2)', lineHeight: '1.75', fontWeight: '300', marginBottom: '28px'}}>Singapore hiring reqs attract 250–1,000+ applicants. Only 10% are technically qualified. Traditional BGC takes 10–15 business days and costs SGD 300–800 per candidate — <em>after</em> the offer. CareerAiHub flips this. Candidates arrive pre-verified, COMPASS-aligned, and screened before you spend a dollar.</p>
-
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '12px', marginBottom: '32px'}}>
-                <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '12px', padding: '18px 16px', textAlign: 'center'}}>
-                  <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '22px', fontWeight: '700', color: 'var(--c4)', lineHeight: '1', marginBottom: '4px'}}>$240k</div>
-                  <div style={{fontSize: '9px', color: 'var(--ink3)', fontFamily: '\'DM Mono\',monospace', letterSpacing: '.06em', textTransform: 'uppercase'}}>Cost of a bad hire (SGD)</div>
-                </div>
-                <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '12px', padding: '18px 16px', textAlign: 'center'}}>
-                  <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '22px', fontWeight: '700', color: 'var(--c3)', lineHeight: '1', marginBottom: '4px'}}>15 days</div>
-                  <div style={{fontSize: '9px', color: 'var(--ink3)', fontFamily: '\'DM Mono\',monospace', letterSpacing: '.06em', textTransform: 'uppercase'}}>Avg BGC wait (traditional)</div>
-                </div>
-                <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '12px', padding: '18px 16px', textAlign: 'center'}}>
-                  <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '22px', fontWeight: '700', color: 'var(--c1)', lineHeight: '1', marginBottom: '4px'}}>50%</div>
-                  <div style={{fontSize: '9px', color: 'var(--ink3)', fontFamily: '\'DM Mono\',monospace', letterSpacing: '.06em', textTransform: 'uppercase'}}>Faster time-to-hire</div>
-                </div>
-              </div>
-
-              <div style={{display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px'}}>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '2px', flexShrink: '0'}}>✓</span><span><strong style={{color: 'var(--ink)', fontWeight: '500'}}>Verification Clarity Score</strong> — not a black box. Every point is traceable: education via OpenCerts, employment via Singpass, credentials via Credly. Full audit trail.</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '2px', flexShrink: '0'}}>✓</span><span><strong style={{color: 'var(--ink)', fontWeight: '500'}}>MOM COMPASS-aligned</strong> — profiles carry the data points you need for Fair Consideration Framework compliance. No extra legwork.</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '2px', flexShrink: '0'}}>✓</span><span><strong style={{color: 'var(--ink)', fontWeight: '500'}}>Spam eliminated at source</strong> — AI-optimised resume spam never earns a verified profile. You only see candidates who proved their credentials.</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px', color: 'var(--ink2)'}}><span style={{color: 'var(--c4)', fontSize: '11px', marginTop: '2px', flexShrink: '0'}}>◎</span><span><strong style={{color: 'var(--ink)', fontWeight: '500'}}>AI Integrity Signal</strong> <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', color: 'var(--c4)', padding: '1px 6px', border: '1px solid rgba(232,92,128,.3)', borderRadius: '20px', marginLeft: '4px'}}>Building next</span> — flags likely real-time AI copilot use during live interviews, the #1 unresolved gap in 2026 hiring.</span></div>
-              </div>
-
-              {/* Verification source badges */}
-              <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '28px'}}>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.2)'}}>🇸🇬 Singpass</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.2)'}}>🎓 OpenCerts</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(139,130,240,.07)', color: 'var(--c2)', border: '1px solid rgba(139,130,240,.2)'}}>🏅 Credly</span>
-                <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(99,102,241,.07)', color: 'var(--g1)', border: '1px solid rgba(99,102,241,.2)'}}>⚖️ MOM COMPASS-aligned</span>
-              </div>
-
-              <button onClick={() => setAuthModal("register")} style={{display: "inline-flex", alignItems: "center", gap: "8px", background: "var(--surf)", border: "1px solid var(--borderA)", color: "var(--ink2)", padding: "11px 22px", borderRadius: "100px", fontSize: "13px", fontWeight: "500", cursor: "pointer", fontFamily: "sans-serif", transition: "all .2s"}}>Request recruiter access →</button>
-            </div>
-
-            {/* Right: VCS card */}
-            <div style={{position: 'sticky', top: '80px'}}>
-              <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '18px', overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,.5)'}}>
-                <div style={{padding: '18px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-                  <div>
-                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--c2)', marginBottom: '4px'}}>Verification Clarity Score</div>
-                    <div style={{fontSize: '14px', fontWeight: '600', color: 'var(--ink)'}}>Sarah Lim · Senior Data Engineer</div>
-                    <div style={{fontSize: '11px', color: 'var(--ink3)', marginTop: '2px'}}>NUS · 6 yrs exp · Singapore PR</div>
-                  </div>
-                  <div style={{textAlign: 'center', flexShrink: '0'}}>
-                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '32px', fontWeight: '700', color: 'var(--c1)', lineHeight: '1'}}>91</div>
-                    <div style={{fontSize: '8px', color: 'var(--ink3)', fontFamily: '\'DM Mono\',monospace'}}>/100 VCS</div>
-                  </div>
-                </div>
-                <div style={{padding: '16px 20px', borderBottom: '1px solid var(--border)'}}>
-                  <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: '12px'}}>Clarity Breakdown — Auditable</div>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px'}}>
-                    <div style={{fontSize: '11px', color: 'var(--ink2)', width: '170px', flexShrink: '0'}}>🎓 Education (OpenCerts)</div>
-                    <div style={{flex: '1', height: '4px', background: 'var(--border2)', borderRadius: '2px', overflow: 'hidden'}}><div style={{height: '100%', width: '100%', background: 'var(--c1)', borderRadius: '2px'}}></div></div>
-                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', color: 'var(--c1)', width: '32px', textAlign: 'right'}}>25/25</div>
-                  </div>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px'}}>
-                    <div style={{fontSize: '11px', color: 'var(--ink2)', width: '170px', flexShrink: '0'}}>💼 Employment (Singpass)</div>
-                    <div style={{flex: '1', height: '4px', background: 'var(--border2)', borderRadius: '2px', overflow: 'hidden'}}><div style={{height: '100%', width: '97%', background: 'var(--c1)', borderRadius: '2px'}}></div></div>
-                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', color: 'var(--c1)', width: '32px', textAlign: 'right'}}>34/35</div>
-                  </div>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px'}}>
-                    <div style={{fontSize: '11px', color: 'var(--ink2)', width: '170px', flexShrink: '0'}}>🏅 Credentials (Credly)</div>
-                    <div style={{flex: '1', height: '4px', background: 'var(--border2)', borderRadius: '2px', overflow: 'hidden'}}><div style={{height: '100%', width: '90%', background: 'var(--c2)', borderRadius: '2px'}}></div></div>
-                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', color: 'var(--c2)', width: '32px', textAlign: 'right'}}>18/20</div>
-                  </div>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-                    <div style={{fontSize: '11px', color: 'var(--ink2)', width: '170px', flexShrink: '0'}}>⚡ Platform Activity</div>
-                    <div style={{flex: '1', height: '4px', background: 'var(--border2)', borderRadius: '2px', overflow: 'hidden'}}><div style={{height: '100%', width: '70%', background: 'var(--c3)', borderRadius: '2px'}}></div></div>
-                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', color: 'var(--c3)', width: '32px', textAlign: 'right'}}>14/20</div>
-                  </div>
-                </div>
-                <div style={{padding: '14px 20px', display: 'flex', gap: '6px', flexWrap: 'wrap', borderBottom: '1px solid var(--border)'}}>
-                  <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', padding: '3px 9px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.2)'}}>✓ 🇸🇬 Singpass</span>
-                  <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', padding: '3px 9px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.2)'}}>✓ 🎓 OpenCerts</span>
-                  <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', padding: '3px 9px', borderRadius: '20px', background: 'rgba(99,102,241,.07)', color: 'var(--g1)', border: '1px solid rgba(99,102,241,.2)'}}>⚖️ MOM COMPASS-aligned</span>
-                  <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', padding: '3px 9px', borderRadius: '20px', background: 'rgba(139,130,240,.07)', color: 'var(--c2)', border: '1px solid rgba(139,130,240,.2)'}}>🏅 Credly</span>
-                  <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', padding: '3px 9px', borderRadius: '20px', background: 'rgba(139,130,240,.07)', color: 'var(--c2)', border: '1px solid rgba(139,130,240,.2)'}}>⛓ On-chain hash</span>
-                </div>
-                <div style={{padding: '12px 20px', background: 'rgba(30,201,138,.03)'}}>
-                  <div style={{fontSize: '11px', color: 'var(--ink2)', lineHeight: '1.6'}}>No BGC vendor needed. <strong style={{color: 'var(--ink)', fontWeight: '500'}}>Save SGD 300–800</strong> per candidate and <strong style={{color: 'var(--ink)', fontWeight: '500'}}>10–15 business days</strong> of wait — before you make an offer.</div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
 
       {/* DATA PRIVACY */}
       <section id="privacy" style={{padding: '80px 0', background: 'var(--bg)', borderTop: '1px solid var(--border)'}}>
@@ -5173,7 +4852,6 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
           <p className="fcta-sub">AI-powered career acceleration for the modern job seeker. Join 2,714 verified candidates and forward-thinking companies already on the platform.</p>
           <div className="fcta-actions">
             <button className="btn-fcta" onClick={() => setAuthModal("register")}>Get Early Access →</button>
-            <a href="#for-recruiters" className="btn-fcta2">Request Recruiter Access ↗</a>
           </div>
           <div className="fcta-note">Free forever · No card required · 10 AI modules unlocked instantly</div>
         </div>

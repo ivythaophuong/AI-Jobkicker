@@ -9,11 +9,11 @@ const GEMINI_KEY    = import.meta.env.VITE_GEMINI_API_KEY;
 // ── callLLM ──────────────────────────────────────────────────────────────────
 // Generic LLM caller. Routes to the configured provider.
 // pdfBase64: optional — if provided, the PDF is sent alongside the prompt.
-//            Only Gemini supports inline PDF; other providers receive text only.
+//            Gemini: inline_data. Anthropic: document content type (beta header).
 export async function callLLM(messages, maxTokens = 8192, pdfBase64 = null) {
   if (PROVIDER === 'gemini') return _callGemini(messages, maxTokens, pdfBase64);
   if (PROVIDER === 'openai') return _callOpenAI(messages, maxTokens);
-  return _callAnthropic(messages, maxTokens);
+  return _callAnthropic(messages, maxTokens, pdfBase64);
 }
 
 async function _callGemini(messages, maxTokens, pdfBase64) {
@@ -40,15 +40,28 @@ async function _callGemini(messages, maxTokens, pdfBase64) {
   return data.candidates[0].content.parts[0].text;
 }
 
-async function _callAnthropic(messages, maxTokens) {
+async function _callAnthropic(messages, maxTokens, pdfBase64 = null) {
+  const processedMessages = pdfBase64
+    ? messages.map(m => ({
+        role: m.role,
+        content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } },
+          { type: 'text', text: typeof m.content === 'string' ? m.content : JSON.stringify(m.content) }
+        ]
+      }))
+    : messages;
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'x-api-key': ANTHROPIC_KEY,
+    'anthropic-version': '2023-06-01',
+  };
+  if (pdfBase64) headers['anthropic-beta'] = 'pdfs-2024-09-25';
+
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': ANTHROPIC_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, messages })
+    headers,
+    body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, messages: processedMessages })
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message || 'Anthropic call failed');
