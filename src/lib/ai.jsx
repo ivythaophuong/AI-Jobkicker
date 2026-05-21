@@ -10,10 +10,19 @@ const GEMINI_KEY    = import.meta.env.VITE_GEMINI_API_KEY;
 // Generic LLM caller. Routes to the configured provider.
 // pdfBase64: optional — if provided, the PDF is sent alongside the prompt.
 //            Gemini: inline_data. Anthropic: document content type (beta header).
+// Fallback: if primary fails and OPENAI_KEY is set, retries with gpt-4o-mini.
 export async function callLLM(messages, maxTokens = 8192, pdfBase64 = null) {
-  if (PROVIDER === 'gemini') return _callGemini(messages, maxTokens, pdfBase64);
-  if (PROVIDER === 'openai') return _callOpenAI(messages, maxTokens);
-  return _callAnthropic(messages, maxTokens, pdfBase64);
+  try {
+    if (PROVIDER === 'gemini') return await _callGemini(messages, maxTokens, pdfBase64);
+    if (PROVIDER === 'openai') return await _callOpenAI(messages, maxTokens);
+    return await _callAnthropic(messages, maxTokens, pdfBase64);
+  } catch (err) {
+    if (PROVIDER !== 'openai' && OPENAI_KEY) {
+      console.warn('[callLLM] Primary provider failed, falling back to OpenAI:', err.message);
+      return _callOpenAI(messages, maxTokens);
+    }
+    throw err;
+  }
 }
 
 async function _callGemini(messages, maxTokens, pdfBase64) {
@@ -71,13 +80,14 @@ async function _callAnthropic(messages, maxTokens, pdfBase64 = null) {
 }
 
 async function _callOpenAI(messages, maxTokens) {
+  const openaiModel = PROVIDER === 'openai' ? MODEL : 'gpt-4o-mini';
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${OPENAI_KEY}`
     },
-    body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, messages })
+    body: JSON.stringify({ model: openaiModel, max_tokens: maxTokens, messages })
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message || 'OpenAI call failed');
