@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import './landing.css';
 import './landing-v10.css';
+import './landing-v36.css';
 import { OrbitMark } from '../../components/OrbitMark';
 import { l1Html, l1HtmlHeight, l2Html, l2HtmlHeight, l3Html, l3HtmlHeight, l4Html, l4HtmlHeight } from './demoHtml';
 
@@ -3669,1331 +3670,742 @@ function SuccessSnack({ msg, visible }) {
 
 // ── MAIN ──────────────────────────────────────────────────────────────────────
 
+/* ── legal content ── */
+const LEGAL_CONTENT = {
+  privacy: { title: 'Privacy Policy', body: 'CareerAiHub collects only the data necessary to provide the platform. We never sell personal data. Data is encrypted at rest and in transit. You can request deletion at any time by emailing hello.careeraihub@gmail.com.' },
+  tos: { title: 'Terms of Service', body: 'By using CareerAiHub you agree to use the platform for lawful purposes only. You retain ownership of your uploaded content. We may terminate accounts that violate these terms. Full terms available at careeraihub.com/terms.' },
+  security: { title: 'Security', body: 'We use industry-standard TLS encryption, SOC 2-aligned practices, and regular penetration testing. Credentials are stored using bcrypt hashing. API keys are never logged or exposed to the client.' },
+  deletion: { title: 'Data Deletion', body: 'To permanently delete your account and all associated data, email hello.careeraihub@gmail.com with subject "Data Deletion Request". We process requests within 30 days in compliance with PDPA.' },
+};
+
+const ATS_STEPS = [
+  { num: 'STEP 01', title: 'Upload your resume', desc: 'Drop a PDF or Word file. Our engine parses 50+ fields including experience, skills, education, and certifications in under 5 seconds.', status: 'DONE' },
+  { num: 'STEP 02', title: 'ATS gap analysis', desc: 'We compare your resume against the job description and identify missing keywords, weak phrasing, and formatting issues that ATS systems penalise.', status: 'RUNNING' },
+  { num: 'STEP 03', title: 'Optimised resume output', desc: 'Download a fully ATS-optimised resume with a score of 90+. Keywords inserted, structure fixed, quantified achievements surfaced.', status: 'LIVE' },
+];
+
+const INT_STEPS = [
+  { num: 'STEP 01', title: 'AI assesses your profile', desc: 'We analyse your background to identify the 4 key dimensions: Situation framing, Task clarity, Action depth, and Result quantification.' },
+  { num: 'STEP 02', title: 'Adaptive question bank', desc: 'Questions are generated based on your target role and seniority. The AI targets your weakest dimension first, not a generic script.' },
+  { num: 'STEP 03', title: 'Real-time coaching', desc: 'Each answer gets a score, specific improvement suggestions, and a better phrasing example. Your STAR stories are saved and refined over time.' },
+  { num: 'STEP 04', title: 'Track your progress', desc: 'Interview Score rises from 6.2 → 8.5 over a week of daily 20-min sessions. Recruiters see your improvement trajectory.' },
+];
 
 export default function LandingPage({ setAuthModal, onModuleSelect }) {
-  const fnRef = useRef({});
+  const [atsOpen, setAtsOpen] = useState(false);
+  const [intOpen, setIntOpen] = useState(false);
+  const [legalModal, setLegalModal] = useState({ open: false, type: null });
+  const [faqExpanded, setFaqExpanded] = useState(false);
+
 
   useEffect(() => {
-    const cleanup = [];
-
-    // Load Instrument Serif font
     const fontLink = document.createElement('link');
     fontLink.rel = 'stylesheet';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@300;400;500;600&family=DM+Mono:wght@300;400&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800;12..96,900&display=swap';
     document.head.appendChild(fontLink);
     document.documentElement.style.scrollBehavior = 'smooth';
-
-    /* MOBILE NAV */
-    fnRef.current.toggleMobileNav = function(){const h=document.getElementById('navHamburger'),m=document.getElementById('mobileNav');h.classList.toggle('open');m.classList.toggle('open');}
-    fnRef.current.closeMobileNav = function(){document.getElementById('navHamburger').classList.remove('open');document.getElementById('mobileNav').classList.remove('open');}
-
-    /* HERO CARD ANIMATION — ring → badges → match → TrustChat */
-    ;(function(){
-      const timers=[];
-      const ST=(fn,ms)=>{const id=setTimeout(fn,ms);timers.push(()=>clearTimeout(id));return id;};
-      const SI=(fn,ms)=>{const id=setInterval(fn,ms);timers.push(()=>clearInterval(id));return id;};
-      cleanup.push(()=>timers.forEach(fn=>fn()));
-
-      function runHeroAnim(){
-        const ringArc=document.getElementById('hcRingArc');
-        const scoreNum=document.getElementById('hcScoreNum');
-        const scoreLbl=document.getElementById('hcScoreLbl');
-        const badge=document.getElementById('hcBadge');
-        const bottom=document.getElementById('hcBottom');
-        const matchNum=document.getElementById('hcMatchNum');
-        const matchBar=document.getElementById('hcMatchBar');
-        const trustChat=document.getElementById('hcTrustChat');
-        const msgEl=document.getElementById('hcMsg');
-        if(!ringArc)return;
-
-        if(badge){badge.style.opacity='1';badge.style.transform='translateY(0)';}
-
-        ST(()=>{
-          ringArc.style.strokeDashoffset='15.08';
-          let n=0;
-          SI(()=>{n=Math.min(n+2,92);if(scoreNum)scoreNum.textContent=n;if(n>=92){if(scoreLbl)scoreLbl.textContent='Excellent';}},22);
-        },400);
-
-        ['hcb0','hcb1','hcb2','hcb3'].forEach((id,i)=>{
-          ST(()=>{const el=document.getElementById(id);if(el){el.style.opacity='1';el.style.transform='translateY(0)';}},900+i*160);
-        });
-        ST(()=>{const strip=document.getElementById('hcb4');if(strip){strip.style.opacity='1';strip.style.transform='translateY(0)';}},1560);
-
-        ST(()=>{
-          if(bottom){bottom.style.opacity='1';bottom.style.transform='translateY(0)';}
-          ST(()=>{
-            if(matchBar)matchBar.style.width='87%';
-            let m=0;SI(()=>{m=Math.min(m+2,87);if(matchNum)matchNum.textContent=m+'%';if(m>=87)clearInterval;},18);
-          },200);
-        },1600);
-
-        ST(()=>{
-          if(trustChat){trustChat.style.opacity='1';trustChat.style.transform='translateY(0)';}
-          if(msgEl){
-            msgEl.textContent='';
-            const msg='Hi Marcus — I can see your ✓NUS · ✓AWS · ✓Singpass credentials and your VCS 92/100. Are you open to a quick call this Friday?';
-            let i=0;
-            SI(()=>{if(i<msg.length){msgEl.textContent+=msg[i];i++;}},22);
-          }
-        },2600);
-      }
-      runHeroAnim();
-    })();
-
-    /* GA4 — consent-gated loader */
-    function loadGA4(){const gid=import.meta.env.VITE_GA4_ID;if(!gid||document.getElementById('ga4-script'))return;const s=document.createElement('script');s.id='ga4-script';s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+gid;document.head.appendChild(s);window.dataLayer=window.dataLayer||[];function gtag(){window.dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config',gid);}
-
-    /* COOKIE BANNER */
-    ;(function(){
-      function hasConsent(){try{return localStorage.getItem('cah_cookie_consent')||sessionStorage.getItem('cah_cookie_consent');}catch(e){return sessionStorage.getItem('cah_cookie_consent');}}
-      function showBanner(){const b=document.getElementById('cookieBanner');if(b)b.style.transform='translateY(0)';}
-      if(!hasConsent()){showBanner();}else{try{if((localStorage.getItem('cah_cookie_consent')||sessionStorage.getItem('cah_cookie_consent'))==='all')loadGA4();}catch(e){}}
-    })();
-    fnRef.current.hideCookieBanner = function(){const b=document.getElementById('cookieBanner');if(b)b.style.transform='translateY(100%)';}
-    fnRef.current.acceptCookies = function(){try{localStorage.setItem('cah_cookie_consent','all');}catch(e){sessionStorage.setItem('cah_cookie_consent','all');}fnRef.current.hideCookieBanner();loadGA4();}
-    fnRef.current.declineCookies = function(){try{localStorage.setItem('cah_cookie_consent','essential');}catch(e){sessionStorage.setItem('cah_cookie_consent','essential');}fnRef.current.hideCookieBanner();}
-    fnRef.current.cookiePrefs = function(){try{localStorage.setItem('cah_cookie_consent','all');}catch(e){sessionStorage.setItem('cah_cookie_consent','all');}fnRef.current.hideCookieBanner();loadGA4();}
-
-
-    const $=id=>document.getElementById(id);
-    const wait=ms=>new Promise(r=>setTimeout(r,ms));
-    function cu(el,target,dur,sfx=''){let cur=0,step=target/(dur/16);const iv=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=Math.round(cur)+sfx;if(cur>=target)clearInterval(iv);},16);}
-    function typeIn(el,text,speed=22){return new Promise(res=>{let i=0;el.textContent='';const cur=document.createElement('span');cur.className='tcursor';cur.style.color='inherit';el.appendChild(cur);const iv=setInterval(()=>{if(!el.isConnected||cur.parentNode!==el){clearInterval(iv);res();return;}if(i<text.length){el.insertBefore(document.createTextNode(text[i]),cur);i++;}else{clearInterval(iv);cur.remove();res();}},speed);});}
-
-    /* ATS MODAL */
-    fnRef.current.openATSDemo = function(){$('atsModalBg').classList.add('open');document.body.style.overflow='hidden';setTimeout(wRunScan,500);}
-    fnRef.current.closeATSDemo = function(){$('atsModalBg').classList.remove('open');document.body.style.overflow='';}
-    var mb=$('atsModalBg');if(mb){mb.addEventListener('click',function(e){if(e.target===mb)fnRef.current.closeATSDemo();});}
-    const escHandler=function(e){if(e.key==='Escape')fnRef.current.closeATSDemo?.();};
-    document.addEventListener('keydown',escHandler);
-    cleanup.push(()=>document.removeEventListener('keydown',escHandler));
-
-    /* ATS ENGINE */
-    ;(function(){
-      const ENG=[
-        {lbl:'Keyword match',bef:'12% — missing OKR, SQL',aft:'+22 pts · 89% match',pts:22,dims:{rd0:'91%',rb0:91},ins:'<strong>Keyword match:</strong> "Responsible for team tasks" scores 0 for "OKR-driven roadmap". We injected 6 exact-match keywords — immediate ATS pass.'},
-        {lbl:'Bullet impact',bef:'No numbers anywhere',aft:'+15 pts · 3 fixed',pts:15,dims:{rd2:'85%',rb2:85},ins:'<strong>Bullet impact:</strong> Numberless bullets are invisible to ATS. "Led OKR roadmap → +28% retention" scores on both machine and human scan.'},
-        {lbl:'Section headers',bef:'Non-standard labels',aft:'+8 pts · ATS-readable',pts:8,dims:{rd1:'88%',rb1:88},ins:'<strong>Section headers:</strong> Parsers need exact strings. "What I\'ve done" → section skipped. "Experience" → fully parsed.'},
-        {lbl:'Action verbs',bef:'Helped, worked, assisted',aft:'+7 pts · Led, Built, Drove',pts:7,dims:{},ins:'<strong>Action verbs:</strong> Weak openers flag a junior role.'},
-        {lbl:'Seniority framing',bef:'Junior-level framing',aft:'+5 pts · Senior aligned',pts:5,dims:{rd3:'94%',rb3:94},ins:'<strong>Seniority framing:</strong> ATS cross-checks years, language, and impact scope against the role level.'},
-        {lbl:'File & format',bef:'Tables + parse errors',aft:'+4 pts · Clean column',pts:4,dims:{},ins:'<strong>File format:</strong> PDF tables scramble text order in parsers. Single-column plain text passes every major ATS system.'},
-      ];
-      let step=0,score=38,done=false,scanStarted=false;
-      function buildChecks(){const c=$('engChecks');if(!c)return;c.innerHTML=ENG.map((e,i)=>`<div class="check-row" id="cr${i}"><span class="cr-ic" id="ci${i}"></span><span class="cr-lbl">${e.lbl}</span><span class="cr-st" id="cs${i}">${e.bef}</span></div>`).join('');}
-      function buildFixes(){const c=$('engFixes');if(!c)return;c.innerHTML=ENG.map((e,i)=>`<div class="fix-row" id="fr${i}"><span class="fix-ic" id="fi${i}"></span><span class="fix-lbl">${e.lbl}</span><span class="fix-st" id="fs${i}">${e.bef}</span></div>`).join('');}
-      function wReset(){step=0;score=38;done=false;scanStarted=false;for(let i=0;i<8;i++){const l=$('rl'+i);if(l)l.className='w-rl';}for(let i=0;i<5;i++){const s=$('ss'+i);if(s)s.className='wss';}const sb=$('scanBar');if(sb)sb.style.width='0';$('scanPct').textContent='0%';$('scoreBefore').textContent='38%';$('scoreAfter').textContent='—';$('barAfter').style.width='0';$('scoreDelta').classList.remove('show');$('scoreDelta').textContent='';const badge=$('engBadge');if(badge){badge.textContent='Running';badge.style.background='rgba(30,201,138,.06)';badge.style.color='var(--c1)';badge.style.borderColor='rgba(30,201,138,.18)';}const dot=$('engDot');if(dot){dot.style.background='var(--c1)';dot.style.animation='wglow 2s infinite';}$('engTitle').textContent='ATS Engine — scanning…';$('atsBadge').textContent='Scanning';const p1=$('ph1'),p2=$('ph2');if(p1){p1.style.display='block';p1.style.opacity='1';}if(p2)p2.style.display='none';$('engKw').style.opacity='0';$('engFin').style.display='none';$('engGate').style.display='none';$('engInsight').style.opacity='0';const rc=$('wrc');if(rc)rc.classList.add('dim');$('rcScore').textContent='—';$('rcVd').style.display='none';$('rcAi').style.opacity='.4';$('rcHd').textContent='AI result card';$('rcTx').textContent='Analysing — results appear here.';for(let i=0;i<4;i++){const d=$('rd'+i),b=$('rb'+i);if(d)d.textContent='—';if(b)b.style.width='0';}const ab=$('applyBtn');if(ab){ab.disabled=false;ab.style.opacity='1';}buildChecks();}
-      fnRef.current.wRunScan=function(){if(scanStarted)return;scanStarted=true;wReset();setTimeout(()=>{buildChecks();const lo=[0,2,4,1,6,3,5,7];lo.forEach((li,i)=>{setTimeout(()=>{const el=$('rl'+li);if(el){el.classList.add('scanning');const sw=document.createElement('div');sw.style.cssText='position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(30,201,138,.45),transparent);animation:wsweep 1s ease-in-out infinite';el.appendChild(sw);}},i*70);setTimeout(()=>{const el=$('rl'+li);if(el){el.innerHTML='';el.classList.remove('scanning');el.classList.add(li===1||li===3?'weak':'found');}},i*70+540);});const pcts=['20%','42%','65%','82%','100%'];[160,580,1050,1520,2000].forEach((t,i)=>{setTimeout(()=>{for(let k=0;k<5;k++){const s=$('ss'+k);if(s)s.className='wss'+(k<i?' dn':k===i?' on':'');}const sb=$('scanBar');if(sb)sb.style.width=pcts[i];$('scanPct').textContent=pcts[i];},t);});setTimeout(()=>{const ins=$('engInsight');if(ins){ins.textContent='Checking keywords, headers, bullet impact, seniority framing…';ins.style.opacity='1';}ENG.forEach((_,i)=>setTimeout(()=>{const r=$('cr'+i),ic=$('ci'+i);if(r)r.classList.add('dn');if(ic){ic.style.background='var(--c1)';ic.style.borderColor='var(--c1)';}},i*180));},900);setTimeout(()=>{done=true;$('atsBadge').textContent='Complete';const badge=$('engBadge');if(badge){badge.textContent='Fix mode';badge.style.background='rgba(139,130,240,.07)';badge.style.color='var(--c2)';badge.style.borderColor='rgba(139,130,240,.22)';}const dot=$('engDot');if(dot){dot.style.background='var(--c2)';dot.style.animation='none';}$('engTitle').textContent='ATS Engine — 6 fixes ready';$('engKw').style.opacity='1';const p1=$('ph1'),p2=$('ph2');if(p1)p1.style.display='none';if(p2)p2.style.display='block';buildFixes();const rc=$('wrc');if(rc)rc.classList.remove('dim');$('rcScore').textContent='38%';$('rcVd').style.display='block';$('rcVd').className='wrc-vd low';$('rcVd').textContent='Below average';$('rcAi').style.opacity='1';$('rcTx').innerHTML='<strong>Your score is 38%.</strong> 6 specific issues found. Apply each fix to see your score climb to 91%.';$('rcHd').textContent='Result — fix mode active';},2600);},300);};
-      fnRef.current.wResetScanner=function(){scanStarted=false;wRunScan();};
-      fnRef.current.wApplyFix=function(){if(step>=ENG.length)return;const e=ENG[step];score+=e.pts;const fi=$('fi'+step),fs=$('fs'+step),fr=$('fr'+step);if(fi){fi.style.background='var(--c1)';fi.style.borderColor='var(--c1)';}if(fs)fs.textContent=e.aft;if(fr)fr.classList.add('done');const fi2=$('fixInsight');if(fi2)fi2.innerHTML=e.ins;$('scoreAfter').textContent=score+'%';$('barAfter').style.width=score+'%';const delta=score-38;$('scoreDelta').textContent='+'+delta+' pts';$('scoreDelta').classList.add('show');Object.entries(e.dims).forEach(([id,v])=>{const el=$(id);if(el){if(id.startsWith('rd'))el.textContent=v;else{el.style.transition='width 1.2s ease';el.style.width=v+'%';}}});step++;const ab=$('applyBtn');if(step>=ENG.length){if(ab){ab.disabled=true;ab.style.opacity='.4';}$('rcScore').textContent='91%';$('rcVd').className='wrc-vd good';$('rcVd').textContent='Excellent — top 5%';$('rcTx').innerHTML='<strong>ATS score: 91%.</strong> Your resume now passes every major scanner. Keyword match 94%, bullet impact 85%, seniority framing 94%.';$('rcHd').textContent='✓ ATS Optimized';setTimeout(()=>{$('engFin').style.display='block';setTimeout(()=>{$('engGate').style.display='block';},1200);},500);}};
-      fnRef.current.wCtaClick=function(){const gate=$('engGate');if(gate){gate.style.display='block';gate.scrollIntoView({behavior:'smooth',block:'nearest'});}};
-      fnRef.current.wSubmitGate=async function(){const email=($('gateEmail')?.value||'').trim();if(!email||!email.includes('@')){$('gateEmail')?.focus();return;}const btn=document.querySelector('.gate-btn');if(btn){btn.textContent='Saving…';btn.disabled=true;}try{await fetch((import.meta.env.VITE_SUPABASE_URL||'https://ruibdsvrcctxgxctaxwe.supabase.co')+'/rest/v1/waitlist',{method:'POST',headers:{'Content-Type':'application/json','apikey':import.meta.env.VITE_SUPABASE_ANON||'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1aWJkc3ZyY2N0eGd4Y3RheHdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0Nzg3MjksImV4cCI6MjA4OTA1NDcyOX0.TB2jdImKiHx6oP0aNNXObShT_eHk0wvtN_As5tkbcmE','Prefer':'return=minimal'},body:JSON.stringify({email,source:'ats_demo'})});}catch(e){}setAuthModal('register');};
-    })();
-
-    /* UTILITIES FOR DECK CARDS */
-    /* $d and waitD defined here; modal uses $ and wait from the ATS section */
-    const $d=id=>document.getElementById(id);
-    const waitD=ms=>new Promise(r=>setTimeout(r,ms));
-    function cuD(el,target,dur){let s=0,step=target/(dur/16);const iv=setInterval(()=>{s=Math.min(s+step,target);el.textContent=Math.round(s);if(s>=target)clearInterval(iv);},16);}
-    async function typeInD(el,txt,spd){const cur=document.createElement('span');cur.className='d-cursor2';el.textContent='';el.appendChild(cur);await new Promise(res=>{let i=0;const iv=setInterval(()=>{if(!el.isConnected||cur.parentNode!==el){clearInterval(iv);res();return;}if(i<txt.length){el.insertBefore(document.createTextNode(txt[i]),cur);i++;}else{clearInterval(iv);cur.remove();res();}},spd||18);});}
-
-    /* STAGE CARD DATA */
-    const STAGES=[
-    /* ══ STAGE 1 — GET SEEN ══ */
-    {cards:[
-    {step:'Step 01',title:'The bot rejected you before anyone read a word',sCls:'st-run',sTxt:'● Scanning',
-     html:`<div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">ATS scan · before → after AI rebuild</div>
-    <div style="display:flex;gap:8px;margin-bottom:9px">
-      <div style="flex:1;background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:7px;padding:7px 9px">
-        <div style="font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#ef4444;margin-bottom:5px">Before — ATS 38%</div>
-        <div style="font-size:8.5px;color:rgba(138,135,156,.6);line-height:1.7;font-style:italic">Led product roadmap and strategy initiatives across teams.</div>
-        <div style="font-size:8.5px;color:rgba(138,135,156,.6);line-height:1.7;font-style:italic">Managed collaboration and drove business outcomes.</div>
-      </div>
-      <div style="flex:1;background:var(--c1d);border:1px solid rgba(30,201,138,.2);border-radius:7px;padding:7px 9px;opacity:0;transform:translateX(8px);transition:opacity .5s,transform .5s" id="dc1after">
-        <div style="font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--c1);margin-bottom:5px">After — ATS 91% ✓</div>
-        <div style="font-size:8.5px;color:var(--ink2);line-height:1.7">OKR-driven roadmap · cut TTM 30% · $2.4M delivered.</div>
-        <div style="font-size:8.5px;color:var(--ink2);line-height:1.7">Led 3-team alignment · zero escalations · MLOps pipeline.</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:7px">
-      <div style="flex:1;height:5px;background:var(--border2);border-radius:3px;overflow:hidden"><div id="dc1sbar" style="height:100%;border-radius:3px;width:38%;background:#ef4444;transition:width 1.2s cubic-bezier(.22,1,.36,1),background 1.2s"></div></div>
-      <span style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;width:32px;text-align:right" id="dc1snum" style="color:#ef4444">38%</span>
-    </div>
-    <div style="font-size:8px;color:var(--ink3);font-family:'DM Mono',monospace;margin-top:3px" id="dc1lbl">ATS score · 6 issues detected</div>`,
-     anim:async()=>{
-      const after=$d('dc1after');if(after){after.style.opacity='0';after.style.transform='translateX(8px)';}
-      const bar=$d('dc1sbar');const num=$d('dc1snum');const lbl=$d('dc1lbl');
-      if(bar){bar.style.width='38%';bar.style.background='#ef4444';}if(num)num.textContent='38%';if(lbl)lbl.textContent='ATS score · 6 issues detected';
-      await waitD(900);
-      if(after){after.style.opacity='1';after.style.transform='none';}
-      if(bar){bar.style.width='91%';bar.style.background='var(--c1)';}
-      let n=38;const iv=setInterval(()=>{n=Math.min(n+2,91);if(num)num.textContent=n+'%';if(n>=91){clearInterval(iv);if(lbl)lbl.textContent='✓ ATS score · top 5% · 90 sec to fix';}},22);
-     }},
-
-    {step:'Step 02',title:'Every keyword gap — found, named, injected in one pass',sCls:'st-run',sTxt:'⚡ Matching',
-     html:`<div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">JD match engine · Senior PM · Shopee · this exact role</div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;margin-bottom:8px">
-      <div style="font-size:7px;color:var(--ink3);font-family:'DM Mono',monospace;margin-bottom:5px;letter-spacing:.5px">JD KEYWORDS — MATCH STATUS</div>
-      <div style="display:flex;flex-direction:column;gap:3px">
-        <div style="display:flex;align-items:center;justify-content:space-between;font-size:9px"><span style="color:var(--ink2)">OKR-driven roadmap</span><span id="dc2s0" style="font-size:8px;font-family:'DM Mono',monospace;color:var(--ink3)">···</span></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;font-size:9px"><span style="color:var(--ink2)">P&amp;L ownership</span><span id="dc2s1" style="font-size:8px;font-family:'DM Mono',monospace;color:var(--ink3)">···</span></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;font-size:9px"><span style="color:var(--ink2)">cross-functional leadership</span><span id="dc2s2" style="font-size:8px;font-family:'DM Mono',monospace;color:var(--ink3)">···</span></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;font-size:9px"><span style="color:var(--ink2)">data-informed decisions</span><span id="dc2s3" style="font-size:8px;font-family:'DM Mono',monospace;color:var(--ink3)">···</span></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;font-size:9px"><span style="color:var(--ink2)">growth experimentation</span><span id="dc2s4" style="font-size:8px;font-family:'DM Mono',monospace;color:var(--ink3)">···</span></div>
-      </div>
-    </div>
-    <div id="dc2result" style="display:flex;align-items:center;gap:8px;background:var(--c1d);border:1px solid rgba(30,201,138,.2);border-radius:7px;padding:7px 10px;opacity:0;transition:opacity .5s">
-      <span style="font-size:16px;font-weight:700;color:var(--c1);font-family:'DM Mono',monospace">94%</span>
-      <span style="font-size:9px;color:var(--ink2);line-height:1.5">match after AI injection · 3 keywords added · 2 bullets rewritten</span>
-    </div>`,
-     anim:async()=>{
-      const res=$d('dc2result');if(res)res.style.opacity='0';
-      const statuses=[['dc2s0',false],['dc2s1',true],['dc2s2',false],['dc2s3',false],['dc2s4',true]];
-      statuses.forEach(([id])=>{const e=$d(id);if(e){e.textContent='···';e.style.color='var(--ink3)';}});
-      for(const [id,missing] of statuses){
-        await waitD(420);const e=$d(id);if(e){e.textContent=missing?'✗ Missing':'✓ Match';e.style.color=missing?'#ef4444':'var(--c1)';}
-      }
-      await waitD(600);
-      for(const [id,missing] of statuses){if(missing){const e=$d(id);if(e){e.textContent='✓ Injected';e.style.color='var(--c1)';}}}
-      await waitD(300);if(res)res.style.opacity='1';
-     }},
-
-    {step:'Step 03',title:'A recruiter replies 3 days after you apply — because your resume reads right',sCls:'st-done',sTxt:'✓ Callback',
-     html:`<div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:7px">Application timeline · what changed</div>
-    <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:9px">
-      <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15)">
-        <span style="font-size:9px;font-family:'DM Mono',monospace;color:#ef4444;width:36px;flex-shrink:0">Before</span>
-        <span style="font-size:9px;color:var(--ink3)">40 apps · 2 callbacks · ATS 38%</span>
-        <span style="margin-left:auto;font-size:8px;font-family:'DM Mono',monospace;color:rgba(239,68,68,.6)">5% reply</span>
-      </div>
-      <div id="dc3after" style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;background:var(--c1d);border:1px solid rgba(30,201,138,.2);opacity:0;transform:translateY(5px);transition:opacity .5s,transform .5s">
-        <span style="font-size:9px;font-family:'DM Mono',monospace;color:var(--c1);width:36px;flex-shrink:0">After</span>
-        <span style="font-size:9px;color:var(--ink2)">First 6 apps · 3 interviews · ATS 91%</span>
-        <span style="margin-left:auto;font-size:8px;font-family:'DM Mono',monospace;color:var(--c1)">50% reply</span>
-      </div>
-    </div>
-    <div id="dc3ping" style="background:rgba(232,92,128,.05);border:1px solid rgba(232,92,128,.2);border-radius:8px;padding:9px 11px;opacity:0;transition:opacity .6s">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
-        <div style="width:20px;height:20px;border-radius:50%;background:var(--c4d);border:1px solid rgba(232,92,128,.3);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:var(--c4)">JC</div>
-        <div><div style="font-size:9.5px;font-weight:600;color:var(--ink)">Jamie C. · Tech Recruiter, Shopee</div><div style="font-size:8px;color:var(--ink3)">3 days after applying</div></div>
-      </div>
-      <div id="dc3msg" style="font-size:9px;color:var(--ink2);line-height:1.6"></div>
-    </div>`,
-     anim:async()=>{
-      const after=$d('dc3after');const ping=$d('dc3ping');const msg=$d('dc3msg');
-      if(after){after.style.opacity='0';after.style.transform='translateY(5px)';}
-      if(ping)ping.style.opacity='0';if(msg)msg.textContent='';
-      await waitD(600);if(after){after.style.opacity='1';after.style.transform='none';}
-      await waitD(800);if(ping)ping.style.opacity='1';
-      await waitD(300);
-      await typeInD(msg,'Your experience caught my eye — especially the OKR track record. Are you open to a quick call this week about a Senior PM opening?',16);
-     }}
-    ]},
-
-    /* ══ STAGE 2 — GET READY ══ */
-    {cards:[
-    {step:'Step 01',title:'Your AI Memory Dashboard — built from everything you\'ve done',sCls:'st-done',sTxt:'✓ Synced',
-     html:`<div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:7px">AI Memory Dashboard · Senior AI Engineer · Alex Tan · session 3</div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:7px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="font-size:10px;font-weight:600;color:var(--ink)">Readiness Score</div>
-        <div style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700" id="dd-ready" style="color:#ef4444">–</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:7px">
-        <div style="background:var(--surf);border-radius:5px;padding:5px 7px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace" id="dd0" style="color:#ef4444">–</div><div style="font-size:7.5px;color:var(--ink3)">Concrete examples</div><div style="height:2px;background:var(--border2);border-radius:1px;margin-top:3px;overflow:hidden"><div id="ddb0" style="height:100%;border-radius:1px;background:#ef4444;width:0%;transition:width 1s"></div></div></div>
-        <div style="background:var(--surf);border-radius:5px;padding:5px 7px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace" id="dd1" style="color:var(--c3)">–</div><div style="font-size:7.5px;color:var(--ink3)">STAR structure</div><div style="height:2px;background:var(--border2);border-radius:1px;margin-top:3px;overflow:hidden"><div id="ddb1" style="height:100%;border-radius:1px;background:var(--c3);width:0%;transition:width 1s"></div></div></div>
-        <div style="background:var(--surf);border-radius:5px;padding:5px 7px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace" id="dd2" style="color:var(--c2)">–</div><div style="font-size:7.5px;color:var(--ink3)">Clarity &amp; delivery</div><div style="height:2px;background:var(--border2);border-radius:1px;margin-top:3px;overflow:hidden"><div id="ddb2" style="height:100%;border-radius:1px;background:var(--c2);width:0%;transition:width 1s"></div></div></div>
-        <div style="background:var(--surf);border-radius:5px;padding:5px 7px;border:1px solid var(--border)"><div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace" id="dd3" style="color:var(--c1)">–</div><div style="font-size:7.5px;color:var(--ink3)">Role knowledge</div><div style="height:2px;background:var(--border2);border-radius:1px;margin-top:3px;overflow:hidden"><div id="ddb3" style="height:100%;border-radius:1px;background:var(--c1);width:0%;transition:width 1s"></div></div></div>
-      </div>
-      <div id="dd-mem" style="display:flex;flex-wrap:wrap;gap:3px;opacity:0;transition:opacity .5s">
-        <span style="font-size:7.5px;padding:2px 6px;border-radius:20px;background:var(--c1d);color:var(--c1);border:1px solid rgba(30,201,138,.2);font-family:'DM Mono',monospace">✓ LLM rollout memory</span>
-        <span style="font-size:7.5px;padding:2px 6px;border-radius:20px;background:var(--c2d);color:var(--c2);border:1px solid rgba(139,130,240,.2);font-family:'DM Mono',monospace">✓ 3 STAR stories</span>
-        <span style="font-size:7.5px;padding:2px 6px;border-radius:20px;background:var(--c3d);color:var(--c3);border:1px solid rgba(240,168,50,.2);font-family:'DM Mono',monospace">✓ salary anchored 16k</span>
-      </div>
-    </div>
-    <div id="dd-aibox" style="display:flex;gap:7px;align-items:flex-start;background:var(--c2d);border:1px solid rgba(139,130,240,.22);border-radius:7px;padding:7px 9px;opacity:0;transition:opacity .5s">
-      <div style="width:17px;height:17px;border-radius:4px;background:var(--c2);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;flex-shrink:0">AI</div>
-      <div id="dd-aitxt" style="font-size:9px;color:var(--ink2);line-height:1.6"></div>
-    </div>`,
-     anim:async()=>{
-      const sc=[38,44,72,84];const ready=$d('dd-ready');const mem=$d('dd-mem');const aibox=$d('dd-aibox');const aitxt=$d('dd-aitxt');
-      if(ready)ready.textContent='–';if(mem)mem.style.opacity='0';if(aibox)aibox.style.opacity='0';if(aitxt)aitxt.textContent='';
-      for(let i=0;i<4;i++){const dEl=$d('dd'+i);const bEl=$d('ddb'+i);if(dEl)dEl.textContent='–';if(bEl)bEl.style.width='0%';}
-      await waitD(300);
-      for(let i=0;i<4;i++){cuD($d('dd'+i),sc[i],900);$d('ddb'+i).style.width=sc[i]+'%';await waitD(220);}
-      let r=0;const rv=setInterval(()=>{r=Math.min(r+1,59);if(ready){ready.textContent=r+'/100';ready.style.color=r<50?'#ef4444':r<70?'var(--c3)':'var(--c2)';}if(r>=59)clearInterval(rv);},28);
-      await waitD(1000);if(mem)mem.style.opacity='1';
-      await waitD(400);if(aibox)aibox.style.opacity='1';
-      await typeInD(aitxt,'Weakest gap: Concrete examples (38). Targeting this first. You\'ll hit 88 readiness in 3 sessions.',14);
-     }},
-
-    {step:'Step 02',title:'After each answer — a score and the exact line to fix',sCls:'st-live',sTxt:'● Live',
-     html:`<div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:6px">AI Hiring Manager · Senior AI Engineer</div>
-    <div id="ds2q" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-size:9.5px;color:var(--ink2);line-height:1.6;margin-bottom:7px;min-height:36px"></div>
-    <div style="display:flex;gap:4px;margin-bottom:7px">
-      <div style="flex:1;text-align:center;background:var(--surf);border:1px solid var(--border);border-radius:6px;padding:5px 3px"><div id="ds2sc0" style="font-size:14px;font-weight:700;color:#ef4444;font-family:'DM Mono',monospace">–</div><div style="font-size:7.5px;color:var(--ink3)">Examples</div></div>
-      <div style="flex:1;text-align:center;background:var(--surf);border:1px solid var(--border);border-radius:6px;padding:5px 3px"><div id="ds2sc1" style="font-size:14px;font-weight:700;color:var(--c3);font-family:'DM Mono',monospace">–</div><div style="font-size:7.5px;color:var(--ink3)">STAR</div></div>
-      <div style="flex:1;text-align:center;background:var(--surf);border:1px solid var(--border);border-radius:6px;padding:5px 3px"><div id="ds2sc2" style="font-size:14px;font-weight:700;color:var(--c2);font-family:'DM Mono',monospace">–</div><div style="font-size:7.5px;color:var(--ink3)">Clarity</div></div>
-      <div style="flex:1;text-align:center;background:var(--surf);border:1px solid var(--border);border-radius:6px;padding:5px 3px"><div id="ds2sc3" style="font-size:14px;font-weight:700;color:var(--c1);font-family:'DM Mono',monospace">–</div><div style="font-size:7.5px;color:var(--ink3)">Role fit</div></div>
-    </div>
-    <div id="ds2fb" style="font-size:8.5px;color:var(--ink3);line-height:1.55;font-style:italic;min-height:20px;opacity:0;transition:opacity .4s"></div>`,
-     anim:async()=>{
-      $d('ds2q').textContent='';['ds2sc0','ds2sc1','ds2sc2','ds2sc3'].forEach(id=>$d(id).textContent='–');
-      $d('ds2fb').textContent='';$d('ds2fb').style.opacity='0';
-      await typeInD($d('ds2q'),'Tell me about a time you delivered an AI feature under tight constraints. What was the outcome?',16);
-      await waitD(500);
-      const scores=[{id:'ds2sc0',v:62,c:'#ef4444'},{id:'ds2sc1',v:55,c:'var(--c3)'},{id:'ds2sc2',v:78,c:'var(--c2)'},{id:'ds2sc3',v:80,c:'var(--c1)'}];
-      for(const s of scores){cuD($d(s.id),s.v,700);$d(s.id).style.color=s.c;await waitD(180);}
-      await waitD(700);$d('ds2fb').style.opacity='1';
-      await typeInD($d('ds2fb'),'Score: 61/100. Missing: a quantified result. Add "which cut latency by 40%" and your Examples score jumps to 84.',14);
-     }},
-
-    {step:'Step 03',title:'Your best answers — built once, reused in every interview',sCls:'st-done',sTxt:'✓ 3 stories',
-     html:`<div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:4px">Before → After · AI rewrites vague bullets into scored STAR stories</div>
-    <div style="font-size:8.5px;color:rgba(232,92,128,.7);font-family:'DM Mono',monospace;margin-bottom:6px;padding:4px 7px;background:rgba(232,92,128,.05);border-radius:4px;border-left:2px solid rgba(232,92,128,.3)">✗ Before: "Led the product team through a difficult launch"</div>
-    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:7px">
-      <div id="ds3s0" style="background:var(--surf2);border:1px solid rgba(139,130,240,.2);border-radius:6px;padding:6px 9px;opacity:0;transform:translateX(-7px);transition:opacity .4s,transform .4s">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px"><span style="font-size:9.5px;font-weight:600;color:var(--ink)">LLM rollout · cut latency 40%</span><span style="font-size:7.5px;font-weight:700;color:var(--c1);background:var(--c1d);padding:1px 6px;border-radius:10px;font-family:'DM Mono',monospace">RESULT ✓</span></div>
-        <div style="font-size:8.5px;color:var(--ink3);font-family:'DM Mono',monospace">Situation · Task · Action · Result</div>
-      </div>
-      <div id="ds3s1" style="background:var(--surf2);border:1px solid rgba(139,130,240,.2);border-radius:6px;padding:6px 9px;opacity:0;transform:translateX(-7px);transition:opacity .4s,transform .4s">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px"><span style="font-size:9.5px;font-weight:600;color:var(--ink)">Cross-team alignment · zero escalations</span><span style="font-size:7.5px;font-weight:700;color:var(--c2);background:var(--c2d);padding:1px 6px;border-radius:10px;font-family:'DM Mono',monospace">IMPACT ✓</span></div>
-        <div style="font-size:8.5px;color:var(--ink3);font-family:'DM Mono',monospace">Situation · Task · Action · Result</div>
-      </div>
-      <div id="ds3s2" style="background:var(--surf2);border:1px solid var(--border2);border-radius:6px;padding:6px 9px;opacity:0;transform:translateX(-7px);transition:opacity .4s,transform .4s">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1px"><span style="font-size:9.5px;font-weight:600;color:var(--ink)">$2.4M feature delivery — on schedule</span><span style="font-size:7.5px;font-weight:700;color:var(--c3);background:var(--c3d);padding:1px 6px;border-radius:10px;font-family:'DM Mono',monospace">QUANTIFIED ✓</span></div>
-        <div style="font-size:8.5px;color:var(--ink3);font-family:'DM Mono',monospace">Situation · Task · Action · Result</div>
-      </div>
-    </div>
-    <div style="font-size:8.5px;color:var(--ink3);font-family:'DM Mono',monospace"><span style="font-size:9px;color:var(--c2);font-weight:700">3</span> stories ready · reused in every interview question</div>`,
-     anim:async()=>{
-      ['ds3s0','ds3s1','ds3s2'].forEach(id=>{$d(id).style.opacity='0';$d(id).style.transform='translateX(-7px)';});
-      await waitD(300);
-      for(const id of ['ds3s0','ds3s1','ds3s2']){$d(id).style.opacity='1';$d(id).style.transform='none';await waitD(380);}
-     }},
-
-    {step:'Step 04',title:'You find your P75 rate — and get a script to ask for it',sCls:'st-done',sTxt:'✓ Benchmarked',
-     html:`<div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:7px">Market Intel · Senior AI Engineer · Singapore · unlocks at readiness 75</div>
-    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">
-      <div class="d-mbar-row"><span class="d-mbar-label" style="width:40px">P25</span><div class="d-mbar-track"><div class="d-mbar-fill" id="ds4b0" style="background:rgba(139,130,240,.5)"></div></div><span class="d-mbar-val" id="ds4v0" style="color:var(--ink3);width:42px;text-align:right">SGD 9k</span></div>
-      <div class="d-mbar-row"><span class="d-mbar-label" style="width:40px">Median</span><div class="d-mbar-track"><div class="d-mbar-fill" id="ds4b1" style="background:rgba(139,130,240,.7)"></div></div><span class="d-mbar-val" id="ds4v1" style="color:var(--ink2);width:42px;text-align:right">SGD 12k</span></div>
-      <div class="d-mbar-row"><span class="d-mbar-label" style="width:40px">P75</span><div class="d-mbar-track"><div class="d-mbar-fill" id="ds4b2" style="background:rgba(232,92,128,.6)"></div></div><span class="d-mbar-val" id="ds4v2" style="color:var(--c4);width:42px;text-align:right">SGD 16k</span></div>
-      <div class="d-mbar-row"><span class="d-mbar-label" style="width:40px">Top 10%</span><div class="d-mbar-track"><div class="d-mbar-fill" id="ds4b3" style="background:var(--c3)"></div></div><span class="d-mbar-val" id="ds4v3" style="color:var(--c3);width:42px;text-align:right">SGD 22k</span></div>
-    </div>
-    <div id="ds4anchor" style="display:flex;justify-content:space-between;align-items:center;background:var(--c3d);border:1px solid rgba(240,168,50,.22);border-radius:7px;padding:7px 10px;opacity:0;transition:opacity .5s">
-      <div><div style="font-size:7.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--c3);margin-bottom:2px;font-family:'DM Mono',monospace">Your opening ask — P75 strategy</div>
-      <div style="font-size:10px;color:var(--ink2)">Open at <strong style="color:var(--ink)">SGD 16k</strong> · accept <strong style="color:var(--c1)">≥ 14k</strong> · script ready to send</div></div>
-      <div style="font-size:13px;font-weight:700;color:var(--c3);font-family:'DM Mono',monospace">+33%</div>
-    </div>`,
-     anim:async()=>{
-      const pcts=[40,55,72,100];$d('ds4anchor').style.opacity='0';
-      for(let i=0;i<4;i++){$d('ds4b'+i).style.width='0%';}
-      for(let i=0;i<4;i++){$d('ds4b'+i).style.width=pcts[i]+'%';await waitD(180);}
-      await waitD(700);$d('ds4anchor').style.opacity='1';
-     }}
-    ]},
-
-    /* ══ STAGE 4 — GET FOUND ══ */
-    {cards:[
-    {step:'Step 01',title:'Recruiters see your proof — before they message you',sCls:'st-done',sTxt:'✓ All verified',
-     html:`<div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:7px">Each credential verified · blockchain-anchored · VCS builds as you go</div>
-    <div class="d-cred-list" style="margin-bottom:7px">
-      <div class="d-cred-row"><div class="d-cred-chk" id="df1c0"></div><span class="d-cred-name">Singpass ID · Alex Tan</span><span class="d-cred-badge ver" id="df1b0">✓ Blockchain</span></div>
-      <div class="d-cred-row"><div class="d-cred-chk" id="df1c1"></div><span class="d-cred-name">NUS CS · OpenCerts</span><span class="d-cred-badge ver" id="df1b1">✓ Blockchain</span></div>
-      <div class="d-cred-row"><div class="d-cred-chk" id="df1c2"></div><span class="d-cred-name">AWS Solutions Architect · Credly</span><span class="d-cred-badge ver" id="df1b2">✓ Blockchain</span></div>
-      <div class="d-cred-row"><div class="d-cred-chk" id="df1c3"></div><span class="d-cred-name">7 yr AI Engineering · verified</span><span class="d-cred-badge ver" id="df1b3">✓ Blockchain</span></div>
-    </div>
-    <div id="df1cos" style="display:flex;justify-content:space-between;align-items:center;background:var(--c4d);border:1px solid rgba(232,92,128,.2);border-radius:7px;padding:7px 10px;opacity:0;transition:opacity .5s">
-      <span style="font-size:9px;color:var(--ink2)">VCS · marketplace unlocked at 80</span>
-      <span id="df1cosnum" style="font-size:16px;font-weight:700;color:var(--c4);font-family:'DM Mono',monospace">0 / 100</span>
-      <span style="font-size:8px;padding:2px 7px;background:var(--c4d);color:var(--c4);border:1px solid rgba(232,92,128,.22);border-radius:20px;font-weight:700;font-family:'DM Mono',monospace">🔓 Live</span>
-    </div>`,
-     anim:async()=>{
-      for(let i=0;i<4;i++){$d('df1c'+i).classList.remove('ver');$d('df1c'+i).textContent='';$d('df1b'+i).classList.remove('vis');}
-      $d('df1cos').style.opacity='0';$d('df1cosnum').textContent='0 / 100';
-      for(let i=0;i<4;i++){await waitD(460);$d('df1c'+i).classList.add('ver');$d('df1c'+i).textContent='✓';$d('df1b'+i).classList.add('vis');}
-      await waitD(300);$d('df1cos').style.opacity='1';
-      let n=0;const iv=setInterval(()=>{n=Math.min(n+2,88);$d('df1cosnum').textContent=n+' / 100';if(n>=88)clearInterval(iv);},28);
-     }},
-
-    {step:'Step 02',title:'You appear in front of the one recruiter who matches you',sCls:'st-run',sTxt:'● Scanning',
-     html:`<div class="d-mp-dark">
-      <div class="d-mp-hrow"><span class="d-mp-badge">AI Match Engine</span><span class="d-mp-scan" id="df2scan">Scanning 0…</span></div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:7px">
-        <div class="d-sring" id="df2ring" style="background:conic-gradient(var(--c4) 0deg,var(--c4) 0deg,#1a0814 0deg)"><div class="d-sring-inner"><div class="d-sring-num" id="df2rnum">0%</div><div class="d-sring-lbl">MATCH</div></div></div>
-        <div style="flex:1">
-          <div class="d-fn-row"><span class="d-fn-lbl">Total pool</span><div class="d-fn-track"><div class="d-fn-fill" style="background:#3d3875" id="df2f0" data-t="100%"></div></div><span class="d-fn-val">2,714</span></div>
-          <div class="d-fn-row"><span class="d-fn-lbl">Skills</span><div class="d-fn-track"><div class="d-fn-fill" style="background:#5a54a8" id="df2f1" data-t="5.2%"></div></div><span class="d-fn-val">142</span></div>
-          <div class="d-fn-row"><span class="d-fn-lbl">Verified</span><div class="d-fn-track"><div class="d-fn-fill" style="background:#7F77DD" id="df2f2" data-t="1.1%"></div></div><span class="d-fn-val">31</span></div>
-          <div class="d-fn-row"><span class="d-fn-lbl">95%+ match</span><div class="d-fn-track"><div class="d-fn-fill" style="background:var(--c4)" id="df2f3" data-t="0.04%"></div></div><span class="d-fn-val" style="color:var(--c4);font-weight:700">1</span></div>
-        </div>
-      </div>
-      <div class="d-mp-creds">
-        <span class="d-mp-cred" id="df2m0"><span style="color:#7F77DD">✓</span> Singpass</span>
-        <span class="d-mp-cred" id="df2m1"><span style="color:#7F77DD">✓</span> NUS CS</span>
-        <span class="d-mp-cred" id="df2m2"><span style="color:#7F77DD">✓</span> AWS SAA</span>
-        <span class="d-mp-cred" id="df2m3"><span style="color:#7F77DD">✓</span> 7yr AI</span>
-      </div>
-    </div>`,
-     anim:async()=>{
-      $d('df2scan').classList.remove('done');$d('df2scan').textContent='Scanning 0…';$d('df2rnum').textContent='0%';
-      ['df2f0','df2f1','df2f2','df2f3'].forEach(id=>$d(id).style.width='0%');
-      ['df2m0','df2m1','df2m2','df2m3'].forEach(id=>$d(id).classList.remove('vis'));
-      $d('df2ring').style.background='conic-gradient(var(--c4) 0deg,var(--c4) 0deg,#1a0814 0deg)';
-      let cn=0;const civ=setInterval(()=>{cn=Math.min(cn+68,2714);$d('df2scan').textContent='Scanning '+cn.toLocaleString()+'…';if(cn>=2714){clearInterval(civ);$d('df2scan').textContent='2,714 scanned ✓';$d('df2scan').classList.add('done');}},40);
-      let sc=0;const siv=setInterval(()=>{sc=Math.min(sc+1.4,95);$d('df2rnum').textContent=Math.round(sc)+'%';const deg=Math.round(sc/100*360);$d('df2ring').style.background=`conic-gradient(var(--c4) 0deg,var(--c4) ${deg}deg,#1a0814 ${deg}deg)`;if(sc>=95)clearInterval(siv);},20);
-      ['df2f0','df2f1','df2f2','df2f3'].forEach((id,i)=>setTimeout(()=>{const el=$d(id);el.style.transition='width .9s cubic-bezier(.22,1,.36,1)';el.style.width=el.getAttribute('data-t');},i*280));
-      ['df2m0','df2m1','df2m2','df2m3'].forEach((id,i)=>setTimeout(()=>$d(id).classList.add('vis'),1200+i*200));
-     }},
-
-    {step:'Step 03',title:'A recruiter who already knows your credentials messages you',sCls:'st-live',sTxt:'● Live',
-     html:`<div class="d-rec-ping">
-      <div class="d-rec-hd"><div class="d-rec-av">👤</div><div><div class="d-rec-name">Sarah L. · Head of Talent · Vertex AI Labs</div><div class="d-rec-role">Senior AI Engineer · 95% match · <span style="color:var(--c1);font-weight:700">3:42 after you went live</span></div></div></div>
-      <div class="d-rec-msg" id="df3msg"></div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">
-        <span style="font-size:7.5px;padding:1px 6px;border-radius:10px;background:var(--c1d);color:var(--c1);border:1px solid rgba(30,201,138,.2);font-family:'DM Mono',monospace;font-weight:700">✓ NUS CS</span>
-        <span style="font-size:7.5px;padding:1px 6px;border-radius:10px;background:var(--c1d);color:var(--c1);border:1px solid rgba(30,201,138,.2);font-family:'DM Mono',monospace;font-weight:700">✓ AWS SAA</span>
-        <span style="font-size:7.5px;padding:1px 6px;border-radius:10px;background:var(--c1d);color:var(--c1);border:1px solid rgba(30,201,138,.2);font-family:'DM Mono',monospace;font-weight:700">✓ Singpass</span>
-        <span style="font-size:7.5px;padding:1px 6px;border-radius:10px;background:var(--c1d);color:var(--c1);border:1px solid rgba(30,201,138,.2);font-family:'DM Mono',monospace;font-weight:700">✓ 7yr AI exp</span>
-      </div>
-    </div>`,
-     anim:async()=>{
-      const el=$d('df3msg');el.textContent='';
-      await typeInD(el,'Hi Alex — I can see your ✓NUS CS degree, ✓AWS cert, and 7 years AI experience. You\'re shortlisted for our Senior AI Engineer role. Are you open to a call this Friday at SGD 14k/mo?',19);
-     }},
-
-    {step:'Step 04',title:'Your profile is live — 3 employers shortlisted you today',sCls:'st-done',sTxt:'✓ Top 8%',
-     html:`<div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:7px">Candidate view · Alex Tan</div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <div style="width:30px;height:30px;border-radius:50%;background:var(--c4d);border:2px solid rgba(232,92,128,.3);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--ink);flex-shrink:0;font-family:'DM Mono',monospace">AT</div>
-      <div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--ink)">Alex Tan · Senior AI Engineer</div><div style="font-size:8.5px;color:var(--ink3)">VCS <span id="df4ts" style="font-family:'DM Mono',monospace;font-weight:700;color:var(--c4)">0</span>/100 · <span style="color:var(--c1)">Top 8%</span></div></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:7px">
-      <div id="df4m0" style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);opacity:0;transform:translateX(6px);transition:opacity .4s,transform .4s"><span style="font-size:9.5px;font-weight:600;color:var(--ink)">Vertex AI Labs</span><span style="font-size:12px;font-weight:700;color:var(--c1);font-family:'DM Mono',monospace">95%</span></div>
-      <div id="df4m1" style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);opacity:0;transform:translateX(6px);transition:opacity .4s,transform .4s"><span style="font-size:9.5px;font-weight:600;color:var(--ink)">Grab</span><span style="font-size:12px;font-weight:700;color:var(--c2);font-family:'DM Mono',monospace">88%</span></div>
-      <div id="df4m2" style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border-radius:5px;background:var(--bg2);border:1px solid var(--border);opacity:0;transform:translateX(6px);transition:opacity .4s,transform .4s"><span style="font-size:9.5px;font-weight:600;color:var(--ink)">Sea Group</span><span style="font-size:12px;font-weight:700;color:var(--c4);font-family:'DM Mono',monospace">81%</span></div>
-    </div>
-    <div class="d-tbadge" id="df4t0">🔐 Identity &amp; credentials verified — recruiters see proof<span>✓</span></div>
-    <div class="d-tbadge" id="df4t1">⚡ 95% match · first ping in 3:42 · avg 9 days to shortlist<span>✓</span></div>
-    <div class="d-tbadge" id="df4t2">🧠 AI memory profile active · gets sharper every session<span>✓</span></div>`,
-     anim:async()=>{
-      ['df4t0','df4t1','df4t2'].forEach(id=>$d(id).classList.remove('vis'));
-      ['df4m0','df4m1','df4m2'].forEach(id=>{$d(id).style.opacity='0';$d(id).style.transform='translateX(6px)';});
-      $d('df4ts').textContent='0';
-      let n=0;const iv=setInterval(()=>{n=Math.min(n+2,88);$d('df4ts').textContent=n;if(n>=88)clearInterval(iv);},22);
-      await waitD(400);
-      for(const id of ['df4m0','df4m1','df4m2']){$d(id).style.opacity='1';$d(id).style.transform='none';await waitD(300);}
-      await waitD(300);['df4t0','df4t1','df4t2'].forEach((id,i)=>setTimeout(()=>$d(id).classList.add('vis'),400+i*280));
-     }}
-    ]}
-    ];
-
-    /* ── DECK ENGINE (manual, no auto-timer) ── */
-    function makeCardEl(card,si){
-      const isV=si===1||si===2;
-      const d=document.createElement('div');d.className='dcard';
-      d.innerHTML=`<div class="dcard-top"><div class="dct-dots"><div class="dct-dot"></div><div class="dct-dot"></div><div class="dct-dot"></div></div><div class="dct-step">${card.step}</div><div class="dct-status ${card.sCls}">${card.sTxt}</div></div><div class="dcard-body"><div class="dcard-title">${card.title}</div>${card.html}</div>`;
-      return d;
-    }
-
-    STAGES.forEach((stage,si)=>{
-      const stackEl=$d('dk'+si),stepsEl=$d('ds'+si);
-      const fillEl=$d('dpfill'+si),lblEl=$d('dplbl'+si);
-      const prevBtn=$d('dprev'+si),nextBtn=$d('dnext'+si);
-      if(!stackEl||!stepsEl)return;
-      const isV=si===1||si===2;
-      const N=stage.cards.length;
-      let current=0,fanned=false;
-      const animRunning=Array(N).fill(false),cardEls=[];
-
-      stage.cards.forEach((_,i)=>{
-        const el=document.createElement('div');el.className='dstep';
-        el.innerHTML=`<span>${String(i+1).padStart(2,'0')}</span>`;
-        el.addEventListener('click',()=>{unfan();goTo(i);});
-        stepsEl.appendChild(el);
-      });
-      stage.cards.forEach((card,i)=>{
-        const el=makeCardEl(card,si);
-        el.addEventListener('click',()=>{if(!fanned)fan();else{unfan();goTo(i);}});
-        stackEl.appendChild(el);cardEls.push(el);
-      });
-
-      function updateProgress(){
-        const pct=N>1?Math.round((current/(N-1))*100):100;
-        if(fillEl)fillEl.style.width=pct+'%';
-        if(lblEl)lblEl.textContent=`Step ${current+1} / ${N}`;
-        stepsEl.querySelectorAll('.dstep').forEach((el,i)=>{
-          el.classList.toggle('done',i<current);
-          el.style.opacity=i===current?'1':i<current?'.6':'.3';
-        });
-      }
-      function position(){
-        if(fanned){
-          cardEls.forEach((el,i)=>{const ord=(i-current+N)%N;el.removeAttribute('data-pos');el.setAttribute('data-fan',ord);});
-          stackEl.classList.add('fanned');
-        }else{
-          cardEls.forEach((el,i)=>{const pos=(i-current+N)%N;el.removeAttribute('data-fan');el.setAttribute('data-pos',pos);});
-          stackEl.classList.remove('fanned');
-        }
-        updateProgress();
-      }
-      function fan(){fanned=true;position();}
-      function unfan(){fanned=false;position();}
-      async function runAnim(idx){
-        if(animRunning[idx])return;animRunning[idx]=true;
-        const cls='card-enter';
-        cardEls[idx].classList.remove(cls);void cardEls[idx].offsetWidth;cardEls[idx].classList.add(cls);
-        try{await stage.cards[idx].anim();}catch(e){}
-        animRunning[idx]=false;
-      }
-      function goTo(idx){current=idx;position();runAnim(idx);for(let i=0;i<N;i++)if(i!==idx)animRunning[i]=false;}
-
-      /* prev / next buttons */
-      if(prevBtn)prevBtn.addEventListener('click',e=>{e.stopPropagation();unfan();goTo((current-1+N)%N);});
-      if(nextBtn)nextBtn.addEventListener('click',e=>{e.stopPropagation();unfan();goTo((current+1)%N);});
-
-      /* hover fan */
-      stackEl.addEventListener('mouseenter',()=>{if(!fanned)fan();});
-      stackEl.addEventListener('mouseleave',()=>{if(fanned)unfan();});
-
-      position();
-      stage._start=()=>{goTo(0);};
-      stage._started=false;
-    });
-
-    /* NAV PROGRESS + INTERSECTION */
-    const navItems=document.querySelectorAll('.sni');
-    const snavFill=document.getElementById('snavFill');
-    const progWidths=['0%','50%','100%'];
-    // Auto-start all stages immediately so they are always visible
-    document.querySelectorAll('.stage').forEach(s=>s.classList.add('vis'));
-    STAGES.forEach((stage,si)=>{if(!stage._started){stage._started=true;stage._start();}});
-    // Also auto-activate TrustMatch
-    ;(function(){var tm=document.querySelector('.tmatch');if(tm){tm.classList.add('vis');tm.classList.add('beat2');tm.classList.add('beat3');}})();
-    navItems[0]&&navItems[0].classList.add('active');
-    const stageObs=new IntersectionObserver(entries=>{
-      entries.forEach(entry=>{
-        if(!entry.isIntersecting)return;
-        const sec=entry.target,si=parseInt(sec.dataset.si);
-        sec.classList.add('vis');
-        navItems.forEach((n,i)=>n.classList.toggle('active',i===si));
-        if(snavFill)snavFill.style.width=progWidths[si];
-        if(!STAGES[si]._started){STAGES[si]._started=true;STAGES[si]._start();}
-      });
-    },{threshold:0.25});
-    document.querySelectorAll('.stage').forEach(s=>stageObs.observe(s));
-    cleanup.push(()=>stageObs.disconnect());
-
-    /* TRUSTMATCH ANIMATION */
-    ;(function(){
-      function activateTmatch(){var sec=document.querySelector('.tmatch');if(!sec||sec.classList.contains('vis'))return;sec.classList.add('vis');setTimeout(function(){sec.classList.add('beat2');},280);setTimeout(function(){sec.classList.add('beat3');},680);}
-      if('IntersectionObserver' in window){var obs2=new IntersectionObserver(function(entries){entries.forEach(function(e){if(!e.isIntersecting)return;activateTmatch();obs2.disconnect();});},{threshold:0.08,rootMargin:'0px 0px -40px 0px'});var sec2=document.querySelector('.tmatch');if(sec2)obs2.observe(sec2);}
-    })();
-
-    /* FLOAT CTA */
-    ;(function(){
-      const floatCta=document.getElementById('floatCta');
-      const hero=document.querySelector('#hero');
-      if(!floatCta||!hero)return;
-      const heroObs=new IntersectionObserver(entries=>{entries.forEach(e=>floatCta.classList.toggle('vis',!e.isIntersecting));},{threshold:0});
-      heroObs.observe(hero);
-      cleanup.push(()=>heroObs.disconnect());
-    })();
-    /* duplicate nav observer removed */
-
-    ;
-
-    ;
-
-    /* RECRUITER TOGGLE */
-    fnRef.current.toggleRecruiterSection = function(scrollTo){
-      const sec=document.getElementById('for-recruiters');
-      const btn=document.getElementById('recruiterToggleBtn');
-      const navBtn=document.getElementById('navRecruiterBtn');
-      if(!sec||!btn)return;
-      const isOpen=sec.classList.contains('recruiter-open');
-      if(isOpen){
-        sec.classList.remove('recruiter-open');
-        btn.classList.remove('open');
-        if(navBtn)navBtn.classList.remove('open');
-      } else {
-        sec.classList.add('recruiter-open');
-        btn.classList.add('open');
-        if(navBtn)navBtn.classList.add('open');
-        if(scrollTo!==false){
-          setTimeout(()=>{
-            document.getElementById('recruiter-trigger').scrollIntoView({behavior:'smooth',block:'start'});
-          },80);
-        }
-      }
-    }
-    /* Nav recruiter access button opens + scrolls */
-    ;(function(){
-      const navA=document.querySelector('.nav-cta a.btn-ghost');
-      if(navA&&navA.textContent.trim()==='Recruiter Access'){
-        navA.id='navRecruiterBtn';
-        navA.href='#recruiter-trigger';
-        navA.addEventListener('click',function(e){
-          e.preventDefault();
-          const sec=document.getElementById('for-recruiters');
-          if(!sec.classList.contains('recruiter-open')){
-            toggleRecruiterSection(false);
-          }
-          setTimeout(()=>{
-            document.getElementById('recruiter-trigger').scrollIntoView({behavior:'smooth',block:'start'});
-          },80);
-        });
-      }
-    })();
-
-    fnRef.current.toggleFaqMore = function(btn){
-      const m=document.getElementById('faqMore');
-      const arrow=document.getElementById('faqMoreArrow');
-      const txt=document.getElementById('faqMoreBtnTxt');
-      const open=m.style.display==='flex';
-      m.style.display=open?'none':'flex';
-      arrow.style.transform=open?'':'rotate(180deg)';
-      if(txt)txt.textContent=open?'See more questions':'Show fewer questions';
-    }
-
-    /* LEGAL MODALS */
-    const LEGAL={
-      tos:{title:'Terms of Service — CareerAiHub',body:'<p style="font-size:11px;color:var(--ink3);margin-bottom:20px">Last updated: April 2026 · CareerAiHub Pte. Ltd. · Singapore</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">1. Acceptance of terms</h3><p style="margin-bottom:16px">By using CareerAiHub, you agree to these Terms of Service. If you do not agree, please do not use the platform.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">2. Service description</h3><p style="margin-bottom:16px">CareerAiHub provides AI-powered career tools including resume scanning, ATS scoring, mock interview coaching, salary benchmarking, and related services. Features marked "Building next" are roadmap items not currently available.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">3. User obligations</h3><ul style="margin-bottom:16px;padding-left:20px;line-height:2"><li>You must be 18 or older to use the platform</li><li>You may only upload resumes you have the right to share</li><li>You may not use the platform for any unlawful purpose</li><li>You may not attempt to reverse-engineer or copy the platform</li></ul><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">4. Subscription and billing</h3><p style="margin-bottom:16px">Pro subscription: SGD 8.99 for a 7-day trial, then SGD 21/month automatically. You may cancel before the trial ends for no charge. Refunds available within 7 days of initial charge.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">5. Limitation of liability</h3><p style="margin-bottom:16px">CareerAiHub provides career guidance tools, not guaranteed employment outcomes. AI-generated scores are for informational purposes. We are not liable for employment decisions made by third parties.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">6. Governing law</h3><p>These terms are governed by the laws of Singapore. Disputes shall be resolved in Singapore courts.</p>'},
-      privacy:{title:'Privacy Policy — CareerAiHub',body:'<p style="font-size:11px;color:var(--ink3);margin-bottom:20px">Last updated: April 2026 · CareerAiHub Pte. Ltd. · Singapore</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">1. What data we collect</h3><p style="margin-bottom:16px">We collect your resume file (PDF or DOCX), your email address when you create an account, and your usage data within the platform. We do not collect payment card data directly — this is handled by our payment processor.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">2. How we use your data</h3><p style="margin-bottom:16px">Your resume is used solely to power your CareerAiHub modules. It is never shared with recruiters, employers, or third-party advertisers without your explicit consent.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">3. Data storage and security</h3><p style="margin-bottom:16px">All data is encrypted at rest (AES-256) and in transit (TLS 1.3). Your resume is stored on secure cloud infrastructure in Singapore. Access is restricted to essential engineering staff only.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">4. Your rights (PDPA)</h3><ul style="margin-bottom:16px;padding-left:20px;line-height:2"><li>Access your personal data at any time from account settings</li><li>Request correction of inaccurate data</li><li>Request deletion — processed within 24 hours</li><li>Withdraw consent for data processing at any time</li></ul><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">5. Cookies</h3><p style="margin-bottom:16px">We use essential cookies for session management and optional analytics cookies (Google Analytics 4). You can decline optional cookies via the consent banner.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">6. Contact</h3><p>privacy@careeraihub.com · CareerAiHub Pte. Ltd. · Singapore</p>'},
-      security:{title:'Security Statement — CareerAiHub',body:'<p style="font-size:11px;color:var(--ink3);margin-bottom:20px">Last updated: April 2026</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">Encryption</h3><p style="margin-bottom:16px">All data is encrypted at rest using AES-256 and in transit using TLS 1.3. Resume files are encrypted immediately upon upload before being stored.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">Blockchain anchoring</h3><p style="margin-bottom:16px">Verified credentials are cryptographically hashed and written to a public blockchain — immutable and tamper-evident.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">Access control</h3><p style="margin-bottom:16px">Access to production systems is restricted to essential engineering staff. All access is logged and audited. Regular security reviews are conducted.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">Responsible disclosure</h3><p>Found a vulnerability? Email security@careeraihub.com. We respond within 48 hours and resolve critical issues within 7 days.</p>'},
-      deletion:{title:'Data Deletion Request — CareerAiHub',body:'<p style="font-size:13px;color:var(--ink2);line-height:1.75;margin-bottom:20px">You have the right to request deletion of all personal data CareerAiHub holds about you at any time, in accordance with Singapore\'s PDPA.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">What gets deleted</h3><ul style="margin-bottom:16px;padding-left:20px;line-height:2"><li>Your resume file(s) and all parsed content</li><li>Your account and profile data</li><li>Your session history and AI coaching records</li><li>Your Verification Clarity Score and verified credential links</li></ul><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">Timeline</h3><p style="margin-bottom:16px">Active data is deleted within 24 hours. Backup copies are purged within 30 days. Blockchain credential hashes are pseudonymous and contain no personal data.</p><h3 style="font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px">How to request</h3><p style="margin-bottom:8px">Delete directly from Settings → Account → Delete Account.</p><p>Or email: <a href="mailto:privacy@careeraihub.com" style="color:var(--g1)">privacy@careeraihub.com</a> with subject "Data Deletion Request".</p>'}
-    };
-    fnRef.current.openLegal = function(key){
-      const modal=document.getElementById('legalModal');
-      const sheet=document.getElementById('legalSheet');
-      const title=document.getElementById('legalTitle');
-      const body=document.getElementById('legalBody');
-      const d=LEGAL[key];if(!d||!modal)return;
-      title.textContent=d.title;body.innerHTML=d.body;
-      modal.style.display='flex';document.body.style.overflow='hidden';
-      requestAnimationFrame(()=>requestAnimationFrame(()=>{sheet.style.transform='translateY(0)';}));
-    }
-    fnRef.current.closeLegal = function(){
-      const modal=document.getElementById('legalModal');
-      const sheet=document.getElementById('legalSheet');
-      if(!modal)return;
-      sheet.style.transform='translateY(100%)';
-      setTimeout(()=>{modal.style.display='none';document.body.style.overflow='';},400);
-    }
-    fnRef.current.toggleRecruiter = fnRef.current.toggleRecruiterSection;
-
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    setTimeout(() => {
+      document.querySelectorAll('.v36-page .reveal').forEach(e => io.observe(e));
+    }, 100);
     return () => {
+      io.disconnect();
       if (document.head.contains(fontLink)) document.head.removeChild(fontLink);
-      document.documentElement.style.scrollBehavior = '';
-      cleanup.forEach(fn => { try { fn(); } catch(e) {} });
     };
   }, []);
 
+  const join = () => setAuthModal?.('register');
+  const login = () => setAuthModal?.('login');
+  const openLegal = (type) => setLegalModal({ open: true, type });
+  const closeLegal = () => setLegalModal({ open: false, type: null });
+  const legal = legalModal.type ? LEGAL_CONTENT[legalModal.type] : null;
+
   return (
-    <div className="v10lp">
-      {/* NAV */}
-      <nav>
-        <a href="#" onClick={e => e.preventDefault()} className="nav-logo">
-          <LogoMark size={28} />
-          <div>
-            <div className="nav-logo-text">CareerAiHub</div>
-            <div className="nav-logo-sub">Proof over claims.</div>
+    <div className="v36-page">
+
+      {/* ── NAV ── */}
+      <nav className="v36-nav">
+        <a className="v36-nav-logo" href="#" onClick={e => e.preventDefault()}>
+          <svg width="26" height="26" viewBox="0 0 80 80" fill="none">
+            <defs><linearGradient id="v36NavGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6366F1"/><stop offset="55%" stopColor="#EC4899"/><stop offset="100%" stopColor="#F59E0B"/></linearGradient></defs>
+            <circle cx="40" cy="40" r="34" stroke="url(#v36NavGrad)" strokeWidth="2.5" opacity="0.25"/>
+            <line x1="40" y1="26" x2="40" y2="10" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
+            <line x1="51.96" y1="33" x2="65.57" y2="25.1" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
+            <line x1="51.96" y1="47" x2="65.57" y2="54.9" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
+            <line x1="40" y1="54" x2="40" y2="70" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
+            <line x1="28.04" y1="47" x2="14.43" y2="54.9" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
+            <line x1="28.04" y1="33" x2="14.43" y2="25.1" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
+            <circle cx="40" cy="8" r="3" fill="url(#v36NavGrad)"/>
+            <circle cx="67" cy="24" r="3" fill="url(#v36NavGrad)"/>
+            <circle cx="67" cy="56" r="3" fill="url(#v36NavGrad)"/>
+            <circle cx="40" cy="72" r="3" fill="url(#v36NavGrad)"/>
+            <circle cx="13" cy="56" r="3" fill="url(#v36NavGrad)"/>
+            <circle cx="13" cy="24" r="3" fill="url(#v36NavGrad)"/>
+            <circle cx="40" cy="40" r="10" fill="url(#v36NavGrad)"/>
+            <circle cx="40" cy="40" r="4" fill="white"/>
+          </svg>
+          <div className="v36-nav-logo-text">
+            <span className="v36-nav-wordmark"><span>career</span><span className="v36-nav-wm-ai">ai</span><span>hub</span></span>
+            <span className="v36-nav-tagline">Build. Verified. Connect.</span>
           </div>
         </a>
-        <div className="nav-links">
-          <a href="#s1">For Candidates</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#faq">FAQ</a>
-        </div>
-        <div className="nav-cta">
-          <button onClick={() => setAuthModal("register")} style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 100, color: 'var(--ink2)', padding: '9px 20px', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s', letterSpacing: '0.01em' }} onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'; e.currentTarget.style.color = 'var(--ink)'; }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'var(--ink2)'; }}>For Employers</button>
-          <button className="btn-primary" onClick={() => setAuthModal("register")}>Get Early Access →</button>
-          <button className="nav-hamburger" id="navHamburger" aria-label="Menu" onClick={() => fnRef.current.toggleMobileNav?.()}><span></span><span></span><span></span></button>
+        <ul className="v36-nav-links">
+          <li><a href="#v36-platform">Platform</a></li>
+          <li><a href="#v36-future">For Recruiters</a></li>
+          <li><a href="#v36-faq">Resources</a></li>
+          <li><a href="#v36-pricing">Pricing</a></li>
+        </ul>
+        <div className="v36-nav-right">
+          <button className="v36-btn-ghost" onClick={login}>Log in</button>
+          <button className="v36-btn-primary" onClick={join}>Get Started Free</button>
         </div>
       </nav>
-      {/* MOBILE NAV */}
-      <div className="mobile-nav" id="mobileNav">
-        <a href="#s1" onClick={() => fnRef.current.closeMobileNav?.()}>For Candidates</a>
-        <a href="#pricing" onClick={() => fnRef.current.closeMobileNav?.()}>Pricing</a>
-        <a href="#testimonials" onClick={() => fnRef.current.closeMobileNav?.()}>Stories</a>
-        <a href="#faq" onClick={() => fnRef.current.closeMobileNav?.()}>FAQ</a>
-        <button onClick={() => { fnRef.current.closeMobileNav?.(); setAuthModal("register"); }} style={{color: "var(--g1)", fontWeight: "600", background:"none",border:"none",cursor:"pointer",fontSize:"14px",padding:"10px 0",borderBottom:"1px solid var(--border)",width:"100%",textAlign:"left"}}>Get Early Access →</button>
-      </div>
 
-      {/* HERO */}
-      <section id="hero">
-        <div className="hero-bg">
-          <div className="hero-grid"></div>
-          <div className="hero-glow1"></div>
-          <div className="hero-glow2"></div>
-        </div>
-        <div className="wrap" style={{display: 'contents'}}>
-          <div className="hero-copy" style={{paddingLeft: '48px'}} id="hero-copy">
-            <h1 className="hero-h1">Land the Role<br /><span className="accent">You've Earned.</span></h1>
-            <div className="hero-actions">
-              <button className="btn-hero" onClick={() => setAuthModal("register")}>Get Early Access →</button>
-              <button className="btn-watch" onClick={() => fnRef.current.openATSDemo?.()}><span className="btn-watch-ic">▶</span> Watch Demo</button>
-              <button className="btn-watch" onClick={() => setAuthModal("register")} style={{ border: '1px solid rgba(255,255,255,0.12)', color: 'var(--ink3)', fontSize: 13 }}>🏢 For Employers →</button>
+      {/* ── HERO ── */}
+      <div className="v36-hero-wrap">
+        <div className="v36-hero">
+
+          {/* LEFT */}
+          <div className="v36-hero-left reveal visible">
+            {/* Eyebrow */}
+            <div style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(99,102,241,0.08)',border:'1px solid rgba(99,102,241,0.2)',borderRadius:100,padding:'5px 14px',marginBottom:28,width:'fit-content'}}>
+              <span style={{width:6,height:6,borderRadius:'50%',background:'#6366f1',boxShadow:'0 0 8px rgba(99,102,241,0.8)',flexShrink:0,animation:'v36blink 2s ease-in-out infinite',display:'inline-block'}}></span>
+              <span style={{fontSize:12,fontWeight:500,color:'rgba(160,174,192,0.75)',letterSpacing:'0.02em'}}>Singapore's verified career platform</span>
             </div>
-            <div className="hero-stats">
-              <div className="hero-stat"><div className="val">10+</div><div className="lbl">Modules Live</div></div>
-              <div className="hero-stat"><div className="val">2,714</div><div className="lbl">Verified Profiles</div></div>
-              <div className="hero-stat"><div className="val">Early</div><div className="lbl">Access Open</div></div>
-              <div className="hero-stat"><div className="val">SG</div><div className="lbl">Founded &amp; Built</div></div>
+            {/* Headline */}
+            <h1 style={{fontSize:58,fontWeight:800,lineHeight:1.0,letterSpacing:'-0.045em',margin:'0 0 20px',fontFamily:"'Bricolage Grotesque','Sora','Inter',sans-serif"}}>
+              <span style={{display:'block',color:'#ffffff'}}>From Invisible</span>
+              <span style={{display:'block',background:'linear-gradient(100deg,#6366f1 0%,#8b5cf6 55%,#ec4899 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>To Get Hired.</span>
+            </h1>
+            {/* Sub */}
+            <p style={{fontSize:16,color:'rgba(160,174,192,0.6)',lineHeight:1.65,margin:'0 0 36px',maxWidth:420,fontWeight:400,letterSpacing:'-0.01em'}}>
+              Build a verified profile, practice with AI, and get discovered by top Singapore recruiters.
+            </p>
+            {/* CTAs */}
+            <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:40,flexWrap:'wrap'}}>
+              <button onClick={join} style={{display:'inline-flex',alignItems:'center',gap:8,background:'#6366f1',color:'#fff',border:'none',fontSize:15,fontWeight:600,padding:'15px 32px',borderRadius:100,cursor:'pointer',fontFamily:"'Bricolage Grotesque','Inter',sans-serif",letterSpacing:'-0.02em',boxShadow:'0 0 40px rgba(99,102,241,0.4),0 1px 0 rgba(255,255,255,0.12) inset'}}>
+                Build My Profile Free &nbsp;→
+              </button>
+              <button onClick={join} style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(255,255,255,0.04)',color:'rgba(200,215,235,0.85)',border:'1px solid rgba(255,255,255,0.14)',fontSize:14,fontWeight:500,padding:'13px 22px',borderRadius:100,cursor:'pointer',fontFamily:"'Inter',sans-serif",letterSpacing:'-0.01em'}}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Scan My Resume Free
+              </button>
+            </div>
+            {/* Social proof */}
+            <div style={{display:'flex',alignItems:'center',gap:14}}>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <span style={{fontSize:13,color:'#fbbf24',letterSpacing:1}}>★★★★★</span>
+                <span style={{fontSize:12,color:'rgba(74,86,104,0.9)',letterSpacing:'-0.01em'}}><strong style={{color:'rgba(160,174,192,0.7)',fontWeight:600}}>Free to start</strong> · No credit card · Cancel anytime</span>
+              </div>
             </div>
           </div>
-          <div className="hero-visual" style={{paddingRight: '48px'}}>
-            <div className="hc-wrap">
 
-              {/* Single animated Trust Card */}
-              <div className="trust-card hc-card" id="hcCard">
-
-                {/* Header row: badge left, score ring right */}
-                <div className="tc-header">
-                  <div style={{display: 'flex', flexDirection: 'column', gap: '6px'}}>
-                    <div className="tc-badge" id="hcBadge" style={{opacity: '0', transform: 'translateY(-6px)', transition: 'opacity .5s,transform .5s'}}>✓ Clarity Verified</div>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-                      <div className="tc-avatar">ML</div>
-                      <div className="tc-info">
-                        <div className="tc-name">Marcus Lee</div>
-                        <div className="tc-role">Product Designer</div>
-                        <div className="tc-skills">
-                          <span className="tc-skill">UI/UX</span><span className="tc-skill">Figma</span><span className="tc-skill">Design Systems</span>
+          {/* RIGHT — Dashboard card */}
+          <div className="v36-hero-right reveal visible">
+            <div className="ndc-wrap">
+              <div className="ndc-topbar">
+                <span className="ndc-verified">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#29c492" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  TRUSTMATCH VERIFIED
+                </span>
+                <span className="ndc-live"><span className="ndc-live-dot"></span>Live</span>
+              </div>
+              <div className="ndc-body">
+                {/* LEFT column */}
+                <div className="ndc-left">
+                  <div className="ndc-profile">
+                    <div className="ndc-avatar">
+                      <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=120&h=120&fit=crop&crop=face&auto=format" alt="Sarah Tan" />
+                    </div>
+                    <div className="ndc-pinfo">
+                      <div className="ndc-pname">Sarah Tan</div>
+                      <div className="ndc-prole">Product Manager</div>
+                      <div className="ndc-ploc">Singapore</div>
+                    </div>
+                  </div>
+                  <div className="ndc-id-badges">
+                    <span className="ndc-idbadge ndc-idb-green">Verified Identity</span>
+                    <span className="ndc-idbadge ndc-idb-teal">AI Memory Active</span>
+                  </div>
+                  <div className="ndc-divider"></div>
+                  <div>
+                    <div className="ndc-trust-label">TRUST SCORE</div>
+                    <div className="ndc-trust-row">
+                      <div className="ndc-trust-num">87</div>
+                      <div className="ndc-trust-denom">/100</div>
+                      <div className="ndc-trust-excellent">● Excellent</div>
+                    </div>
+                    <div className="ndc-trust-ring-row">
+                      <div className="ndc-ring">
+                        <svg width="52" height="52" viewBox="0 0 52 52">
+                          <circle cx="26" cy="26" r="21" fill="none" stroke="rgba(41,196,146,0.15)" strokeWidth="4"/>
+                          <circle cx="26" cy="26" r="21" fill="none" stroke="#29c492" strokeWidth="4" strokeLinecap="round" strokeDasharray="131.9" strokeDashoffset="131.9" className="ndc-ring-animated"/>
+                        </svg>
+                      </div>
+                      <div className="ndc-trust-note">Top <strong>8%</strong> verified<br />profiles in Singapore</div>
+                    </div>
+                  </div>
+                  <div className="ndc-divider"></div>
+                  <div>
+                    <div className="ndc-strength-row">
+                      <span className="ndc-strength-label">PROFILE STRENGTH</span>
+                      <span className="ndc-strength-pct">87%</span>
+                    </div>
+                    <div className="ndc-strength-bar-wrap"><div className="ndc-strength-bar"></div></div>
+                  </div>
+                  <div className="ndc-divider"></div>
+                  <div className="ndc-skills-block">
+                    <div className="ndc-skills-label">TOP SKILLS</div>
+                    <div className="ndc-skills-wrap">
+                      <span className="ndc-skill">Product Strategy</span>
+                      <span className="ndc-skill">Agile</span>
+                      <span className="ndc-skill">Data Analytics</span>
+                      <span className="ndc-skill">Roadmapping</span>
+                    </div>
+                  </div>
+                </div>
+                {/* RIGHT column */}
+                <div className="ndc-right">
+                  <div className="ndc-panel ndc-recruiter">
+                    <div className="ndc-panel-header">
+                      <span className="ndc-panel-title">RECRUITER INTEREST</span>
+                      <span className="ndc-panel-link">View all</span>
+                    </div>
+                    <div className="ndc-msg-row">
+                      <div className="ndc-msg-avatar">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face&auto=format" alt="Rachel Chen" />
+                      </div>
+                      <div className="ndc-msg-bubble">
+                        <div className="ndc-msg-text">Hi Sarah,<br />I can see your credentials and your strong product background. We have a PM role that matches your profile. Are you open to a quick call this week?</div>
+                        <div className="ndc-msg-meta">
+                          <span className="ndc-msg-sender">Rachel Chen</span>
+                          <span className="ndc-msg-role">· Talent Lead @ Grab</span>
+                          <span className="ndc-msg-time">3:42 PM</span>
+                          <span className="ndc-msg-dot"></span>
                         </div>
                       </div>
                     </div>
                   </div>
-                  {/* Animated score ring */}
-                  <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flexShrink: '0'}}>
-                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8px', color: 'var(--ink2)', letterSpacing: '.04em'}}>Clarity Score</div>
-                    <div style={{position: 'relative', width: '68px', height: '68px'}}>
-                      <svg viewBox="0 0 72 72" width="68" height="68" style={{position: 'absolute', top: '0', left: '0'}}>
-                        <circle cx="36" cy="36" r="30" fill="none" stroke="var(--surf2)" strokeWidth="5"/>
-                        <circle cx="36" cy="36" r="30" fill="none" stroke="var(--c1)" strokeWidth="5"
-                          strokeDasharray="188.5" strokeDashoffset="188.5"
-                          strokeLinecap="round" transform="rotate(-90 36 36)"
-                          id="hcRingArc" style={{transition: 'stroke-dashoffset 2s cubic-bezier(.22,1,.36,1)'}}/>
-                      </svg>
-                      <div style={{position: 'absolute', inset: '0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
-                        <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '20px', fontWeight: '800', color: 'var(--ink)', lineHeight: '1'}} id="hcScoreNum">0</div>
-                        <div style={{fontSize: '9px', color: 'var(--ink2)', fontFamily: '\'DM Mono\',monospace', marginTop: '2px'}}>VCS</div>
+                  <div className="ndc-panel ndc-matches">
+                    <div className="ndc-panel-header">
+                      <span className="ndc-panel-title">YOUR MATCHES</span>
+                      <span className="ndc-panel-link">See all</span>
+                    </div>
+                    <div className="ndc-match-row">
+                      <div className="ndc-match-logo">
+                        <svg width="32" height="32" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#00B14F"/><text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="14" fontWeight="800" fontFamily="sans-serif">G</text></svg>
                       </div>
+                      <div className="ndc-match-info">
+                        <div className="ndc-match-title">Product Manager</div>
+                        <div className="ndc-match-company">Grab · Singapore</div>
+                      </div>
+                      <span className="ndc-match-pct ndc-pct-green">95% Match</span>
                     </div>
-                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', fontWeight: '600', color: 'var(--c1)', opacity: '0'}} id="hcScoreLbl">···</div>
-                  </div>
-                </div>
-
-                {/* Verification badges — stagger in */}
-                <div className="tc-verified" style={{marginTop: '2px'}}>
-                  <div className="tc-verified-title">Verification Clarity Breakdown</div>
-                  <div className="tc-proof-grid">
-                    <div className="tc-proof-item" id="hcb0" style={{opacity: '0', transform: 'translateY(8px)', transition: 'opacity .45s,transform .45s'}}>
-                      <div className="tc-proof-ic">🎓</div><div className="tc-proof-name">Education</div><div className="tc-proof-chk">✓ Verified</div>
-                    </div>
-                    <div className="tc-proof-item" id="hcb1" style={{opacity: '0', transform: 'translateY(8px)', transition: 'opacity .45s .13s,transform .45s .13s'}}>
-                      <div className="tc-proof-ic">💼</div><div className="tc-proof-name">Work</div><div className="tc-proof-chk">✓ Verified</div>
-                    </div>
-                    <div className="tc-proof-item" id="hcb2" style={{opacity: '0', transform: 'translateY(8px)', transition: 'opacity .45s .26s,transform .45s .26s'}}>
-                      <div className="tc-proof-ic">🔥</div><div className="tc-proof-name">Projects</div><div className="tc-proof-chk">✓ Verified</div>
-                    </div>
-                    <div className="tc-proof-item" id="hcb3" style={{opacity: '0', transform: 'translateY(8px)', transition: 'opacity .45s .39s,transform .45s .39s'}}>
-                      <div className="tc-proof-ic">🏅</div><div className="tc-proof-name">Certificate</div><div className="tc-proof-chk">✓ Verified</div>
+                    <div className="ndc-match-row">
+                      <div className="ndc-match-logo">
+                        <svg width="32" height="32" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#96BF48"/><text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="14" fontWeight="800" fontFamily="sans-serif">S</text></svg>
+                      </div>
+                      <div className="ndc-match-info">
+                        <div className="ndc-match-title">Senior Product Manager</div>
+                        <div className="ndc-match-company">Shopify · Remote</div>
+                      </div>
+                      <span className="ndc-match-pct ndc-pct-teal">92% Match</span>
                     </div>
                   </div>
-                  {/* Verification sources strip */}
-                  <div id="hcb4" style={{display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px', opacity: '0', transform: 'translateY(6px)', transition: 'opacity .45s .55s,transform .45s .55s'}}>
-                    <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.18)'}}>🇸🇬 Singpass</span>
-                    <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.18)'}}>🎓 OpenCerts</span>
-                    <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(139,130,240,.07)', color: 'var(--c2)', border: '1px solid rgba(139,130,240,.18)'}}>🏅 Credly</span>
-                    <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '7px', padding: '2px 6px', borderRadius: '20px', background: 'rgba(99,102,241,.07)', color: 'var(--g1)', border: '1px solid rgba(99,102,241,.18)'}}>⚖️ MOM COMPASS</span>
-                  </div>
-                </div>
-
-                {/* Bottom: AI insight + match score */}
-                <div className="tc-bottom" id="hcBottom" style={{opacity: '0', transform: 'translateY(6px)', transition: 'opacity .5s,transform .5s'}}>
-                  <div className="tc-insight">
-                    <div className="tc-insight-lbl">AI Insight</div>
-                    <div className="tc-insight-text">Strong design systems thinking. High potential for senior product design roles.</div>
-                  </div>
-                  <div className="tc-match">
-                    <div className="tc-match-lbl">Role Match</div>
-                    <div className="tc-match-num" id="hcMatchNum">0%</div>
-                    <div className="tc-match-role">Product Designer</div>
-                    <div className="tc-match-bar"><div className="tc-match-fill" id="hcMatchBar" style={{width: '0%', transition: 'width 1.4s cubic-bezier(.22,1,.36,1)'}}></div></div>
-                  </div>
-                </div>
-
-                {/* TrustChat notification — slides up last */}
-                <div className="hc-trustchat" id="hcTrustChat" style={{opacity: '0', transform: 'translateY(12px)', transition: 'opacity .55s,transform .55s cubic-bezier(.34,1.12,.64,1)'}}>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
-                    <div style={{width: '8px', height: '8px', borderRadius: '50%', background: 'var(--c4)', boxShadow: '0 0 8px rgba(232,92,128,.6)', animation: 'hbPulse 1.5s ease infinite'}}></div>
-                    <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--c4)'}}>TrustChat · New message</div>
-                    <div style={{marginLeft: 'auto', fontFamily: '\'DM Mono\',monospace', fontSize: '8px', color: 'var(--ink3)'}} id="hcTimer">3:42</div>
-                  </div>
-                  <div style={{display: 'flex', gap: '8px', alignItems: 'flex-start'}}>
-                    <div style={{width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(232,92,128,.12)', border: '1px solid rgba(232,92,128,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: '700', color: 'var(--c4)', flexShrink: '0'}}>RC</div>
-                    <div>
-                      <div style={{fontSize: '11px', fontWeight: '600', color: 'var(--ink)', marginBottom: '2px'}}>Rachel Chen · Talent Lead, Grab</div>
-                      <div style={{fontSize: '11px', color: 'var(--ink2)', lineHeight: '1.55'}} id="hcMsg"></div>
+                  <div className="ndc-stats-row">
+                    <div className="ndc-stat-item">
+                      <div className="ndc-stat-icon" style={{color:'#8b5cf6'}}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                      </div>
+                      <div><div className="ndc-stat-num">3</div><div className="ndc-stat-lbl">Recruiters<br />Viewed</div></div>
+                    </div>
+                    <div className="ndc-stat-item">
+                      <div className="ndc-stat-icon" style={{color:'#f59e0b'}}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                      </div>
+                      <div><div className="ndc-stat-num">12</div><div className="ndc-stat-lbl">Opportunities<br />Matched</div></div>
+                    </div>
+                    <div className="ndc-stat-item">
+                      <div className="ndc-stat-icon" style={{color:'#06b6d4'}}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      </div>
+                      <div><div className="ndc-stat-num">7</div><div className="ndc-stat-lbl">Interviews<br />This Month</div></div>
+                    </div>
+                    <div className="ndc-stat-item">
+                      <div className="ndc-stat-icon" style={{color:'#ec4899'}}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                      </div>
+                      <div><div className="ndc-stat-num" style={{color:'#ec4899'}}>High</div><div className="ndc-stat-lbl">Interview<br />Confidence</div></div>
                     </div>
                   </div>
                 </div>
-
-              </div>{/* /trust-card */}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* STATS STRIP */}
-      <div className="stats-strip">
-        <div className="stats-strip-inner">
-          <div className="ss-item"><div className="ss-val">2,714</div><div className="ss-lbl">Verified Profiles</div></div>
-          <div className="ss-item"><div className="ss-val">9 days</div><div className="ss-lbl">Avg to Shortlist</div></div>
-          <div className="ss-item"><div className="ss-val">SGD 4–12k</div><div className="ss-lbl">Avg Salary Uplift</div></div>
-          <div className="ss-item"><div className="ss-val">Blockchain</div><div className="ss-lbl">Verified Credentials</div></div>
-          <div className="ss-item"><div className="ss-val">4.9★</div><div className="ss-lbl">User Rating</div></div>
         </div>
       </div>
 
-      <div className="snav-wrap">
-        <nav className="snav" id="snav">
-          <div className="snav-track"></div>
-          <div className="snav-fill" id="snavFill"></div>
-          <a className="sni s1 active" href="#s1"><div className="sni-dot">·</div><span className="sni-lbl">Get Seen</span></a>
-          <a className="sni s2" href="#s2"><div className="sni-dot">·</div><span className="sni-lbl">Get Ready</span></a>
-          <a className="sni s3" href="#s3"><div className="sni-dot">·</div><span className="sni-lbl">Get Matched</span></a>
-        </nav>
+      {/* ── STATS TICKER ── */}
+      <div className="v36-stats-ticker-wrap">
+        <div className="v36-stats-ticker-track">
+          {[
+            { color:'#fbbf24', val:'4.9★', label:'User Rating' },
+            { color:'#10b981', val:'95%', label:'ATS Match Rate' },
+            { color:'#5b6ef5', val:'50+', label:'Hiring Partners' },
+            { color:'#8b5cf6', val:'2,714+', label:'Verified Profiles' },
+            { color:'#06b6d4', val:'9 Days', label:'Avg. to Shortlist' },
+            { color:'#f59e0b', val:'SGD 4–12k', label:'Salary Uplift' },
+            { color:'#fbbf24', val:'4.9★', label:'User Rating' },
+            { color:'#10b981', val:'95%', label:'ATS Match Rate' },
+            { color:'#5b6ef5', val:'50+', label:'Hiring Partners' },
+            { color:'#8b5cf6', val:'2,714+', label:'Verified Profiles' },
+            { color:'#06b6d4', val:'9 Days', label:'Avg. to Shortlist' },
+            { color:'#f59e0b', val:'SGD 4–12k', label:'Salary Uplift' },
+          ].map((item, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && <span className="v36-stats-tick-sep">·</span>}
+              <div className="v36-stats-tick-item">
+                <span className="v36-stats-tick-dot" style={{background:item.color}}></span>
+                <span className="v36-stats-tick-val" style={{color:item.color}}>{item.val}</span>
+                <span className="v36-stats-tick-label">{item.label}</span>
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
       </div>
 
-      {/* STAGES */}
-      <div className="stages">
-
-      {/* S1 */}
-      <section className="stage terminal s1" id="s1" data-si="0">
-        <div className="wrap">
-          <div className="stage-grid">
-            <div className="scopy">
-              <div className="stage-badge terminal"><span className="badge-dot"></span>ATS · Data Engine</div>
-              <div className="stag-num">Get seen</div>
-              <h2>You find out in 90 seconds <span className="hl">exactly why you're not getting callbacks.</span></h2>
-              <p className="stage-sub">95% of resumes are filtered by a bot before a human sees them — you get a precise diagnosis, then your resume fixes itself.</p>
-              <p className="pain">"40 applications. 2 callbacks. I didn't know the bot was the problem."</p>
-              <div className="outcome">↑ 38 → 91 ATS score · your resume, rebuilt in 90 sec</div>
-              <button className="ats-soft-btn" onClick={() => fnRef.current.openATSDemo?.()}>⚡ See live ATS demo</button>
-            </div>
-            <div className="scard">
-              <div className="deck-wrap">
-                <div className="deck-steps" id="ds0"></div>
-                <div className="deck-stack h-stack" id="dk0"></div>
-                <div className="deck-progress" id="dh0">
-                <div className="deck-progress-track" id="dptrack0"><div className="deck-progress-fill" id="dpfill0"></div></div>
-                <div className="deck-progress-label"><span id="dplbl0">Step 1 / 3</span><span>click card or use arrows</span></div>
-                <div className="deck-nav-btns">
-                  <button className="deck-nav-btn" id="dprev0">←</button>
-                  <button className="deck-nav-btn" id="dnext0">→</button>
+      {/* ── AI MEMORY ── */}
+      <div className="v36-section v36-mem-section">
+        <div className="v36-section-inner">
+          <div style={{textAlign:'center',marginBottom:48}} className="reveal">
+            <h2 className="v36-s-title">Your career intelligence compounds over time.</h2>
+            <p className="v36-s-sub" style={{maxWidth:500,margin:'10px auto 0'}}>Every resume scan, interview practice, and credential verification makes your profile stronger. CareerAIHub remembers everything.</p>
+          </div>
+          <div className="v36-mem-timeline reveal">
+            {[
+              { day:'Day 1', title:'Upload your resume', desc:'AI scans and scores your resume. ATS match calculated instantly.', metric:'ATS Score: 72 → optimised to 95', color:'#8b5cf6', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> },
+              { day:'Week 1', title:'Practice interviews', desc:'AI coaches your answers, remembers your STAR stories, tracks improvement.', metric:'Interview Score: 6.2 → 8.5 / 10', color:'#ec4899', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> },
+              { day:'Week 2', title:'Verify credentials', desc:'Connect OpenCerts, Credly, Singpass. Trust Score rises with every verification.', metric:'Trust Score: 61 → 87 / 100', color:'#29c492', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#29c492" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> },
+              { day:'Week 3+', title:'Get discovered', desc:'Recruiters find your verified profile. TrustChat connects you to the right roles.', metric:'3 recruiter messages · 95% role match', color:'#f59e0b', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> },
+            ].map((step, i) => (
+              <div className="v36-mem-tl-item" key={i}>
+                <div className="v36-mem-tl-node" style={{'--nc': step.color}}>{step.icon}</div>
+                {i < 3 && <div className="v36-mem-tl-line"></div>}
+                <div className="v36-mem-tl-card">
+                  <div className="v36-mem-tl-day">{step.day}</div>
+                  <div className="v36-mem-tl-title">{step.title}</div>
+                  <div className="v36-mem-tl-desc">{step.desc}</div>
+                  <div className="v36-mem-tl-metric" style={{color:step.color}}>{step.metric}</div>
                 </div>
               </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
-      </section>
-
-      {/* S2 */}
-      <section className="stage human s2" id="s2" data-si="1">
-        <div className="wrap">
-          <div className="stage-grid">
-            <div className="scopy">
-              <div className="stage-badge human"><span className="badge-dot"></span>Interview · AI Coach</div>
-              <div className="stag-num">Get ready</div>
-              <h2>You find out your weakest interview dimension — <span className="hl">and fix it before you walk in.</span></h2>
-              <p className="stage-sub">AI targets your weakest dimension first, scores every answer, and won't let you walk in below 88/100.</p>
-              <p className="pain">"I knew the role cold. Blanked on the one question that mattered."</p>
-              <div className="outcome">↑ 88/100 readiness · salary script unlocks at 75</div>
-            </div>
-            <div className="scard">
-              <div className="deck-wrap">
-                <div className="deck-steps" id="ds1"></div>
-                <div className="deck-stack h-stack" id="dk1"></div>
-                <div className="deck-progress" id="dh1">
-                <div className="deck-progress-track" id="dptrack1"><div className="deck-progress-fill" id="dpfill1"></div></div>
-                <div className="deck-progress-label"><span id="dplbl1">Step 1 / 4</span><span>click card or use arrows</span></div>
-                <div className="deck-nav-btns">
-                  <button className="deck-nav-btn" id="dprev1">←</button>
-                  <button className="deck-nav-btn" id="dnext1">→</button>
-                </div>
-              </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* S4 (now S3) */}
-      <section className="stage human s4" id="s3" data-si="2">
-        <div className="wrap">
-          <div className="stage-grid">
-            <div className="scopy">
-              <div className="stage-badge s4"><span className="badge-dot"></span>TrustMatch · AI Market</div>
-              <div className="stag-num">Get matched</div>
-              <h2>Recruiters who match your brief <span className="hl">find you — you don't apply to them.</span></h2>
-              <p className="stage-sub">Verify once — Singpass, Credly, university — and recruiters who match your brief find you in an average of 9 days.</p>
-              <p className="pain">"60 applications. 3 callbacks. I was invisible — not unqualified."</p>
-              <div className="outcome">↑ avg 9 days to shortlist · 4 min to first recruiter ping</div>
-            </div>
-            <div className="scard">
-              <div className="deck-wrap">
-                <div className="deck-steps" id="ds2"></div>
-                <div className="deck-stack v-stack" id="dk2"></div>
-                <div className="deck-progress" id="dh2">
-                <div className="deck-progress-track" id="dptrack2"><div className="deck-progress-fill" id="dpfill2"></div></div>
-                <div className="deck-progress-label"><span id="dplbl2">Step 1 / 4</span><span>click card or use arrows</span></div>
-                <div className="deck-nav-btns">
-                  <button className="deck-nav-btn" id="dprev2">←</button>
-                  <button className="deck-nav-btn" id="dnext2">→</button>
-                </div>
-              </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
       </div>
 
-      {/* LOGOS SECTION REMOVED: unverified partner logos —>
-
-      <!-- ═══════════════════════════════════════════════ */}
-      {/* PRICING */}
-      {/* ═══════════════════════════════════════════════ */}
-      <section id="pricing" style={{padding: '100px 0', position: 'relative', overflow: 'hidden'}}>
-        <div style={{position: 'absolute', inset: '0', background: 'radial-gradient(ellipse 60% 50% at 50% 50%,rgba(99,102,241,.04),transparent 70%)', pointerEvents: 'none'}}></div>
-        <div className="wrap">
-          <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--g1)', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center', marginBottom: '16px'}}>
-            <span style={{width: '24px', height: '1px', background: 'rgba(99,102,241,.3)', display: 'block'}}></span>Pricing<span style={{width: '24px', height: '1px', background: 'rgba(99,102,241,.3)', display: 'block'}}></span>
+      {/* ── PLATFORM ── */}
+      <div className="v36-section" id="v36-platform">
+        <div className="v36-section-inner">
+          <div className="reveal" style={{textAlign:'center',marginBottom:48}}>
+            <div className="v36-tag">OUR PLATFORM</div>
+            <h2 className="v36-s-title">Four layers. One unified identity.</h2>
           </div>
-          <h2 style={{fontFamily: '\'Instrument Serif\',serif', fontSize: 'clamp(32px,4vw,52px)', lineHeight: '1.08', letterSpacing: '-1.5px', textAlign: 'center', marginBottom: '8px'}}>Free to start. <span style={{background: 'var(--grad)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>Proven to pay off.</span></h2>
-          <p style={{textAlign: 'center', fontSize: '13px', color: 'var(--ink2)', marginBottom: '52px', fontWeight: '300'}}>Try everything free. Upgrade when you're ready to be found.</p>
-
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px', maxWidth: '920px', margin: '0 auto'}}>
-
-            {/* Free */}
-            <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '16px', padding: '28px', position: 'relative'}}>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: '16px'}}>Candidate · Free</div>
-              <div style={{fontFamily: '\'Instrument Serif\',serif', fontSize: '42px', lineHeight: '1', color: 'var(--ink)', marginBottom: '4px'}}>$0</div>
-              <div style={{fontSize: '11px', color: 'var(--ink3)', marginBottom: '24px'}}>Free forever · no card required</div>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '9px', marginBottom: '28px'}}>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span><strong style={{color: 'var(--ink)', fontWeight: '500'}}>2 resume scans</strong> + ATS fixes with keyword injection</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>JD gap analysis — missing keywords, instant</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>1 AI cover letter generation</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>3 AI interview prep sessions</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>Basic Verification Clarity Score</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span><strong style={{color: 'var(--ink)', fontWeight: '500'}}>AI Memory Dashboard</strong> — basic career profile</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink3)'}}><span style={{color: 'var(--ink3)', fontSize: '11px', marginTop: '1px'}}>—</span><span>TrustMatch marketplace</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink3)'}}><span style={{color: 'var(--ink3)', fontSize: '11px', marginTop: '1px'}}>—</span><span>Salary coach</span></div>
+          <div className="v36-plat-grid reveal">
+            {/* Card 1 */}
+            <div className="v36-plat-card rd1">
+              <div className="v36-plat-num">0<span className="v36-num-accent">1</span></div>
+              <div className="v36-plat-title">Resume &amp; ATS</div>
+              <ul className="v36-plat-feats">
+                <li><span className="v36-feat-check">✓</span> AI Resume Builder</li>
+                <li><span className="v36-feat-check">✓</span> ATS Scanner &amp; Score</li>
+                <li><span className="v36-feat-check">✓</span> Keyword Optimization</li>
+                <li><span className="v36-feat-check">✓</span> Persistent AI Profile</li>
+              </ul>
+              <div className="v36-plat-divider"></div>
+              <div className="v36-plat-mock">
+                <div style={{display:'flex',alignItems:'center',gap:12}}>
+                  <div style={{position:'relative',width:64,height:64,flexShrink:0}}>
+                    <svg viewBox="0 0 64 64" style={{transform:'rotate(-90deg)',width:64,height:64}}>
+                      <defs><linearGradient id="atsGradV36" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#29c492"/><stop offset="100%" stopColor="#06b6d4"/></linearGradient></defs>
+                      <circle cx="32" cy="32" r="27" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5"/>
+                      <circle cx="32" cy="32" r="27" fill="none" stroke="url(#atsGradV36)" strokeWidth="5" strokeLinecap="round" strokeDasharray="169.6" strokeDashoffset="25"/>
+                    </svg>
+                    <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+                      <div style={{fontSize:16,fontWeight:800,color:'#fff',lineHeight:1,letterSpacing:'-0.04em'}}>92</div>
+                      <div style={{fontSize:7,color:'#29c492',fontWeight:600,letterSpacing:'0.04em'}}>Excellent</div>
+                    </div>
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:9,color:'#4a5568',marginBottom:5,fontWeight:500}}>Top Keywords</div>
+                    <div style={{height:4,background:'linear-gradient(90deg,#8b5cf6,#6366f1)',borderRadius:2,width:'90%',marginBottom:4}}></div>
+                    <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:4,padding:'2px 7px',fontSize:9,color:'#818cf8',fontWeight:600,marginBottom:4}}>Product Strategy</div>
+                  </div>
+                </div>
               </div>
-              <button style={{display: 'block', textAlign: 'center', padding: '11px', borderRadius: '100px', border: '1px solid var(--border2)', fontSize: '13px', fontWeight: '600', color: 'var(--ink2)', textDecoration: 'none', transition: 'all .2s'}} onClick={() => setAuthModal("register")}>Get started free</button>
-            </div>
-
-            {/* Pro */}
-            <div style={{background: 'var(--surf)', border: '1px solid rgba(99,102,241,.35)', borderRadius: '16px', padding: '28px', position: 'relative', boxShadow: '0 0 48px rgba(99,102,241,.1)'}}>
-              <div style={{position: 'absolute', top: '0', left: '0', right: '0', height: '2px', background: 'var(--grad)', borderRadius: '16px 16px 0 0'}}></div>
-              <div style={{position: 'absolute', top: '16px', right: '16px', fontFamily: '\'DM Mono\',monospace', fontSize: '8px', padding: '3px 10px', borderRadius: '20px', background: 'rgba(99,102,241,.1)', color: 'var(--g1)', border: '1px solid rgba(99,102,241,.25)'}}>Most popular</div>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--g1)', marginBottom: '16px'}}>Candidate · Pro</div>
-              {/* Trial offer */}
-              <div style={{background: 'rgba(99,102,241,.07)', border: '1px solid rgba(99,102,241,.2)', borderRadius: '10px', padding: '12px 14px', marginBottom: '16px'}}>
-                <div style={{fontSize: '12px', fontWeight: '600', color: 'var(--g1)', marginBottom: '2px'}}>🎯 Try free for 7 days</div>
-                <div style={{fontSize: '11px', color: 'var(--ink2)', fontWeight: '300'}}>SGD 8.99 for 7 days — full access. Then <strong style={{color: 'var(--ink)', fontWeight: '500'}}>SGD 21/month</strong>, billed automatically. Cancel anytime.</div>
-              </div>
-              <div style={{fontFamily: '\'Instrument Serif\',serif', fontSize: '42px', lineHeight: '1', color: 'var(--ink)', marginBottom: '4px'}}>SGD 21<span style={{fontSize: '18px', color: 'var(--ink2)'}}>/mo</span></div>
-              <div style={{fontSize: '11px', color: 'var(--ink3)', marginBottom: '24px'}}>After trial · cancel anytime</div>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '9px', marginBottom: '28px'}}>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>Everything in Free</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span><strong style={{color: 'var(--ink)', fontWeight: '500'}}>Unlimited</strong> resume scans + fixes</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>Unlimited AI cover letters</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>Unlimited verifications (Singpass, Credly, OpenCerts)</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>TrustMatch marketplace — be discovered by recruiters</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>Salary coach + P75 counter scripts</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>HM Simulator · all 4 personas</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span><strong style={{color: 'var(--ink)', fontWeight: '500'}}>AI Memory Dashboard</strong> — full adaptive profile</span></div>
-              </div>
-              <button style={{display: 'block', textAlign: 'center', padding: '11px', borderRadius: '100px', background: 'var(--grad)', fontSize: '13px', fontWeight: '600', color: '#fff', textDecoration: 'none', boxShadow: '0 0 24px rgba(99,102,241,.3)', transition: 'all .2s'}} onClick={() => setAuthModal("register")}>Start 7-day trial — SGD 8.99 →</button>
-            </div>
-
-            {/* Recruiter — no price shown */}
-            <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '16px', padding: '28px', position: 'relative'}}>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--c4)', marginBottom: '16px'}}>Recruiter · Team</div>
-              <div style={{fontFamily: '\'Instrument Serif\',serif', fontSize: '32px', lineHeight: '1.1', color: 'var(--ink)', marginBottom: '4px'}}>Custom pricing</div>
-              <div style={{fontSize: '11px', color: 'var(--ink3)', marginBottom: '24px'}}>Per seat · billed annually · contact us</div>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '9px', marginBottom: '28px'}}>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>Access full verified candidate pool</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>TrustMatch + TrustChat — message verified candidates directly</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>AI-ranked shortlists in minutes, not hours</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>Zero fake credentials — blockchain-verified only</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>ATS &amp; HRIS integration</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>Dedicated customer success manager</span></div>
-                <div style={{display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12.5px', color: 'var(--ink2)'}}><span style={{color: 'var(--c1)', fontSize: '11px', marginTop: '1px'}}>✓</span><span>Analytics dashboard + hiring pipeline insights</span></div>
-              </div>
-              <a href="mailto:recruiters@careeraihub.com" style={{display: 'block', textAlign: 'center', padding: '11px', borderRadius: '100px', border: '1px solid rgba(232,92,128,.35)', fontSize: '13px', fontWeight: '600', color: 'var(--c4)', textDecoration: 'none', transition: 'all .2s'}}>Request recruiter access →</a>
-            </div>
-
-          </div>
-          <p style={{textAlign: 'center', fontSize: '11px', color: 'var(--ink3)', marginTop: '24px', fontFamily: '\'DM Mono\',monospace'}}>No contracts. No hidden fees. Cancel anytime.</p>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════ */}
-      {/* TESTIMONIALS / FEEDBACK */}
-      {/* ═══════════════════════════════════════════════ */}
-      <section id="testimonials" style={{padding: '72px 0', background: 'var(--bg2)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', overflow: 'hidden'}}>
-        <div className="wrap">
-          <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--c2)', display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center', marginBottom: '12px'}}>
-            <span style={{width: '24px', height: '1px', background: 'rgba(139,130,240,.3)', display: 'block'}}></span>Early users<span style={{width: '24px', height: '1px', background: 'rgba(139,130,240,.3)', display: 'block'}}></span>
-          </div>
-          <h2 style={{fontFamily: '\'Instrument Serif\',serif', fontSize: 'clamp(24px,3vw,38px)', lineHeight: '1.1', letterSpacing: '-1px', textAlign: 'center', marginBottom: '36px'}}>What early access users are saying</h2>
-        </div>
-        {/* Horizontal scroll row — no wrap */}
-        <div style={{display: 'flex', gap: '16px', overflowX: 'auto', padding: '4px 48px 16px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch'}} id="testimRow">
-    
-
-          <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '14px', padding: '20px', minWidth: '280px', maxWidth: '280px', flexShrink: '0'}}>
-            <div style={{color: 'var(--g1)', fontSize: '12px', marginBottom: '12px'}}>★★★★★</div>
-            <p style={{fontSize: '12.5px', color: 'var(--ink2)', lineHeight: '1.7', marginBottom: '16px', fontWeight: '300'}}>"First verified match led to an interview in 11 days. The Verification Clarity Score made me feel real to recruiters."</p>
-            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-              <div style={{width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(99,102,241,.15)', border: '1px solid rgba(99,102,241,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: '700', color: 'var(--g1)', flexShrink: '0'}}>PM</div>
-              <div><div style={{fontSize: '11.5px', fontWeight: '600', color: 'var(--ink)'}}>Priya M.</div><div style={{fontSize: '9.5px', color: 'var(--ink3)'}}>Senior AI Engineer · SG</div><div style={{fontSize: '8.5px', color: 'var(--c1)', fontFamily: '\'DM Mono\',monospace', marginTop: '2px'}}>✓ VCS 88/100</div></div>
-            </div>
-          </div>
-
-          <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '14px', padding: '20px', minWidth: '280px', maxWidth: '280px', flexShrink: '0'}}>
-            <div style={{color: 'var(--g1)', fontSize: '12px', marginBottom: '12px'}}>★★★★★</div>
-            <p style={{fontSize: '12.5px', color: 'var(--ink2)', lineHeight: '1.7', marginBottom: '16px', fontWeight: '300'}}>"ATS score went from 38 to 91 in under two minutes. Within a week I had three interviews lined up."</p>
-            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-              <div style={{width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(99,102,241,.12)', border: '1px solid rgba(99,102,241,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: '700', color: 'var(--g1)', flexShrink: '0'}}>AT</div>
-              <div><div style={{fontSize: '11.5px', fontWeight: '600', color: 'var(--ink)'}}>Alex T.</div><div style={{fontSize: '9.5px', color: 'var(--ink3)'}}>Software Engineer · 3 YOE</div><div style={{fontSize: '8.5px', color: 'var(--c1)', fontFamily: '\'DM Mono\',monospace', marginTop: '2px'}}>✓ ATS 91%</div></div>
-            </div>
-          </div>
-
-          <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '14px', padding: '20px', minWidth: '280px', maxWidth: '280px', flexShrink: '0'}}>
-            <div style={{color: 'var(--c1)', fontSize: '12px', marginBottom: '12px'}}>★★★★★</div>
-            <p style={{fontSize: '12.5px', color: 'var(--ink2)', lineHeight: '1.7', marginBottom: '16px', fontWeight: '300'}}>"The verified shortlist is a game-changer. The first 10 TrustMatch results beat my best manual screen."</p>
-            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-              <div style={{width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(30,201,138,.1)', border: '1px solid rgba(30,201,138,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: '700', color: 'var(--c1)', flexShrink: '0'}}>RC</div>
-              <div><div style={{fontSize: '11.5px', fontWeight: '600', color: 'var(--ink)'}}>Rachel C.</div><div style={{fontSize: '9.5px', color: 'var(--ink3)'}}>Talent Lead · Grab</div><div style={{fontSize: '8.5px', color: 'var(--c1)', fontFamily: '\'DM Mono\',monospace', marginTop: '2px'}}>✓ Verified Recruiter</div></div>
-            </div>
-          </div>
-
-          <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '14px', padding: '20px', minWidth: '280px', maxWidth: '280px', flexShrink: '0'}}>
-            <div style={{color: 'var(--c3)', fontSize: '12px', marginBottom: '12px'}}>★★★★★</div>
-            <p style={{fontSize: '12.5px', color: 'var(--ink2)', lineHeight: '1.7', marginBottom: '16px', fontWeight: '300'}}>"NUS and Credly badge both instantly verified. Recruiters saw my proof before we spoke. Offer in 9 days."</p>
-            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-              <div style={{width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(240,168,50,.12)', border: '1px solid rgba(240,168,50,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: '700', color: 'var(--c3)', flexShrink: '0'}}>ML</div>
-              <div><div style={{fontSize: '11.5px', fontWeight: '600', color: 'var(--ink)'}}>Mei Lin C.</div><div style={{fontSize: '9.5px', color: 'var(--ink3)'}}>Data Analyst · NUS grad</div><div style={{fontSize: '8.5px', color: 'var(--c1)', fontFamily: '\'DM Mono\',monospace', marginTop: '2px'}}>✓ NUS · AWS · Singpass</div></div>
-            </div>
-          </div>
-
-          <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '14px', padding: '20px', minWidth: '280px', maxWidth: '280px', flexShrink: '0'}}>
-            <div style={{color: 'var(--c4)', fontSize: '12px', marginBottom: '12px'}}>★★★★★</div>
-            <p style={{fontSize: '12.5px', color: 'var(--ink2)', lineHeight: '1.7', marginBottom: '16px', fontWeight: '300'}}>"The salary coach script got me SGD 9k above the offer. First time I negotiated without feeling like I was guessing."</p>
-            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-              <div style={{width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(232,92,128,.12)', border: '1px solid rgba(232,92,128,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: '700', color: 'var(--c4)', flexShrink: '0'}}>DK</div>
-              <div><div style={{fontSize: '11.5px', fontWeight: '600', color: 'var(--ink)'}}>David K.</div><div style={{fontSize: '9.5px', color: 'var(--ink3)'}}>PM · Series B startup</div><div style={{fontSize: '8.5px', color: 'var(--c1)', fontFamily: '\'DM Mono\',monospace', marginTop: '2px'}}>↑ SGD 9k uplift</div></div>
-            </div>
-          </div>
-
-        </div>
-        <div style={{textAlign: 'center', marginTop: '20px'}}>
-          <a href="mailto:feedback@careeraihub.com" style={{display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '9px 20px', borderRadius: '100px', border: '1px solid var(--border2)', fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', fontFamily: '\'DM Sans\',sans-serif'}}>💬 Share your experience →</a>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════ */}
-      {/* FAQ */}
-      {/* ═══════════════════════════════════════════════ */}
-      <section id="faq" style={{padding: '80px 0', position: 'relative'}}>
-        <div className="wrap" style={{maxWidth: '780px'}}>
-
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 1.8fr', gap: '56px', alignItems: 'flex-start'}}>
-
-            {/* Left: heading */}
-            <div style={{position: 'sticky', top: '100px'}}>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--c3)', marginBottom: '14px'}}>FAQ</div>
-              <h2 style={{fontFamily: '\'Instrument Serif\',serif', fontSize: 'clamp(26px,3.5vw,40px)', lineHeight: '1.12', letterSpacing: '-1px', marginBottom: '14px'}}>Questions,<br /><em style={{color: 'var(--c3)'}}>answered.</em></h2>
-              <p style={{fontSize: '13px', color: 'var(--ink2)', lineHeight: '1.7', fontWeight: '300', marginBottom: '20px'}}>Everything you need to know before signing up.</p>
-              <a href="mailto:hello@careeraihub.com" style={{fontSize: '12.5px', color: 'var(--g1)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px'}}>Still have questions? Email us →</a>
-            </div>
-
-            {/* Right: accordions */}
-            <div>
-              {/* 3 always-visible questions */}
-              <div style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
-
-                <details style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '12px', padding: '18px 20px', cursor: 'pointer'}}>
-                  <summary style={{fontSize: '13.5px', fontWeight: '600', color: 'var(--ink)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px'}}>Is my data shared with recruiters without my consent?<span style={{fontSize: '16px', color: 'var(--ink3)', fontWeight: '300', flexShrink: '0'}}>+</span></summary>
-                  <p style={{fontSize: '13px', color: 'var(--ink2)', lineHeight: '1.75', marginTop: '12px', fontWeight: '300'}}>No. You control exactly what's visible. Recruiters see only your Verification Clarity Score and the credential badges you choose to publish. Raw data, documents, or personal identifiers are never shared without your explicit opt-in. You can withdraw from the marketplace at any time.</p>
-                </details>
-
-                <details style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '12px', padding: '18px 20px', cursor: 'pointer'}}>
-                  <summary style={{fontSize: '13.5px', fontWeight: '600', color: 'var(--ink)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px'}}>How does credential verification work?<span style={{fontSize: '16px', color: 'var(--ink3)', fontWeight: '300', flexShrink: '0'}}>+</span></summary>
-                  <p style={{fontSize: '13px', color: 'var(--ink2)', lineHeight: '1.75', marginTop: '12px', fontWeight: '300'}}>We connect directly to institutional sources — Singpass for identity, OpenCerts for academic credentials, Credly for professional certifications, and employer APIs for work history. Every check is real-time. Nothing is self-reported and we never store your raw documents.</p>
-                </details>
-
-                <details style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '12px', padding: '18px 20px', cursor: 'pointer'}}>
-                  <summary style={{fontSize: '13.5px', fontWeight: '600', color: 'var(--ink)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px'}}>How is CareerAiHub different from LinkedIn?<span style={{fontSize: '16px', color: 'var(--ink3)', fontWeight: '300', flexShrink: '0'}}>+</span></summary>
-                  <p style={{fontSize: '13px', color: 'var(--ink2)', lineHeight: '1.75', marginTop: '12px', fontWeight: '300'}}>LinkedIn is a social network built on self-reported claims. Anyone can write anything. We're a trust infrastructure — every signal is verified against an external source. Recruiters don't need to guess; they see proof. We're also not ad-supported, so we have no incentive to show you irrelevant jobs.</p>
-                </details>
-
-              </div>
-
-              {/* See more button */}
-              <button onClick={(e) => fnRef.current.toggleFaqMore?.(e.currentTarget)} style={{display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: '1px solid var(--border2)', color: 'var(--ink2)', padding: '10px 18px', borderRadius: '100px', fontSize: '12.5px', cursor: 'pointer', fontFamily: '\'DM Sans\',sans-serif', marginTop: '12px', transition: 'all .2s'}} id="faqMoreBtn">
-                <span id="faqMoreBtnTxt">See more questions</span> <span id="faqMoreArrow" style={{transition: 'transform .3s'}}>↓</span>
+              <button className="v36-plat-cta-btn v36-plat-cta-ats" onClick={() => setAtsOpen(true)}>
+                <span className="v36-plat-cta-icon">⚡</span>
+                <span>See how it works</span>
+                <span className="v36-plat-cta-arrow">→</span>
               </button>
-
-              {/* Hidden questions */}
-              <div id="faqMore" style={{display: 'none', flexDirection: 'column', gap: '4px', marginTop: '4px', overflow: 'hidden'}}>
-
-                <details style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '12px', padding: '18px 20px', cursor: 'pointer'}}>
-                  <summary style={{fontSize: '13.5px', fontWeight: '600', color: 'var(--ink)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px'}}>What is a Verification Clarity Score and how is it calculated?<span style={{fontSize: '16px', color: 'var(--ink3)', fontWeight: '300', flexShrink: '0'}}>+</span></summary>
-                  <p style={{fontSize: '13px', color: 'var(--ink2)', lineHeight: '1.75', marginTop: '12px', fontWeight: '300'}}>Verification Clarity Score (VCS) is a 100-point facts-based index across four independently verified dimensions: identity verification (25%), credential depth (35%), platform activity (20%), and engagement signals (20%). All inputs are verified against external sources — every point is traceable to a verified source — no black-box algorithms, no self-reporting.</p>
-                </details>
-
-                <details style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '12px', padding: '18px 20px', cursor: 'pointer'}}>
-                  <summary style={{fontSize: '13.5px', fontWeight: '600', color: 'var(--ink)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px'}}>I'm actively employed. Can I stay private?<span style={{fontSize: '16px', color: 'var(--ink3)', fontWeight: '300', flexShrink: '0'}}>+</span></summary>
-                  <p style={{fontSize: '13px', color: 'var(--ink2)', lineHeight: '1.75', marginTop: '12px', fontWeight: '300'}}>Yes. You can use all AI tools — resume builder, interview coach, salary coach — in complete privacy without appearing in TrustMatch. You choose when to go "discoverable," and you can turn it off instantly.</p>
-                </details>
-
-                <details style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '12px', padding: '18px 20px', cursor: 'pointer'}}>
-                  <summary style={{fontSize: '13.5px', fontWeight: '600', color: 'var(--ink)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px'}}>Which countries are supported?<span style={{fontSize: '16px', color: 'var(--ink3)', fontWeight: '300', flexShrink: '0'}}>+</span></summary>
-                  <p style={{fontSize: '13px', color: 'var(--ink2)', lineHeight: '1.75', marginTop: '12px', fontWeight: '300'}}>We're live in Singapore with deep Singpass and OpenCerts integration. Malaysia, Hong Kong, and Australia are on our 2025 roadmap. International candidates can still use all AI tools and Credly-based verification from day one.</p>
-                </details>
-
-                <details style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '12px', padding: '18px 20px', cursor: 'pointer'}}>
-                  <summary style={{fontSize: '13.5px', fontWeight: '600', color: 'var(--ink)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px'}}>How does blockchain verification actually work?<span style={{fontSize: '16px', color: 'var(--ink3)', fontWeight: '300', flexShrink: '0'}}>+</span></summary>
-                  <p style={{fontSize: '13px', color: 'var(--ink2)', lineHeight: '1.75', marginTop: '12px', fontWeight: '300'}}>When a credential is verified, we create a cryptographic hash of the key facts (issuer, date, credential type, holder ID) and write it to a public blockchain. This creates an immutable, tamper-evident record. Anyone — including recruiters — can verify the hash matches the original credential without seeing your personal data.</p>
-                </details>
-
-                <details style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '12px', padding: '18px 20px', cursor: 'pointer'}}>
-                  <summary style={{fontSize: '13.5px', fontWeight: '600', color: 'var(--ink)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px'}}>What can I do on the free tier?<span style={{fontSize: '16px', color: 'var(--ink3)', fontWeight: '300', flexShrink: '0'}}>+</span></summary>
-                  <p style={{fontSize: '13px', color: 'var(--ink2)', lineHeight: '1.75', marginTop: '12px', fontWeight: '300'}}>Free includes: 2 resume scans + ATS fixes, JD gap analysis, 1 cover letter, 3 interview prep sessions, basic Verification Clarity Score, and AI Memory Dashboard. TrustMatch marketplace visibility requires Pro (SGD 21/mo). You only upgrade when you're ready to be discovered by recruiters.</p>
-                </details>
-
+            </div>
+            {/* Card 2 */}
+            <div className="v36-plat-card rd2">
+              <div className="v36-plat-num">0<span className="v36-num-accent">2</span></div>
+              <div className="v36-plat-title">Interview Intelligence</div>
+              <ul className="v36-plat-feats">
+                <li><span className="v36-feat-check">✓</span> AI Mock Interviews</li>
+                <li><span className="v36-feat-check">✓</span> Real-time Feedback</li>
+                <li><span className="v36-feat-check">✓</span> STAR Bank</li>
+                <li><span className="v36-feat-check">✓</span> Salary Negotiator</li>
+              </ul>
+              <div className="v36-plat-divider"></div>
+              <div className="v36-plat-mock">
+                <div style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:10,overflow:'hidden',position:'relative'}}>
+                  <div style={{height:90,background:'linear-gradient(135deg,rgba(139,92,246,0.12),rgba(99,102,241,0.06))',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    <div style={{width:44,height:44,borderRadius:'50%',background:'linear-gradient(135deg,#ec4899,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,boxShadow:'0 4px 20px rgba(139,92,246,0.4)'}}>👤</div>
+                  </div>
+                </div>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:7,padding:'7px 10px',marginTop:6}}>
+                  <span style={{fontSize:'9.5px',color:'#4a5568',fontWeight:500}}>Feedback</span>
+                  <span style={{fontSize:'9.5px',color:'#29c492',fontWeight:600}}>Great structure!</span>
+                  <span style={{background:'rgba(41,196,146,0.15)',border:'1px solid rgba(41,196,146,0.3)',borderRadius:4,padding:'2px 6px',fontSize:9,color:'#29c492',fontWeight:700}}>8.5/10</span>
+                </div>
+              </div>
+              <button className="v36-plat-cta-btn v36-plat-cta-int" onClick={() => setIntOpen(true)}>
+                <span className="v36-plat-cta-icon">▶</span>
+                <span>Watch demo</span>
+                <span className="v36-plat-cta-arrow">→</span>
+              </button>
+            </div>
+            {/* Card 3 */}
+            <div className="v36-plat-card rd3">
+              <div className="v36-plat-num">0<span className="v36-num-accent">3</span></div>
+              <div className="v36-plat-title">Verification Engine</div>
+              <ul className="v36-plat-feats">
+                <li><span className="v36-feat-check">✓</span> Credential Verification</li>
+                <li><span className="v36-feat-check">✓</span> OpenCerts &amp; W3C VC</li>
+                <li><span className="v36-feat-check">✓</span> Trust Score Algorithm</li>
+                <li><span className="v36-feat-check">✓</span> Verified Badge</li>
+              </ul>
+              <div className="v36-plat-divider"></div>
+              <div className="v36-plat-mock">
+                <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                  {[{icon:'🏅',name:'AWS Certified',sub:'Solutions Architect'},{icon:'🛡️',name:'OpenCerts',sub:'Blockchain anchored'}].map((c,i)=>(
+                    <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'5px 8px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:7}}>
+                      <span style={{fontSize:13}}>{c.icon}</span>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:9,fontWeight:700,color:'#e2e8f0',lineHeight:1.2}}>{c.name} <span style={{color:'#4a5568',fontWeight:400}}>· {c.sub}</span></div>
+                      </div>
+                      <span style={{fontSize:'7.5px',fontWeight:600,color:'#29c492',background:'rgba(41,196,146,0.1)',border:'1px solid rgba(41,196,146,0.22)',borderRadius:3,padding:'1px 5px',whiteSpace:'nowrap'}}>✓ Verified</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{marginTop:8,paddingTop:7,borderTop:'1px solid rgba(255,255,255,0.05)'}}>
+                  <div style={{fontSize:8,fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',color:'#2e3d52',marginBottom:5}}>Supported by</div>
+                  <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+                    <span className="v36-verif-logo-pill vl-singpass">🇸🇬 Singpass</span>
+                    <span className="v36-verif-logo-pill vl-opencerts">🎓 OpenCerts</span>
+                    <span className="v36-verif-logo-pill vl-credly">🏅 Credly</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Card 4 */}
+            <div className="v36-plat-card" style={{transitionDelay:'.24s'}}>
+              <div className="v36-plat-num">0<span className="v36-num-accent">4</span></div>
+              <div className="v36-plat-title">TrustMatch Marketplace</div>
+              <ul className="v36-plat-feats">
+                <li><span className="v36-feat-check">✓</span> AI Matching Engine</li>
+                <li><span className="v36-feat-check">✓</span> Verified Candidates</li>
+                <li><span className="v36-feat-check">✓</span> Recruiter Discovery</li>
+                <li><span className="v36-feat-check">✓</span> Outcomes Dashboard</li>
+              </ul>
+              <div className="v36-plat-divider"></div>
+              <div className="v36-plat-mock">
+                <div style={{fontSize:9,color:'#4a5568',marginBottom:6,fontWeight:600,letterSpacing:'0.06em',textTransform:'uppercase'}}>Top Match</div>
+                <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:9,padding:'11px 12px'}}>
+                  <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:8}}>
+                    <div>
+                      <div style={{fontSize:12,fontWeight:700,color:'#e2e8f0',lineHeight:1.2}}>Product Manager</div>
+                      <div style={{fontSize:'9.5px',color:'#4a5568',marginTop:2}}>ByteTech Pte. Ltd. · Singapore</div>
+                    </div>
+                    <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
+                      <div style={{fontSize:14,fontWeight:800,color:'#6366f1',letterSpacing:'-0.04em',lineHeight:1}}>94%</div>
+                      <div style={{fontSize:8,color:'#4a5568',fontWeight:500}}>Match</div>
+                    </div>
+                  </div>
+                  <div style={{display:'flex',gap:4,flexWrap:'wrap',marginBottom:8}}>
+                    {['B2B SaaS','Series B','SGD 8-12k'].map(t=>(
+                      <span key={t} style={{background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.2)',borderRadius:3,padding:'1px 5px',fontSize:8,color:'#818cf8'}}>{t}</span>
+                    ))}
+                  </div>
+                  <button onClick={join} style={{background:'#6366f1',borderRadius:5,padding:5,textAlign:'center',fontSize:9,color:'#fff',fontWeight:600,cursor:'pointer',border:'none',width:'100%'}}>View Opportunity</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
-
-
-      {/* DATA PRIVACY */}
-      <section id="privacy" style={{padding: '80px 0', background: 'var(--bg)', borderTop: '1px solid var(--border)'}}>
-        <div className="wrap">
-
-          {/* Header */}
-          <div style={{marginBottom: '40px'}}>
-            <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '9px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--c1)', marginBottom: '14px'}}>Your Data, Protected</div>
-            <h2 style={{fontFamily: '\'Instrument Serif\',serif', fontSize: 'clamp(28px,3.5vw,46px)', lineHeight: '1.08', letterSpacing: '-1.5px', marginBottom: '10px'}}>Your resume is yours. <em style={{color: 'var(--c1)'}}>Always.</em></h2>
-            <p style={{fontSize: '14px', color: 'var(--ink2)', fontWeight: '300', maxWidth: '520px'}}>We know you're uploading something personal. Here's exactly how we handle it.</p>
-          </div>
-
-          {/* 4 cards in a row */}
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '32px'}}>
-
-            <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '14px', padding: '24px'}}>
-              <div style={{fontSize: '26px', marginBottom: '14px'}}>🔒</div>
-              <div style={{fontSize: '13px', fontWeight: '600', color: 'var(--ink)', marginBottom: '8px'}}>Encrypted in transit and at rest</div>
-              <div style={{fontSize: '12px', color: 'var(--ink3)', lineHeight: '1.65'}}>Your resume is encrypted with AES-256 the moment it's uploaded. It travels over TLS 1.3 and is stored in encrypted form. Only you can access it.</div>
-            </div>
-
-            <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '14px', padding: '24px'}}>
-              <div style={{fontSize: '26px', marginBottom: '14px'}}>🚫</div>
-              <div style={{fontSize: '13px', fontWeight: '600', color: 'var(--ink)', marginBottom: '8px'}}>Never sold. Never shared.</div>
-              <div style={{fontSize: '12px', color: 'var(--ink3)', lineHeight: '1.65'}}>We do not sell your data to recruiters, job boards, or third parties. Ever. Your resume is used only to power your own CareerAiHub modules — nothing else.</div>
-            </div>
-
-            <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '14px', padding: '24px'}}>
-              <div style={{fontSize: '26px', marginBottom: '14px'}}>🗑️</div>
-              <div style={{fontSize: '13px', fontWeight: '600', color: 'var(--ink)', marginBottom: '8px'}}>Delete anytime</div>
-              <div style={{fontSize: '12px', color: 'var(--ink3)', lineHeight: '1.65'}}>Delete your resume, profile, and all data from account settings at any time. We process deletion within 24 hours and purge backups within 30 days.</div>
-            </div>
-
-            <div style={{background: 'var(--surf)', border: '1px solid var(--border2)', borderRadius: '14px', padding: '24px'}}>
-              <div style={{fontSize: '26px', marginBottom: '14px'}}>🇸🇬</div>
-              <div style={{fontSize: '13px', fontWeight: '600', color: 'var(--ink)', marginBottom: '8px'}}>PDPA compliant · Singapore</div>
-              <div style={{fontSize: '12px', color: 'var(--ink3)', lineHeight: '1.65'}}>CareerAiHub is built to comply with Singapore's Personal Data Protection Act (PDPA). GDPR compliance planned for our European expansion.</div>
-            </div>
-
-          </div>
-
-          {/* Legal pill links */}
-          <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
-            <button onClick={() => fnRef.current.openLegal?.("tos")} style={{display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '100px', border: '1px solid var(--border2)', background: 'transparent', fontSize: '12.5px', color: 'var(--ink2)', cursor: 'pointer', fontFamily: '\'DM Sans\',sans-serif', transition: 'all .2s'}}>Terms of Service ↗</button>
-            <button onClick={() => fnRef.current.openLegal?.("privacy")} style={{display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '100px', border: '1px solid var(--border2)', background: 'transparent', fontSize: '12.5px', color: 'var(--ink2)', cursor: 'pointer', fontFamily: '\'DM Sans\',sans-serif', transition: 'all .2s'}}>Privacy Policy ↗</button>
-            <button onClick={() => fnRef.current.openLegal?.("security")} style={{display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '100px', border: '1px solid var(--border2)', background: 'transparent', fontSize: '12.5px', color: 'var(--ink2)', cursor: 'pointer', fontFamily: '\'DM Sans\',sans-serif', transition: 'all .2s'}}>Security Statement ↗</button>
-            <button onClick={() => fnRef.current.openLegal?.("deletion")} style={{display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '100px', border: '1px solid var(--border2)', background: 'transparent', fontSize: '12.5px', color: 'var(--ink2)', cursor: 'pointer', fontFamily: '\'DM Sans\',sans-serif', transition: 'all .2s'}}>Data Deletion Request ↗</button>
-          </div>
-
-        </div>
-      </section>
-
-      {/* LEGAL MODALS */}
-      <div id="legalModal" style={{display: 'none', position: 'fixed', inset: '0', zIndex: '8500', background: 'rgba(0,0,0,.82)', backdropFilter: 'blur(8px)', alignItems: 'flex-end', justifyContent: 'center', padding: '0'}} onClick={(e) => { if(e.target===e.currentTarget) fnRef.current.closeLegal?.(); }}>
-        <div id="legalSheet" style={{background: 'var(--surf)', borderRadius: '20px 20px 0 0', width: '100%', maxWidth: '680px', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', transform: 'translateY(100%)', transition: 'transform .4s cubic-bezier(.22,1,.36,1)'}}>
-          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid var(--border)', flexShrink: '0'}}>
-            <div id="legalTitle" style={{fontFamily: '\'Instrument Serif\',serif', fontSize: '18px', letterSpacing: '-.3px', color: 'var(--ink)'}}></div>
-            <button onClick={() => fnRef.current.closeLegal?.()} style={{width: '30px', height: '30px', borderRadius: '50%', background: 'var(--surf2)', border: '1px solid var(--border2)', color: 'var(--ink2)', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>✕</button>
-          </div>
-          <div id="legalBody" style={{overflowY: 'auto', padding: '24px', fontSize: '13px', color: 'var(--ink2)', lineHeight: '1.8', fontWeight: '300'}}></div>
-        </div>
       </div>
 
-      {/* FINAL CTA */}
-      <section id="final-cta">
-        <div className="wrap" style={{position: 'relative', zIndex: '1'}}>
-          <div className="fcta-pre">The future of hiring</div>
-          <h2 className="fcta-h">The future of hiring is<br /><span className="proof">proof,</span> <span className="not">not</span> keywords.</h2>
-          <p className="fcta-sub">AI-powered career acceleration for the modern job seeker. Join 2,714 verified candidates and forward-thinking companies already on the platform.</p>
-          <div className="fcta-actions">
-            <button className="btn-fcta" onClick={() => setAuthModal("register")}>Get Early Access →</button>
-          </div>
-          <div className="fcta-note">Free forever · No card required · 10 AI modules unlocked instantly</div>
-        </div>
-      </section>
-
-      {/* FLOAT CTA */}
-      <div className="float-cta" id="floatCta">
-        <button onClick={() => setAuthModal("register")}>Get Early Access →</button>
-      </div>
-
-      {/* ═══════════════════════════════════════════════ */}
-      {/* FOOTER */}
-      {/* ═══════════════════════════════════════════════ */}
-      <footer style={{background: 'var(--bg2)', borderTop: '1px solid var(--border)', padding: '64px 0 32px'}}>
-        <div className="wrap">
-          <div style={{display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '48px', marginBottom: '56px'}}>
-
-            {/* Brand */}
+      {/* ── PRICING ── */}
+      <div id="v36-pricing" className="v36-pricing">
+        <div className="v36-pricing-inner">
+          <div className="reveal" style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:40,gap:32,flexWrap:'wrap'}}>
             <div>
-              <a href="#hero" style={{display: 'inline-flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '16px'}}>
-                <LogoMark size={28} />
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--blue)',marginBottom:12,display:'flex',alignItems:'center',gap:8}}><span style={{width:20,height:1,background:'rgba(91,110,245,.4)',display:'block'}}></span>Pricing</div>
+              <h2 style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:'clamp(26px,3.5vw,38px)',fontWeight:800,letterSpacing:'-.03em',lineHeight:1.1,color:'var(--text)',margin:0}}>Free to start.<br /><span style={{background:'linear-gradient(95deg,#6366f1,#8b5cf6,#ec4899)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>Proven to pay off.</span></h2>
+            </div>
+            <p style={{fontSize:13,color:'var(--text3)',fontWeight:300,lineHeight:1.7,maxWidth:300,margin:0}}>Try everything free. Upgrade when you're ready to be found by the right recruiters.</p>
+          </div>
+          <div className="reveal" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:1,background:'var(--border)',borderRadius:16,overflow:'hidden',border:'1px solid var(--border)'}}>
+            {/* Free */}
+            <div style={{background:'var(--bg2)',padding:'28px 24px',display:'flex',flexDirection:'column',gap:0}}>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--text3)',marginBottom:20}}>Free</div>
+              <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:4}}>
+                <span style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:36,fontWeight:800,letterSpacing:'-.04em',color:'var(--text)',lineHeight:1}}>$0</span>
+                <span style={{fontSize:12,color:'var(--text3)'}}>forever</span>
+              </div>
+              <div style={{fontSize:11,color:'var(--text3)',marginBottom:24,paddingBottom:24,borderBottom:'1px solid var(--border)'}}>No credit card required</div>
+              <div style={{display:'flex',flexDirection:'column',gap:10,flex:1,marginBottom:24}}>
+                {['2 resume scans + ATS keyword fixes','JD gap analysis','1 AI cover letter','3 interview prep sessions','Basic Trust Score'].map(f=>(
+                  <div key={f} style={{display:'flex',alignItems:'center',gap:9,fontSize:12,color:'var(--text2)'}}>
+                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:'#10b981',flexShrink:0}}>✓</span>{f}
+                  </div>
+                ))}
+                {['TrustMatch marketplace','Salary coach'].map(f=>(
+                  <div key={f} style={{display:'flex',alignItems:'center',gap:9,fontSize:12,color:'var(--text3)'}}>
+                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(255,255,255,.03)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,color:'var(--text3)',flexShrink:0}}>—</span>{f}
+                  </div>
+                ))}
+              </div>
+              <button onClick={join} style={{display:'block',textAlign:'center',padding:10,borderRadius:8,border:'1px solid var(--border2)',fontSize:'12.5px',fontWeight:600,color:'var(--text2)',background:'transparent',cursor:'pointer',fontFamily:"'Inter',sans-serif",letterSpacing:'-.01em'}}>Get started free</button>
+            </div>
+            {/* Pro */}
+            <div style={{background:'var(--card)',padding:'28px 24px',display:'flex',flexDirection:'column',position:'relative'}}>
+              <div style={{position:'absolute',top:0,left:0,right:0,height:2,background:'linear-gradient(90deg,#6366f1,#ec4899)'}}></div>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:'.14em',textTransform:'uppercase',color:'#818cf8'}}>Pro</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,padding:'3px 8px',borderRadius:20,background:'rgba(99,102,241,.1)',color:'#818cf8',border:'1px solid rgba(99,102,241,.22)'}}>Most popular</div>
+              </div>
+              <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:4}}>
+                <span style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:36,fontWeight:800,letterSpacing:'-.04em',color:'var(--text)',lineHeight:1}}>SGD 19.90</span>
+                <span style={{fontSize:12,color:'var(--text3)'}}>/mo</span>
+              </div>
+              <div style={{fontSize:11,color:'var(--text3)',marginBottom:8}}>after 7-day trial · cancel anytime</div>
+              <div style={{fontSize:11,color:'#818cf8',background:'rgba(99,102,241,.07)',border:'1px solid rgba(99,102,241,.15)',borderRadius:6,padding:'7px 10px',marginBottom:20}}>🎯 Start with 7 days full access — SGD 8.99</div>
+              <div style={{height:1,background:'var(--border)',marginBottom:20}}></div>
+              <div style={{display:'flex',flexDirection:'column',gap:10,flex:1,marginBottom:24}}>
+                {['Everything in Free','Unlimited scans, letters, verifications','TrustMatch marketplace — recruiter discovery','Salary coach + P75 negotiation scripts','HM Simulator · all 4 pressure personas','AI Memory Dashboard — full adaptive profile'].map(f=>(
+                  <div key={f} style={{display:'flex',alignItems:'center',gap:9,fontSize:12,color:'var(--text2)'}}>
+                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(99,102,241,.15)',border:'1px solid rgba(99,102,241,.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:'#818cf8',flexShrink:0}}>✓</span>
+                    <span dangerouslySetInnerHTML={{__html: f.replace('Unlimited','<strong style="color:var(--text);font-weight:500">Unlimited</strong>')}}></span>
+                  </div>
+                ))}
+              </div>
+              <button onClick={join} style={{display:'block',textAlign:'center',padding:11,borderRadius:8,background:'linear-gradient(110deg,#7c3aed,#db2777)',fontSize:'12.5px',fontWeight:700,color:'#fff',cursor:'pointer',border:'none',fontFamily:"'Inter',sans-serif",letterSpacing:'-.01em',boxShadow:'0 0 28px rgba(99,102,241,.25)'}}>Start free trial · SGD 8.99 →</button>
+            </div>
+            {/* Recruiter */}
+            <div style={{background:'var(--bg2)',padding:'28px 24px',display:'flex',flexDirection:'column'}}>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--cyan)',marginBottom:20}}>Recruiter</div>
+              <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:4}}>
+                <span style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:28,fontWeight:800,letterSpacing:'-.04em',color:'var(--text)',lineHeight:1}}>Custom</span>
+              </div>
+              <div style={{fontSize:11,color:'var(--text3)',marginBottom:24,paddingBottom:24,borderBottom:'1px solid var(--border)'}}>Per seat · billed annually</div>
+              <div style={{display:'flex',flexDirection:'column',gap:10,flex:1,marginBottom:24}}>
+                {['Full verified candidate pool','TrustMatch + TrustChat direct messaging','AI-ranked shortlists in minutes','Zero fake credentials — blockchain-verified','ATS integration + CSV export','Dedicated account manager'].map(f=>(
+                  <div key={f} style={{display:'flex',alignItems:'center',gap:9,fontSize:12,color:'var(--text2)'}}>
+                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(6,182,212,.1)',border:'1px solid rgba(6,182,212,.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:'var(--cyan)',flexShrink:0}}>✓</span>{f}
+                  </div>
+                ))}
+              </div>
+              <a href="mailto:hello.careeraihub@gmail.com" style={{display:'block',textAlign:'center',padding:10,borderRadius:8,border:'1px solid rgba(6,182,212,.3)',fontSize:'12.5px',fontWeight:600,color:'var(--cyan)',textDecoration:'none',letterSpacing:'-.01em'}}>Contact us →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── FAQ ── */}
+      <div className="v36-section" id="v36-faq" style={{borderTop:'1px solid var(--border)'}}>
+        <div className="v36-section-inner" style={{maxWidth:900}}>
+          <div style={{display:'grid',gridTemplateColumns:'1.8fr 1fr',gap:64,alignItems:'flex-start'}}>
+            <div className="reveal">
+              <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                {[
+                  {q:'Is my data shared with recruiters without my consent?',a:'No. You control exactly what\'s visible. Recruiters see only your verified Trust Score and the credential badges you choose to publish. Raw data and personal identifiers are never shared without your explicit opt-in.'},
+                  {q:'How does credential verification work?',a:'We connect directly to institutional sources — Singpass for identity, OpenCerts for academic credentials, Credly for professional certifications. Every check is real-time. Nothing is self-reported.'},
+                  {q:'How is CareerAiHub different from LinkedIn?',a:'LinkedIn is built on self-reported claims. We\'re a trust infrastructure — every signal is verified against an external source. We\'re also not ad-supported, so we have no incentive to show you irrelevant jobs.'},
+                ].map((faq, i) => (
+                  <details key={i} style={{background:'var(--card)',border:'1px solid var(--border2)',borderRadius:12,padding:'18px 20px',cursor:'pointer'}}>
+                    <summary style={{fontSize:'13.5px',fontWeight:600,color:'var(--text)',listStyle:'none',display:'flex',justifyContent:'space-between',alignItems:'center',gap:12}}>{faq.q}<span className="v36-faq-plus">+</span></summary>
+                    <p style={{fontSize:13,color:'var(--text2)',lineHeight:1.75,marginTop:12,fontWeight:300}}>{faq.a}</p>
+                  </details>
+                ))}
+              </div>
+              {faqExpanded && (
+                <div style={{display:'flex',flexDirection:'column',gap:4,marginTop:4}}>
+                  {[
+                    {q:'What is a Trust Score and how is it calculated?',a:'A 100-point index across four weighted dimensions: identity verification (25%), credential depth (35%), platform activity (20%), and engagement signals (20%). Cannot be gamed by self-reporting.'},
+                    {q:'I\'m actively employed. Can I stay private?',a:'Yes. Use all AI tools in complete privacy without appearing in TrustMatch. You choose when to go "discoverable," and you can turn it off instantly.'},
+                    {q:'Which countries are supported?',a:'Live in Singapore with Singpass and OpenCerts integration. Malaysia, Hong Kong, and Australia are on our 2027 roadmap. International candidates can use all AI tools and Credly-based verification from day one.'},
+                    {q:'What can I do on the free tier?',a:'Free includes 2 resume scans + ATS fixes, JD gap analysis, 1 cover letter, 3 interview prep sessions, and basic Trust Score. TrustMatch requires Pro (SGD 19.90/mo after 7-day trial at SGD 8.99).'},
+                  ].map((faq, i) => (
+                    <details key={i} style={{background:'var(--card)',border:'1px solid var(--border2)',borderRadius:12,padding:'18px 20px',cursor:'pointer'}}>
+                      <summary style={{fontSize:'13.5px',fontWeight:600,color:'var(--text)',listStyle:'none',display:'flex',justifyContent:'space-between',alignItems:'center',gap:12}}>{faq.q}<span className="v36-faq-plus">+</span></summary>
+                      <p style={{fontSize:13,color:'var(--text2)',lineHeight:1.75,marginTop:12,fontWeight:300}}>{faq.a}</p>
+                    </details>
+                  ))}
+                </div>
+              )}
+              <button onClick={() => setFaqExpanded(v => !v)} style={{display:'inline-flex',alignItems:'center',gap:7,marginTop:12,background:'transparent',border:'1px solid var(--border2)',color:'var(--text2)',padding:'9px 16px',borderRadius:100,fontSize:12,cursor:'pointer',fontFamily:"'Inter',sans-serif"}}>
+                <span>{faqExpanded ? 'Show fewer' : 'Show more questions'}</span>
+                <span style={{fontSize:11,transition:'transform .3s',transform:faqExpanded?'rotate(180deg)':'none'}}>↓</span>
+              </button>
+            </div>
+            <div className="reveal" style={{position:'sticky',top:80}}>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:'.16em',textTransform:'uppercase',color:'#f59e0b',marginBottom:14}}>FAQ</div>
+              <h2 className="v36-s-title" style={{fontSize:26,textAlign:'left',marginBottom:12,lineHeight:1.12}}>Questions,<br /><em style={{color:'#f59e0b',fontStyle:'italic'}}>answered.</em></h2>
+              <p style={{fontSize:13,color:'var(--text2)',lineHeight:1.7,fontWeight:300,marginBottom:20}}>Everything you need to know before signing up.</p>
+              <a href="mailto:hello.careeraihub@gmail.com" style={{fontSize:12,color:'var(--blue)',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:5,opacity:.8}}>Still curious? Email us →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── FUTURE OF HIRING ── */}
+      <div id="v36-future" className="v36-future-section">
+        <div style={{position:'absolute',inset:0,background:'radial-gradient(ellipse 70% 60% at 50% 60%,rgba(99,102,241,.07),transparent 65%)',pointerEvents:'none'}}></div>
+        <div className="v36-future-inner">
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:'.16em',textTransform:'uppercase',color:'#818cf8',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
+            <span style={{width:24,height:1,background:'rgba(99,102,241,.3)',display:'block'}}></span>
+            The future of hiring
+            <span style={{width:24,height:1,background:'rgba(99,102,241,.3)',display:'block'}}></span>
+          </div>
+          <h2 style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:'clamp(40px,6vw,68px)',fontWeight:800,letterSpacing:'-.04em',lineHeight:.96,marginBottom:20,color:'var(--text)'}}>The future of hiring is<br /><span style={{background:'linear-gradient(95deg,#6366f1,#8b5cf6,#ec4899)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text',fontStyle:'italic'}}>proof,</span> not keywords.</h2>
+          <p style={{fontSize:15,color:'var(--text2)',marginBottom:44,maxWidth:440,marginLeft:'auto',marginRight:'auto',fontWeight:300,lineHeight:1.7}}>CareerAiHub is building the trust infrastructure for modern hiring. Join 2,714 verified candidates and forward-thinking companies already on the platform.</p>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:14,flexWrap:'wrap',marginBottom:22}}>
+            <button onClick={join} className="v36-btn-cta">Get Started Free →</button>
+            <button onClick={join} className="v36-btn-outline">Create Recruiter Account ↗</button>
+          </div>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:10,color:'var(--text3)',letterSpacing:'.04em'}}>Free forever · No card required · 10 AI modules unlocked instantly</div>
+        </div>
+      </div>
+
+      {/* ── FOOTER ── */}
+      <footer className="v36-footer">
+        <div className="v36-footer-inner">
+          <div className="v36-footer-grid">
+            <div>
+              <a href="#" onClick={e=>e.preventDefault()} style={{display:'inline-flex',alignItems:'center',gap:9,textDecoration:'none',marginBottom:14}}>
+                <div style={{width:28,height:28,borderRadius:7,background:'linear-gradient(110deg,#7c3aed,#db2777)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,color:'#fff',flexShrink:0}}>C</div>
                 <div>
-                  <div style={{fontWeight: '700', fontSize: '15px', color: 'var(--ink)', letterSpacing: '-.02em'}}>CareerAiHub</div>
-                  <div style={{fontSize: '9px', color: 'var(--ink3)', fontFamily: '\'DM Mono\',monospace', letterSpacing: '.08em', textTransform: 'uppercase'}}>Proof over claims.</div>
+                  <div style={{fontWeight:700,fontSize:14,color:'var(--text)',letterSpacing:'-.02em'}}>CareerAiHub</div>
+                  <div style={{fontSize:'8.5px',color:'var(--text3)',fontFamily:"'DM Mono',monospace",letterSpacing:'.08em',textTransform:'uppercase',marginTop:1}}>Proof over claims.</div>
                 </div>
               </a>
-              <p style={{fontSize: '12.5px', color: 'var(--ink3)', lineHeight: '1.7', maxWidth: '240px', fontWeight: '300'}}>AI-powered career acceleration. Built in Singapore.</p>
-              <div style={{display: 'flex', gap: '10px', marginTop: '18px'}}>
-                <a href="https://www.linkedin.com/company/careeraihub" target="_blank" rel="noopener noreferrer" style={{width: '30px', height: '30px', borderRadius: '8px', border: '1px solid var(--border2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', textDecoration: 'none', color: 'var(--ink3)', transition: '.2s'}} title="LinkedIn">in</a>
+              <p style={{fontSize:12,color:'var(--text3)',lineHeight:1.7,maxWidth:220,fontWeight:300,marginBottom:18}}>The trust infrastructure for modern hiring. Built in Singapore.</p>
+              <div style={{display:'flex',gap:7}}>
+                {['in','𝕏','⌨'].map((icon,i)=>(
+                  <a key={i} href="#" onClick={e=>e.preventDefault()} style={{width:30,height:30,borderRadius:7,border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,textDecoration:'none',color:'var(--text3)'}}>{icon}</a>
+                ))}
               </div>
             </div>
-
-            {/* Product */}
             <div>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8.5px', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: '14px'}}>Product</div>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-                <a href="#s1" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>ATS Builder</a>
-                <a href="#s2" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>AI Interview Coach</a>
-                <a href="#s3" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Salary Coach</a>
-                <a href="#s3" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>TrustMatch</a>
-                <a href="#pricing" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Pricing</a>
+              <div className="v36-footer-col-label">Product</div>
+              <div className="v36-footer-links">
+                {['ATS Builder','AI Interview Coach','Salary Coach','TrustMatch','Pricing'].map(l=>(
+                  <button key={l} onClick={join}>{l}</button>
+                ))}
               </div>
             </div>
-
-            {/* Company */}
             <div>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8.5px', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: '14px'}}>Company</div>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-                <a href="mailto:hello@careeraihub.com" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Contact</a>
-                <a href="mailto:hello@careeraihub.com" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Careers</a>
-                <a href="mailto:press@careeraihub.com" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Press</a>
+              <div className="v36-footer-col-label">Company</div>
+              <div className="v36-footer-links">
+                {['About','Blog','Careers','Press'].map(l=>(
+                  <a key={l} href="#" onClick={e=>e.preventDefault()}>{l}</a>
+                ))}
+                <a href="mailto:hello.careeraihub@gmail.com">Contact</a>
               </div>
             </div>
-
-            {/* Legal */}
             <div>
-              <div style={{fontFamily: '\'DM Mono\',monospace', fontSize: '8.5px', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink3)', marginBottom: '14px'}}>Legal</div>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
-                <a href="#privacy" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Privacy Policy</a>
-                <a href="#" onClick={e => { e.preventDefault(); fnRef.current.openLegal?.('tos'); }} style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s', cursor: 'pointer'}}>Terms of Service</a>
-                <a href="#" onClick={e => { e.preventDefault(); fnRef.current.openLegal?.('privacy'); }} style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s', cursor: 'pointer'}}>Cookie Policy</a>
-                <a href="#" onClick={(e) => {e.preventDefault(); fnRef.current.cookiePrefs?.();}} style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Cookie Preferences</a>
-                <a href="#faq" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>FAQ</a>
-                <a href="mailto:security@careeraihub.com" style={{fontSize: '12.5px', color: 'var(--ink2)', textDecoration: 'none', transition: '.2s'}}>Security</a>
+              <div className="v36-footer-col-label">Legal</div>
+              <div className="v36-footer-links">
+                <button onClick={() => openLegal('privacy')}>Privacy Policy</button>
+                <button onClick={() => openLegal('tos')}>Terms of Service</button>
+                <button onClick={() => openLegal('security')}>Security</button>
+                <button onClick={() => openLegal('deletion')}>Data Deletion</button>
+                <a href="#v36-faq">FAQ</a>
               </div>
-            </div>
-
-          </div>
-
-          {/* Bottom bar */}
-          <div style={{borderTop: '1px solid var(--border)', paddingTop: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px'}}>
-            <div style={{fontSize: '11px', color: 'var(--ink3)', fontFamily: '\'DM Mono\',monospace'}}>© 2025 CareerAiHub Pte. Ltd. · Registered in Singapore</div>
-            <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
-              <span style={{fontSize: '11px', color: 'var(--ink3)', display: 'flex', alignItems: 'center', gap: '5px'}}><span style={{width: '6px', height: '6px', borderRadius: '50%', background: 'var(--c1)', display: 'inline-block'}}></span>All systems operational</span>
-              <span style={{fontFamily: '\'DM Mono\',monospace', fontSize: '10px', padding: '2px 8px', borderRadius: '20px', background: 'rgba(30,201,138,.07)', color: 'var(--c1)', border: '1px solid rgba(30,201,138,.18)'}}>PDPA Compliant</span>
             </div>
           </div>
-
+          <div className="v36-footer-bottom">
+            <div style={{fontSize:11,color:'var(--text3)',fontFamily:"'DM Mono',monospace"}}>© 2026 CareerAiHub Pte. Ltd. · Singapore</div>
+            <div style={{display:'flex',alignItems:'center',gap:12}}>
+              <span style={{fontSize:11,color:'var(--text3)',display:'flex',alignItems:'center',gap:5}}><span style={{width:5,height:5,borderRadius:'50%',background:'#10b981',display:'inline-block',boxShadow:'0 0 5px rgba(16,185,129,.6)'}}></span>All systems operational</span>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:'9.5px',padding:'2px 8px',borderRadius:20,background:'rgba(16,185,129,.06)',color:'#10b981',border:'1px solid rgba(16,185,129,.15)'}}>PDPA Compliant</span>
+            </div>
+          </div>
         </div>
       </footer>
 
-      {/* ATS DEMO MODAL (full from v7) */}
-      <div className="ats-modal-bg" id="atsModalBg" role="dialog" aria-modal="true">
-        <div className="ats-modal">
-          <div className="ats-modal-bar">
-            <div><h3>ATS Score: 38 → 91% — live</h3><p>Paste your JD snippet to personalise · press Apply to fix each issue</p></div>
-            <button className="ats-modal-close" onClick={() => fnRef.current.closeATSDemo?.()} aria-label="Close">✕</button>
-          </div>
-          <div className="ats-modal-body">
-            <div className="ats-grid">
-              <div className="ats-col">
-                <div className="wc">
-                  <div className="wc-hd"><span>Resume.pdf</span><span className="wc-badge" id="atsBadge">Scanning</span></div>
-                  <div className="rl-wrap"><div className="w-rl" id="rl0"></div><div className="w-rl" id="rl1"></div><div className="w-rl" id="rl2"></div><div className="w-rl" id="rl3"></div><div className="w-rl" id="rl4"></div><div className="w-rl" id="rl5"></div><div className="w-rl" id="rl6"></div><div className="w-rl" id="rl7"></div></div>
-                  <div className="scan-steps"><div className="wss" id="ss0">Parse structure</div><div className="wss" id="ss1">Extract keywords</div><div className="wss" id="ss2">Score JD alignment</div><div className="wss" id="ss3">Detect issues</div><div className="wss" id="ss4">Build fix plan</div></div>
-                </div>
-                <div className="wc">
-                  <div className="wc-hd"><span>Your JD snippet</span></div>
-                  <div className="try-in"><div className="try-lbl">Paste job description</div><textarea className="try-ta" id="userJd" placeholder="e.g. Senior PM, OKR, SQL, stakeholder management…"></textarea><button className="try-btn" onClick={() => fnRef.current.wResetScanner?.()}>⚡ Scan against this JD</button></div>
-                </div>
-              </div>
-              <div className="ats-col">
-                <div className="wc">
-                  <div className="eng-hd"><div className="eng-ti"><span className="eng-dot" id="engDot"></span><span id="engTitle">ATS Engine — scanning…</span></div><span className="eng-badge" id="engBadge">Running</span></div>
-                  <div className="eng-prog"><div className="ep-row"><span>Scan progress</span><span id="scanPct">0%</span></div><div className="ep-bg"><div className="ep-bar" id="scanBar"></div></div></div>
-                  <div className="eng-sc"><div className="sc-box wbefore"><div className="sc-lbl">Before</div><div className="sc-num" id="scoreBefore">38%</div><div className="sc-bg"><div className="sc-bar" id="barBefore"></div></div></div><div className="sc-box wafter"><div className="sc-lbl">After AI</div><div className="sc-num" id="scoreAfter">—</div><div className="sc-bg"><div className="sc-bar" id="barAfter"></div></div><div className="sc-delta" id="scoreDelta"></div></div></div>
-                  <div id="ph1"><div className="eng-insight" id="engInsight"></div><div className="eng-checks" id="engChecks"></div></div>
-                  <div id="ph2" style={{display: 'none'}}><div style={{padding: '6px 12px', fontSize: '10px', color: 'var(--ink3)', borderBottom: '1px solid rgba(30,201,138,.06)'}}>6 fixes ready — apply one at a time</div><div className="eng-fixes" id="engFixes"></div><div className="eng-insight" id="fixInsight" style={{opacity: '1'}}></div><div className="eng-acts"><button className="btn-fix" id="applyBtn" onClick={() => fnRef.current.wApplyFix?.()}>⚡ Apply next fix</button><button className="btn-re" onClick={() => fnRef.current.wResetScanner?.()}>↺ Replay</button></div></div>
-                  <div className="eng-kw" id="engKw"><span className="kw-lbl">Keywords detected</span><span className="kwt miss">OKR</span><span className="kwt miss">SQL</span><span className="kwt hit">Stakeholder</span><span className="kwt hit">Roadmap</span><span className="kwt hit">Agile</span><span className="kwt miss">A/B testing</span></div>
-                  <div className="eng-fin" id="engFin"><div className="eng-fin-t">✓ ATS optimized — 91%</div><div className="eng-fin-s">Create your account to save + unlock 9 more AI modules.</div></div>
-                  <div className="eng-gate" id="engGate"><div className="gate-t">Your full ATS report is ready</div><div className="gate-s">Free account — 3 scans + 9 AI modules</div><div className="gate-row"><input className="gate-in" id="gateEmail" type="email" placeholder="you@email.com" /><button className="gate-btn" onClick={() => fnRef.current.wSubmitGate?.()}>Get started →</button></div><div className="gate-note">Free forever · No card required</div></div>
-                </div>
-              </div>
-              <div className="ats-col">
-                <div className="wrc dim" id="wrc">
-                  <div className="wrc-hd" id="rcHd">AI result card</div>
-                  <div className="wrc-score"><div className="wrc-sl">ATS Match Score</div><div className="wrc-sn" id="rcScore">—</div><div className="wrc-vd" id="rcVd"></div></div>
-                  <div className="wrc-dims"><div className="wrd"><div className="wrd-row"><span className="wrd-lbl">Keyword match</span><span className="wrd-val" id="rd0">—</span></div><div className="wrd-bg"><div className="wrd-fill" id="rb0"></div></div></div><div className="wrd"><div className="wrd-row"><span className="wrd-lbl">Section headers</span><span className="wrd-val" id="rd1">—</span></div><div className="wrd-bg"><div className="wrd-fill" id="rb1"></div></div></div><div className="wrd"><div className="wrd-row"><span className="wrd-lbl">Bullet impact</span><span className="wrd-val" id="rd2">—</span></div><div className="wrd-bg"><div className="wrd-fill" id="rb2"></div></div></div><div className="wrd"><div className="wrd-row"><span className="wrd-lbl">Seniority framing</span><span className="wrd-val" id="rd3">—</span></div><div className="wrd-bg"><div className="wrd-fill" id="rb3"></div></div></div></div>
-                  <div className="wrc-ai" id="rcAi"><div className="ai-bub"><div className="ai-av">AI</div><div className="ai-tx" id="rcTx">Analysing — results appear here.</div></div></div>
-                  <div className="wrc-cta"><button className="wrc-cta-btn" onClick={() => fnRef.current.wCtaClick?.()}>✦ Create free account →</button></div>
-                </div>
-              </div>
+      {/* ── ATS DECK MODAL ── */}
+      <div className={`v36-deck-modal-bg${atsOpen?' open':''}`} onClick={e=>{if(e.target===e.currentTarget)setAtsOpen(false);}}>
+        <div className="v36-deck-modal v36-dm-ats">
+          <div className="v36-deck-modal-bar">
+            <div>
+              <div className="v36-dm-bar-title">ATS · Data Engine</div>
+              <div className="v36-dm-bar-sub">How CareerAiHub rebuilds your resume in 90 seconds</div>
             </div>
+            <button className="v36-dm-close" onClick={()=>setAtsOpen(false)}>✕</button>
+          </div>
+          <div className="v36-deck-modal-body">
+            {ATS_STEPS.map((step, i) => (
+              <div key={i} className="v36-dm-step-card">
+                <div className="v36-dm-step-num" style={{color:'var(--c1)'}}>{step.num} <span style={{marginLeft:8,fontSize:8,padding:'2px 8px',borderRadius:20,background:'rgba(30,201,138,.09)',border:'1px solid rgba(30,201,138,.22)',color:'var(--c1)'}}>{step.status}</span></div>
+                <div className="v36-dm-step-title">{step.title}</div>
+                <div className="v36-dm-step-desc">{step.desc}</div>
+              </div>
+            ))}
+            <button onClick={join} style={{alignSelf:'center',background:'var(--c1)',color:'#000',fontWeight:700,fontSize:13,padding:'12px 28px',borderRadius:100,border:'none',cursor:'pointer',fontFamily:"'Inter',sans-serif"}}>Build My ATS Resume Free →</button>
           </div>
         </div>
       </div>
 
-      {/* COOKIE BANNER */}
-      <div id="cookieBanner" style={{position: 'fixed', bottom: '0', left: '0', right: '0', zIndex: '9000', background: 'rgba(12,14,26,.97)', borderTop: '1px solid var(--border2)', backdropFilter: 'blur(12px)', padding: '14px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', transform: 'translateY(100%)', transition: 'transform .38s cubic-bezier(.22,1,.36,1)'}}>
-        <div style={{flex: '1', minWidth: '220px', display: 'flex', alignItems: 'center', gap: '12px'}}>
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--g1,#00D4FF)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M8 1L2 4v4c0 3.5 2.7 6.2 6 7 3.3-.8 6-3.5 6-7V4L8 1z"/><path d="M5.5 8l2 2 3-3"/></svg>
-          <div>
-            <div style={{fontSize: '13px', color: 'var(--ink)', lineHeight: '1.5', fontWeight: '300'}}>We use cookies to improve your experience and analyze platform usage. <strong style={{fontWeight: '500', color: 'var(--ink)'}}>Your resume data is encrypted and never sold.</strong> <a href="#privacy" onClick={() => fnRef.current.hideCookieBanner?.()} style={{color: 'var(--g1)', textDecoration: 'none'}}>Privacy Policy →</a></div>
+      {/* ── INTERVIEW DECK MODAL ── */}
+      <div className={`v36-deck-modal-bg${intOpen?' open':''}`} onClick={e=>{if(e.target===e.currentTarget)setIntOpen(false);}}>
+        <div className="v36-deck-modal v36-dm-int">
+          <div className="v36-deck-modal-bar">
+            <div>
+              <div className="v36-dm-bar-title">Interview · AI Coach</div>
+              <div className="v36-dm-bar-sub">4-dimension coaching that targets your weakest gap first</div>
+            </div>
+            <button className="v36-dm-close" onClick={()=>setIntOpen(false)}>✕</button>
+          </div>
+          <div className="v36-deck-modal-body">
+            {INT_STEPS.map((step, i) => (
+              <div key={i} className="v36-dm-step-card">
+                <div className="v36-dm-step-num" style={{color:'var(--c2)'}}>{step.num}</div>
+                <div className="v36-dm-step-title">{step.title}</div>
+                <div className="v36-dm-step-desc">{step.desc}</div>
+              </div>
+            ))}
+            <button onClick={join} style={{alignSelf:'center',background:'var(--c2)',color:'#fff',fontWeight:700,fontSize:13,padding:'12px 28px',borderRadius:100,border:'none',cursor:'pointer',fontFamily:"'Inter',sans-serif"}}>Start AI Interview Practice Free →</button>
           </div>
         </div>
-        <div style={{display: 'flex', alignItems: 'center', gap: '8px', flexShrink: '0'}}>
-          <button onClick={() => fnRef.current.declineCookies?.()} style={{fontSize: '12px', color: 'var(--ink2)', background: 'transparent', border: '1px solid var(--border2)', padding: '8px 16px', borderRadius: '100px', cursor: 'pointer', fontFamily: '\'DM Sans\',sans-serif', whiteSpace: 'nowrap'}}>Decline optional</button>
-          <button onClick={() => fnRef.current.acceptCookies?.()} style={{fontSize: '12px', fontWeight: '600', color: '#fff', background: 'var(--grad)', border: 'none', padding: '9px 20px', borderRadius: '100px', cursor: 'pointer', fontFamily: '\'DM Sans\',sans-serif', whiteSpace: 'nowrap', boxShadow: '0 2px 12px rgba(99,102,241,.3)'}}>Accept &amp; continue</button>
+      </div>
+
+      {/* ── LEGAL MODAL ── */}
+      <div className={`v36-legal-modal-bg${legalModal.open?' open':''}`} onClick={e=>{if(e.target===e.currentTarget)closeLegal();}}>
+        <div className={`v36-legal-sheet${legalModal.open?' open':''}`}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 24px',borderBottom:'1px solid var(--border)',flexShrink:0}}>
+            <div style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:18,fontWeight:700,letterSpacing:'-.02em',color:'var(--text)'}}>{legal?.title}</div>
+            <button onClick={closeLegal} style={{width:30,height:30,borderRadius:'50%',background:'var(--card3)',border:'1px solid var(--border2)',color:'var(--text2)',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+          </div>
+          <div style={{overflowY:'auto',padding:24,fontSize:13,color:'var(--text2)',lineHeight:1.8,fontWeight:300}}>{legal?.body}</div>
         </div>
       </div>
+
     </div>
   );
 }

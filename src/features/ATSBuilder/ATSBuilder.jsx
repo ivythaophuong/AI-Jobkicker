@@ -8,6 +8,8 @@ import {
   SEVERITY_ORDER, CATEGORIES,
   genId, arrayBufferToBase64, computeLineDiff, sortGapsBySeverity, buildRebuildPrompt, stripHtmlToText,
 } from './atsBuilderUtils.js';
+import { TEMPLATES } from './resumeTemplates.jsx';
+import html2pdf from 'html2pdf.js';
 import './atsBuilder.css';
 
 // ── ATS Scanner Demo ──────────────────────────────────────────────────────────
@@ -892,10 +894,9 @@ function ResultsView({ oldText, newText, newHtml, oldScore, newScore, oldParams,
 
 // ── Resume Builder Tab Bar ────────────────────────────────────────────────────
 const RB_TABS = [
-  { id: 'parse',   label: 'Upload & Parse'    },
-  { id: 'rewrite', label: 'AI Bullet Rewrite' },
-  { id: 'editor',  label: 'Live Editor'       },
-  { id: 'history', label: 'Version History'   },
+  { id: 'parse',   label: 'Upload & Parse'  },
+  { id: 'builder', label: 'Builder'         },
+  { id: 'history', label: 'Version History' },
 ];
 
 function ResumeBuilderTabBar({ active, onTab }) {
@@ -926,7 +927,7 @@ function ResumeBuilderTabBar({ active, onTab }) {
 }
 
 // ── Upload & Parse Tab ────────────────────────────────────────────────────────
-function UploadAndParseTab({ user, memory, resumeText: globalResumeText, initialProfile, onResumeExtracted, onPdfUploaded, onProfileParsed }) {
+function UploadAndParseTab({ user, memory, resumeText: globalResumeText, initialProfile, onResumeExtracted, onPdfUploaded, onProfileParsed, onGoToBuilder }) {
   const inputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [loading, setLoading]   = useState(false);
@@ -941,21 +942,30 @@ function UploadAndParseTab({ user, memory, resumeText: globalResumeText, initial
     setLoading(true); setProfile(null); setError('');
     try {
       const raw = await callLLM([{ role: 'user', content:
-        `Parse this resume and extract structured profile data.
+        `Parse this resume and extract all structured data for a resume builder.
 Resume text:
-${text.slice(0, 4000)}
+${text.slice(0, 5000)}
 
 Return ONLY raw JSON (no markdown, start with {):
 {
+  "name": "full name",
+  "email": "email address",
+  "phone": "phone number",
+  "linkedin": "linkedin handle or URL",
+  "location": "city / region",
   "targetRole": "most recent or target role title",
   "experience": "X years",
   "topSkills": ["skill1","skill2","skill3"],
   "market": "city / region",
   "atsScore": 67,
-  "workExperience": [{"title":"job title","company":"company name","period":"date range","duration":"X years"}],
-  "education": [{"degree":"degree name","institution":"school","period":"years","gpa":"if present"}],
-  "skills": ["skill1","skill2","skill3","skill4","skill5","skill6","skill7","skill8"]
-}` }], 4000);
+  "summary": "professional summary paragraph if present, else empty string",
+  "workExperience": [{"title":"job title","company":"company name","period":"date range","duration":"X years","bullets":["bullet point 1","bullet point 2"]}],
+  "education": [{"degree":"degree name","institution":"school","year":"graduation year","gpa":"if present"}],
+  "skills": ["skill1","skill2","skill3","skill4","skill5","skill6","skill7","skill8"],
+  "awards": ["award 1","award 2"],
+  "extras": [{"heading":"Section Name as written in resume","items":["item 1","item 2"]}]
+}
+For extras: include every section not already captured above (e.g. Certifications, Publications, Projects, Volunteer, Languages, Interests, Patents, etc.). Do NOT put work experience, education, skills, awards, or summary into extras.` }], 4000);
       const parsed = extractJSON(raw);
       if (!parsed.error) {
         setProfile(parsed);
@@ -1194,16 +1204,20 @@ Return ONLY raw JSON (no markdown, start with {):
               </div>
             )}
 
-            {/* CTA */}
-            <button
-              style={{
-                width: '100%', padding: '12px 0',
-                background: 'var(--lp-teal)', color: '#000',
-                border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer',
-              }}
-            >
-              Rewrite bullets with AI →
-            </button>
+            {/* Guiding button → Builder */}
+            {onGoToBuilder && (
+              <button
+                onClick={onGoToBuilder}
+                style={{
+                  width: '100%', padding: '13px 0',
+                  background: 'var(--lp-teal)', color: '#000',
+                  border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+              >
+                Build Resume →
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -1211,7 +1225,7 @@ Return ONLY raw JSON (no markdown, start with {):
   );
 }
 
-// ── AI Bullet Rewrite Tab ─────────────────────────────────────────────────────
+// ── AI Bullet Rewrite Tab (kept for potential future use) ─────────────────────
 function BulletRewriteTab({ resumeText: sharedResume, targetRole: sharedRole }) {
   const [bullets, setBullets]   = useState('');
   const [context, setContext]   = useState(sharedRole || '');
@@ -1301,41 +1315,399 @@ Rewrite every bullet. Never use placeholders.` }], 4000);
 }
 
 // ── Version History Tab ───────────────────────────────────────────────────────
-function VersionHistoryTab({ memory }) {
+function VersionHistoryTab({ memory, onRestore }) {
   const versions = memory?.resumeVersions || [];
 
   return (
     <div style={{ padding: 24 }}>
       <div style={{ color: 'var(--lp-text)', fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Version History</div>
-      <div style={{ color: 'var(--lp-text3)', fontSize: 12, marginBottom: 20 }}>Saved snapshots of your resume after each AI rebuild.</div>
+      <div style={{ color: 'var(--lp-text3)', fontSize: 12, marginBottom: 20 }}>Saved resume snapshots. Restore any version back into the Builder.</div>
 
       {versions.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 48, color: 'var(--lp-text3)', fontSize: 13, opacity: .6 }}>
-          No versions saved yet. Build an ATS-optimised resume in the Live Editor to create your first version.
+          No versions saved yet. Build your resume in the Builder tab and save a version.
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {versions.map((v, i) => (
+          {[...versions].reverse().map((v, i) => (
             <div key={i} style={{
               background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)',
               borderRadius: 10, padding: '14px 16px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
             }}>
-              <div>
-                <div style={{ color: 'var(--lp-text)', fontSize: 13, fontWeight: 600 }}>Version {versions.length - i}</div>
-                <div style={{ color: 'var(--lp-text3)', fontSize: 11, marginTop: 2 }}>
-                  {v.date ? new Date(v.date).toLocaleDateString() : '—'} · ATS {v.score || '—'}/100
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ color: 'var(--lp-text)', fontSize: 13, fontWeight: 600 }}>{v.label || `Version ${versions.length - i}`}</div>
+                <div style={{ color: 'var(--lp-text3)', fontSize: 11, marginTop: 3, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <span>{v.date ? new Date(v.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span>
+                  {v.templateLabel && <span>· {v.templateLabel}</span>}
+                  {v.data?.contact?.name && <span>· {v.data.contact.name}</span>}
                 </div>
               </div>
-              <button style={{
-                background: 'transparent', border: '1px solid var(--lp-bdr)',
-                color: 'var(--lp-text2)', borderRadius: 6, padding: '5px 12px',
-                fontSize: 11, fontWeight: 600, cursor: 'pointer',
-              }}>Restore</button>
+              <button
+                onClick={() => onRestore && onRestore(v)}
+                style={{
+                  background: 'transparent', border: '1px solid var(--lp-bdr)',
+                  color: 'var(--lp-text2)', borderRadius: 6, padding: '5px 14px',
+                  fontSize: 11, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >Restore →</button>
             </div>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Builder Tab ───────────────────────────────────────────────────────────────
+const BUILDER_STEPS = ['Contact', 'Experience', 'Education', 'Skills', 'Summary', 'Review'];
+
+// Sample resume shown in template carousel before user uploads their own
+const SAMPLE_DATA = {
+  contact: { name: 'Alex Chen', email: 'alex.chen@email.com', phone: '+1 (415) 555-0192', linkedin: 'linkedin.com/in/alexchen', location: 'San Francisco, CA' },
+  summary: 'Product Manager with 6 years driving 0→1 launches in fintech and SaaS. Shipped features that grew DAU 40% and added $2.4M ARR. Strong in data-driven roadmaps, stakeholder alignment, and cross-functional execution.',
+  experience: [
+    { id: 0, company: 'Stripe', title: 'Senior Product Manager', period: '2022 – Present', bullets: ['Led 0→1 launch of Stripe Capital, acquiring 12,000 SMBs in first 6 months', 'Defined 3 OKR cycles delivering $2.4M incremental ARR', 'Reduced onboarding drop-off 38% via targeted checkout experiments'] },
+    { id: 1, company: 'Intercom', title: 'Product Manager', period: '2019 – 2022', bullets: ['Owned messaging inbox — 2M+ DAU across 25,000 customers', 'Shipped AI reply suggestions, cutting avg handle time 22%', 'Ran 40+ A/B tests improving trial-to-paid conversion by 18%'] },
+    { id: 2, company: 'Deloitte', title: 'Business Analyst', period: '2018 – 2019', bullets: ['Delivered digital transformation roadmap for Fortune 500 retail client', 'Built Tableau dashboards tracking $180M supply chain KPIs'] },
+  ],
+  education: [{ id: 0, institution: 'UC Berkeley', degree: 'B.S. Business Administration', year: '2018' }],
+  skills: ['Product Strategy', 'OKR Frameworks', 'SQL', 'Figma', 'A/B Testing', 'Stakeholder Management', 'Agile / Scrum', 'Mixpanel'],
+  awards: ['Product Hunt #1 — Stripe Capital', 'Intercom Innovation Award 2021'],
+  extras: [{ heading: 'Certifications', items: ['AWS Certified Cloud Practitioner', 'Google Analytics Certified'] }],
+};
+
+function mapProfileToData(profile) {
+  if (!profile) return JSON.parse(JSON.stringify(SAMPLE_DATA));
+  return {
+    contact: {
+      name: profile.name || '',
+      email: profile.email || '',
+      phone: profile.phone || '',
+      linkedin: profile.linkedin || '',
+      location: profile.location || profile.market || '',
+    },
+    summary: profile.summary || '',
+    experience: (profile.workExperience?.length
+      ? profile.workExperience
+      : [{ id: 0, company: '', title: '', period: '', bullets: [''] }]
+    ).map((w, i) => ({
+      id: i,
+      company: w.company || '',
+      title: w.title || '',
+      period: w.period || '',
+      bullets: w.bullets?.length ? w.bullets : [''],
+    })),
+    education: (profile.education?.length
+      ? profile.education
+      : [{ id: 0, institution: '', degree: '', year: '' }]
+    ).map((e, i) => ({
+      id: i,
+      institution: e.institution || '',
+      degree: e.degree || '',
+      year: e.year || '',
+    })),
+    skills: profile.skills?.filter(s => s).length ? profile.skills : [''],
+    awards: profile.awards || [],
+    extras: (profile.extras || [])
+      .map(s => ({ heading: s.heading || '', items: (s.items || []).filter(i => i?.trim()) }))
+      .filter(s => s.heading && s.items.length),
+  };
+}
+
+function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
+  const [step, setStep] = useState(0);
+  const [activeTemplate, setActiveTemplate] = useState('modern');
+  const [data, setData] = useState(() => restoredData || mapProfileToData(initialProfile));
+  const [isSample, setIsSample] = useState(!initialProfile && !restoredData);
+  const [saved, setSaved] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const previewRef = useRef(null);
+
+  // Sync restored data when user clicks Restore in history — only fires when non-null
+  useEffect(() => {
+    if (!restoredData) return;
+    setData(JSON.parse(JSON.stringify(restoredData)));
+    setIsSample(false);
+    setSaved(false);
+    setStep(0);
+  }, [restoredData]);
+
+  const inp = {
+    width: '100%', background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)',
+    color: 'var(--lp-text)', borderRadius: 8, padding: '8px 12px', fontSize: 13,
+    fontFamily: 'var(--lp-ff)', outline: 'none', boxSizing: 'border-box',
+  };
+  const lbl = { fontSize: 10.5, color: 'var(--lp-text3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4, display: 'block' };
+  const field = { display: 'flex', flexDirection: 'column', gap: 4 };
+
+  const edit = (fn) => { setIsSample(false); setData(fn); };
+
+  // Contact
+  const setContact = (k, v) => edit(d => ({ ...d, contact: { ...d.contact, [k]: v } }));
+
+  // Experience
+  const setExpField = (i, k, v) => edit(d => {
+    const exp = [...d.experience]; exp[i] = { ...exp[i], [k]: v }; return { ...d, experience: exp };
+  });
+  const setExpBullets = (i, text) => setExpField(i, 'bullets', text.split('\n'));
+  const addExp = () => edit(d => ({ ...d, experience: [...d.experience, { id: Date.now(), company: '', title: '', period: '', bullets: [''] }] }));
+  const removeExp = i => edit(d => ({ ...d, experience: d.experience.filter((_, idx) => idx !== i) }));
+
+  // Education
+  const setEduField = (i, k, v) => edit(d => {
+    const edu = [...d.education]; edu[i] = { ...edu[i], [k]: v }; return { ...d, education: edu };
+  });
+  const addEdu = () => edit(d => ({ ...d, education: [...d.education, { id: Date.now(), institution: '', degree: '', year: '' }] }));
+  const removeEdu = i => edit(d => ({ ...d, education: d.education.filter((_, idx) => idx !== i) }));
+
+  // Skills / Summary
+  const setSkills = text => edit(d => ({ ...d, skills: text.split('\n') }));
+  const setSummary = v => edit(d => ({ ...d, summary: v }));
+
+  const handleDownloadPdf = async () => {
+    if (!previewRef.current || !ActiveTemplate) return;
+    if (!previewRef.current.textContent?.trim()) return;
+    setDownloading(true);
+    const name = (data.contact.name || 'resume').replace(/\s+/g, '_');
+    const tplLabel = TEMPLATES.find(t => t.id === activeTemplate)?.label || activeTemplate;
+    try {
+      await html2pdf()
+        .set({
+          margin: 0,
+          filename: `${name}_${tplLabel}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false, width: 794, windowWidth: 794 },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        })
+        .from(previewRef.current)
+        .save();
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleSave = () => {
+    const tpl = TEMPLATES.find(t => t.id === activeTemplate);
+    const version = {
+      date: new Date().toISOString(),
+      template: activeTemplate,
+      templateLabel: tpl?.label || activeTemplate,
+      label: `Version ${(memory?.resumeVersions?.length || 0) + 1}`,
+      data: JSON.parse(JSON.stringify(data)),
+    };
+    onSaveVersion(version);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  const ActiveTemplate = TEMPLATES.find(t => t.id === activeTemplate)?.component;
+
+  const navBtn = (label, onClick, primary) => (
+    <button onClick={onClick} style={{
+      padding: '9px 20px', fontSize: 12, fontWeight: 800, borderRadius: 8, cursor: 'pointer',
+      border: primary ? 'none' : '1px solid var(--lp-bdr)',
+      background: primary ? 'var(--lp-teal)' : 'transparent',
+      color: primary ? '#000' : 'var(--lp-text2)',
+    }}>{label}</button>
+  );
+
+  const sectionBox = (content) => (
+    <div style={{ background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 10, padding: 16 }}>
+      {content}
+    </div>
+  );
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: 640 }}>
+
+      {/* ── LEFT: step form ── */}
+      <div style={{ borderRight: '1px solid var(--lp-bdr)', padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+
+        {/* Sample data banner */}
+        {isSample && (
+          <div style={{ background: 'rgba(0,212,255,.08)', border: '1px solid rgba(0,212,255,.2)', borderRadius: 8, padding: '8px 12px', marginBottom: 14, fontSize: 11.5, color: 'var(--lp-teal)', lineHeight: 1.5 }}>
+            👆 Sample resume shown — go to <strong>Upload & Parse</strong> tab to load yours
+          </div>
+        )}
+
+        {/* Step progress bar */}
+        <div style={{ display: 'flex', gap: 4, marginBottom: 14 }}>
+          {BUILDER_STEPS.map((_, i) => (
+            <div key={i} onClick={() => setStep(i)} style={{
+              flex: 1, height: 3, borderRadius: 2, cursor: 'pointer',
+              background: i <= step ? 'var(--lp-teal)' : 'var(--lp-bdr)', transition: 'background .2s',
+            }} />
+          ))}
+        </div>
+        <div style={{ fontSize: 10, color: 'var(--lp-text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+          Step {step + 1} of {BUILDER_STEPS.length}
+        </div>
+        <div style={{ fontSize: 19, fontWeight: 800, color: 'var(--lp-text)', marginBottom: 20 }}>
+          {BUILDER_STEPS[step]}
+        </div>
+
+        {/* ── Contact ── */}
+        {step === 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 13, flex: 1 }}>
+            <div style={field}><label style={lbl}>Full Name</label><input style={inp} value={data.contact.name} onChange={e => setContact('name', e.target.value)} placeholder="Aman Ashwin" /></div>
+            <div style={field}><label style={lbl}>Email</label><input style={inp} value={data.contact.email} onChange={e => setContact('email', e.target.value)} placeholder="you@email.com" /></div>
+            <div style={field}><label style={lbl}>Phone</label><input style={inp} value={data.contact.phone} onChange={e => setContact('phone', e.target.value)} placeholder="+1 234 567 8900" /></div>
+            <div style={field}><label style={lbl}>LinkedIn</label><input style={inp} value={data.contact.linkedin} onChange={e => setContact('linkedin', e.target.value)} placeholder="linkedin.com/in/yourname" /></div>
+            <div style={field}><label style={lbl}>Location</label><input style={inp} value={data.contact.location} onChange={e => setContact('location', e.target.value)} placeholder="City, Country" /></div>
+          </div>
+        )}
+
+        {/* ── Experience ── */}
+        {step === 1 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, flex: 1 }}>
+            {data.experience.map((job, i) => (
+              <div key={job.id ?? i}>
+                {sectionBox(<>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text2)' }}>Role {i + 1}</span>
+                    {data.experience.length > 1 && <button onClick={() => removeExp(i)} style={{ background: 'none', border: 'none', color: 'var(--lp-text3)', cursor: 'pointer', fontSize: 11 }}>✕ Remove</button>}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                      <div style={field}><label style={lbl}>Company</label><input style={inp} value={job.company} onChange={e => setExpField(i, 'company', e.target.value)} placeholder="Company Name" /></div>
+                      <div style={field}><label style={lbl}>Period</label><input style={inp} value={job.period} onChange={e => setExpField(i, 'period', e.target.value)} placeholder="2020 – Present" /></div>
+                    </div>
+                    <div style={field}><label style={lbl}>Job Title</label><input style={inp} value={job.title} onChange={e => setExpField(i, 'title', e.target.value)} placeholder="Senior Engineer" /></div>
+                    <div style={field}>
+                      <label style={lbl}>Bullet Points (one per line)</label>
+                      <textarea style={{ ...inp, minHeight: 80, resize: 'vertical' }}
+                        value={(job.bullets || ['']).join('\n')}
+                        onChange={e => setExpBullets(i, e.target.value)}
+                        placeholder={'Led a team of 5 to deliver X\nImproved performance by 30%'} />
+                    </div>
+                  </div>
+                </>)}
+              </div>
+            ))}
+            <button onClick={addExp} style={{ background: 'transparent', border: '1px dashed var(--lp-bdr)', color: 'var(--lp-teal)', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>+ Add Role</button>
+          </div>
+        )}
+
+        {/* ── Education ── */}
+        {step === 2 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
+            {data.education.map((edu, i) => (
+              <div key={edu.id ?? i}>
+                {sectionBox(<>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text2)' }}>Education {i + 1}</span>
+                    {data.education.length > 1 && <button onClick={() => removeEdu(i)} style={{ background: 'none', border: 'none', color: 'var(--lp-text3)', cursor: 'pointer', fontSize: 11 }}>✕ Remove</button>}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={field}><label style={lbl}>Institution</label><input style={inp} value={edu.institution} onChange={e => setEduField(i, 'institution', e.target.value)} placeholder="University Name" /></div>
+                    <div style={field}><label style={lbl}>Degree</label><input style={inp} value={edu.degree} onChange={e => setEduField(i, 'degree', e.target.value)} placeholder="B.Tech Computer Science" /></div>
+                    <div style={field}><label style={lbl}>Year</label><input style={inp} value={edu.year} onChange={e => setEduField(i, 'year', e.target.value)} placeholder="2020" /></div>
+                  </div>
+                </>)}
+              </div>
+            ))}
+            <button onClick={addEdu} style={{ background: 'transparent', border: '1px dashed var(--lp-bdr)', color: 'var(--lp-teal)', borderRadius: 8, padding: '10px', cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>+ Add Education</button>
+          </div>
+        )}
+
+        {/* ── Skills ── */}
+        {step === 3 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+            <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>One skill per line.</div>
+            <textarea style={{ ...inp, minHeight: 180, resize: 'vertical', flex: 1 }}
+              value={data.skills.join('\n')}
+              onChange={e => setSkills(e.target.value)}
+              placeholder={'Python\nMachine Learning\nSQL\nSpark\nNLP'} />
+          </div>
+        )}
+
+        {/* ── Summary ── */}
+        {step === 4 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+            <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>2-3 sentences: years of experience, key skills, what you bring.</div>
+            <textarea style={{ ...inp, minHeight: 120, resize: 'vertical' }}
+              value={data.summary}
+              onChange={e => setSummary(e.target.value)}
+              placeholder="Data scientist with 7 years of experience in ML applied to real world problems…" />
+          </div>
+        )}
+
+        {/* ── Review ── */}
+        {step === 5 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
+            <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>Pick a template from the right panel, then save your version.</div>
+            {sectionBox(<>
+              <div style={{ fontSize: 10.5, color: 'var(--lp-text3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Resume Summary</div>
+              <div style={{ fontSize: 12.5, color: 'var(--lp-text)', lineHeight: 2 }}>
+                <div>👤 {data.contact.name || '—'}</div>
+                <div>💼 {data.experience.filter(j => j.company).length} role{data.experience.filter(j => j.company).length !== 1 ? 's' : ''}</div>
+                <div>🎓 {data.education.filter(e => e.institution).length} education entr{data.education.filter(e => e.institution).length !== 1 ? 'ies' : 'y'}</div>
+                <div>🛠 {data.skills.filter(s => s.trim()).length} skills</div>
+                <div>📄 Template: {TEMPLATES.find(t => t.id === activeTemplate)?.label}</div>
+              </div>
+            </>)}
+            <button onClick={handleSave} style={{
+              width: '100%', padding: '14px 0', fontSize: 14, fontWeight: 800, borderRadius: 10, cursor: 'pointer', border: 'none',
+              background: saved ? '#00E5A0' : 'var(--lp-teal)', color: '#000', transition: 'background .2s',
+            }}>
+              {saved ? '✓ Saved to history!' : 'Save Version'}
+            </button>
+            <button onClick={handleDownloadPdf} disabled={downloading} style={{
+              width: '100%', padding: '12px 0', fontSize: 13, fontWeight: 800, borderRadius: 10, cursor: downloading ? 'not-allowed' : 'pointer',
+              border: '1px solid var(--lp-bdr)', background: 'transparent', color: 'var(--lp-teal)', transition: 'all .2s',
+            }}>
+              {downloading ? 'Generating PDF…' : '⬇ Download PDF'}
+            </button>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--lp-bdr)' }}>
+          {step > 0 ? navBtn('← Back', () => setStep(s => s - 1), false) : <div />}
+          {step < BUILDER_STEPS.length - 1 && navBtn('Next →', () => setStep(s => s + 1), true)}
+        </div>
+      </div>
+
+      {/* ── RIGHT: template carousel + live preview ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Carousel */}
+        <div style={{ display: 'flex', gap: 6, padding: '10px 14px', borderBottom: '1px solid var(--lp-bdr)', overflowX: 'auto', scrollbarWidth: 'none', background: 'var(--lp-bg3)', flexShrink: 0 }}>
+          {TEMPLATES.map(t => (
+            <button key={t.id} onClick={() => setActiveTemplate(t.id)} style={{
+              padding: '5px 13px', fontSize: 11, fontWeight: 700, borderRadius: 6, cursor: 'pointer', whiteSpace: 'nowrap',
+              transition: 'all .15s', borderLeft: `3px solid ${t.accent}`,
+              background: activeTemplate === t.id ? 'var(--lp-teal)' : 'transparent',
+              color: activeTemplate === t.id ? '#000' : 'var(--lp-text2)',
+              border: `1px solid ${activeTemplate === t.id ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`,
+              borderLeftColor: t.accent, borderLeftWidth: 3,
+            }}>
+              {activeTemplate === t.id ? '✓ ' : ''}{t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Download button */}
+        <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--lp-bdr)', background: 'var(--lp-bg3)', flexShrink: 0 }}>
+          <button onClick={handleDownloadPdf} disabled={downloading} style={{
+            width: '100%', padding: '8px 0', fontSize: 12, fontWeight: 800, borderRadius: 7, cursor: downloading ? 'not-allowed' : 'pointer',
+            border: 'none', background: downloading ? 'var(--lp-bg2)' : 'var(--lp-teal)', color: '#000', transition: 'background .2s',
+          }}>
+            {downloading ? 'Generating PDF…' : '⬇ Download PDF'}
+          </button>
+        </div>
+
+        {/* Live preview — A4 width (794px = 210mm @ 96dpi) */}
+        <div style={{ flex: 1, overflow: 'auto', background: '#e0e0e0', padding: '16px' }}>
+          <div style={{ fontSize: 9, color: '#999', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, textAlign: 'center', marginBottom: 10 }}>
+            Live Preview · A4
+          </div>
+          <div ref={previewRef} style={{ width: 794, margin: '0 auto', boxShadow: '0 4px 24px rgba(0,0,0,.2)' }}>
+            {ActiveTemplate && <ActiveTemplate {...data} />}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1393,21 +1765,26 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
   // Build result
   const [buildResult, setBuildResult] = useState(null);
 
+  // Builder tab state
+  const [restoredData, setRestoredData] = useState(null);
+
+  const handleSaveVersion = (version) => {
+    if (updateMemory) {
+      updateMemory(m => ({ ...m, resumeVersions: [...(m.resumeVersions || []), version] }));
+    }
+  };
+
+  const handleRestore = (version) => {
+    setRestoredData(version.data);
+    setMainTab('builder');
+  };
+
   // Sync globalResume into local state when memory loads after mount
   useEffect(() => {
     if (globalResume && !resumeText) setResumeTextState(globalResume);
   }, [globalResume]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-scan on mount if a saved resume exists in memory
-  useEffect(() => {
-    if (hasSavedResume) {
-      const b64 = memory.scanPdfBase64;
-      setPdfBase64(b64);
-      setPdfUrl(base64ToBlobUrl(b64));
-      runScanPdf(b64);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Auto-scan disabled — editor tab removed. ATS scan lives in future standalone module.
 
   // ── File upload ──────────────────────────────────────────────────────────────
   const handleFile = async (file) => {
@@ -1599,8 +1976,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
       <div style={{ padding: '16px 24px 0', borderBottom: '1px solid var(--lp-bdr)' }}>
         <div style={{ color: 'var(--lp-text)', fontWeight: 900, fontSize: 22 }}>Resume Builder</div>
         <div style={{ color: 'var(--lp-text3)', fontSize: 13, marginTop: 2, marginBottom: 0 }}>
-          Your resume is at ATS{memory?.lastAtsScore ? ` ${memory.lastAtsScore}/100` : ' —'}.
-          Upload, parse, rewrite bullets, and rebuild to 90+.
+          Upload your resume, build it with 5 templates, and save versions.
         </div>
         <ResumeBuilderTabBar active={mainTab} onTab={setMainTab} />
       </div>
@@ -1615,181 +1991,21 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
           onResumeExtracted={handleResumeExtracted}
           onPdfUploaded={handlePdfUploaded}
           onProfileParsed={handleProfileParsed}
+          onGoToBuilder={() => setMainTab('builder')}
         />
       )}
-      {mainTab === 'rewrite' && (
-        <BulletRewriteTab resumeText={resumeText || globalResume} targetRole={targetRole || form?.role} />
+      {mainTab === 'builder' && (
+        <BuilderTab
+          initialProfile={memory?.parseProfile || null}
+          memory={memory}
+          onSaveVersion={handleSaveVersion}
+          restoredData={restoredData}
+        />
       )}
       {mainTab === 'history' && (
-        <VersionHistoryTab memory={memory} />
+        <VersionHistoryTab memory={memory} onRestore={handleRestore} />
       )}
 
-      {mainTab === 'editor' && phase === 'upload' && (
-        <UploadPhase
-          onFile={handleFile}
-          hasScanResume={!!memory?.scanPdfBase64}
-          onUseScanResume={handleUseScanResume}
-          error={error}
-          onClearError={() => setError(null)}
-          targetRole={targetRole}
-          onTargetRoleChange={setTargetRole}
-        />
-      )}
-
-      {mainTab === 'editor' && phase === 'scanning' && (
-        <LoadingPhase label="Scanning your resume…" step={scanStep} variant="teal" />
-      )}
-
-      {mainTab === 'editor' && phase === 'building' && (
-        <LoadingPhase
-          label="Building your ATS-optimised resume…"
-          step="AI is rewriting your content with the requested edits"
-          variant="violet"
-        />
-      )}
-
-      {mainTab === 'editor' && phase === 'kanban' && (
-        <>
-          {error && (
-            <div className="atb-error">
-              ⚠ {error}
-              <button onClick={() => setError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#ff5f6e', cursor: 'pointer', fontSize: 16 }}>×</button>
-            </div>
-          )}
-          {showNextStep && setActiveModule && (
-            <div style={{ padding: '0 16px', marginTop: 8 }}>
-              <NextStepBanner
-                message="Resume scanned. Next: build your STAR story bank so you're ready for behavioral interview questions."
-                cta="Build STAR Bank →"
-                onClick={() => { setShowNextStep(false); setActiveModule('star'); }}
-                onDismiss={() => setShowNextStep(false)}
-              />
-            </div>
-          )}
-          <div className="atb-workspace">
-            {/* Left: PDF / text preview */}
-            <div className="atb-pdf-pane">
-              <div className="atb-pane-head">
-                <span className="atb-pane-label">Your resume</span>
-                <button className="atb-cbtn" onClick={() => { setPhase('upload'); setError(null); }}>
-                  ← Upload new
-                </button>
-              </div>
-              <div className="atb-pdf-embed-wrap">
-                {pdfUrl
-                  ? <iframe src={pdfUrl} title="Resume preview" className="atb-pdf-embed" />
-                  : <div className="atb-text-preview">{resumeText}</div>
-                }
-              </div>
-            </div>
-
-            {/* Right: Kanban */}
-            <div className="atb-kanban-pane">
-              {/* ATS Score strip */}
-              {atsScore !== null && (() => {
-                const scoreColor = atsScore >= 80 ? '#00E5A0' : atsScore >= 60 ? '#FFB84D' : '#FF5A5A';
-                const delta = prevScore !== null ? atsScore - prevScore : null;
-                const deltaColor = delta > 0 ? '#00E5A0' : delta < 0 ? '#FF5A5A' : '#FFB84D';
-                const deltaLabel = delta > 0 ? `↑ +${delta}` : delta < 0 ? `↓ ${delta}` : '→ no change';
-                return (
-                  <div style={{ padding: '10px 14px', background: 'var(--lp-bg3)', borderBottom: '1px solid var(--lp-bdr)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--lp-text3)', textTransform: 'uppercase', letterSpacing: '.07em', fontFamily: 'var(--lp-ffm)', flexShrink: 0 }}>ATS Score</div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: scoreColor, lineHeight: 1, flexShrink: 0 }}>{atsScore}</div>
-                    {delta !== null && (
-                      <div style={{ fontSize: 11, fontWeight: 700, color: deltaColor, fontFamily: 'var(--lp-ffm)', flexShrink: 0, background: deltaColor + '15', border: `1px solid ${deltaColor}33`, borderRadius: 5, padding: '2px 7px' }}>
-                        {deltaLabel} vs last scan
-                      </div>
-                    )}
-                    <div style={{ flex: 1, height: 6, background: 'var(--lp-bg4, rgba(255,255,255,.06))', borderRadius: 3, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${atsScore}%`, background: scoreColor, borderRadius: 3, transition: 'width 1s ease' }} />
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--lp-text3)', flexShrink: 0 }}>target <span style={{ color: '#00E5A0', fontWeight: 700 }}>85+</span></div>
-                  </div>
-                );
-              })()}
-              <div className="atb-kanban-header">
-                <div>
-                  <div className="atb-kanban-title">Gap Editor</div>
-                  <div className="atb-kanban-meta">
-                    {gapCards.length + editCards.length + doneCards.length} gaps · drag cards between columns
-                  </div>
-                </div>
-                <button
-                  className="atb-build-btn"
-                  disabled={doneCards.length === 0}
-                  onClick={handleBuild}
-                >
-                  ✦ Build ATS ({doneCards.length} {doneCards.length === 1 ? 'edit' : 'edits'} ready)
-                </button>
-              </div>
-
-              <div className="atb-columns">
-                {/* Gaps Identified */}
-                <KanbanColumn
-                  label="Gaps Identified"
-                  color="var(--lp-amber)"
-                  count={gapCards.length}
-                  onDrop={() => handleDrop('gaps')}
-                  headerRight={
-                    <button className="atb-add-gap-btn" onClick={() => setShowAddGap(true)}>+ Add</button>
-                  }
-                >
-                  {gapCards.map(card => (
-                    <GapCard key={card.id} card={card} onDragStart={handleDragStart} onMove={moveCard} />
-                  ))}
-                </KanbanColumn>
-
-                {/* Edit Queue */}
-                <KanbanColumn
-                  label="Edit Queue"
-                  color="var(--lp-violet)"
-                  count={editCards.length}
-                  onDrop={() => handleDrop('edit')}
-                >
-                  {editCards.map(card => (
-                    <EditCard key={card.id} card={card} onDragStart={handleDragStart} onMove={moveCard} onUpdate={updateCard} />
-                  ))}
-                </KanbanColumn>
-
-                {/* Done */}
-                <KanbanColumn
-                  label="Done"
-                  color="var(--lp-teal)"
-                  count={doneCards.length}
-                  onDrop={() => handleDrop('done')}
-                >
-                  {doneCards.map(card => (
-                    <DoneCard key={card.id} card={card} onDragStart={handleDragStart} onMove={moveCard} />
-                  ))}
-                </KanbanColumn>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {mainTab === 'editor' && phase === 'results' && buildResult && (
-        <ResultsView
-          oldText={resumeText}
-          newText={buildResult.newText}
-          newHtml={buildResult.newHtml}
-          oldScore={atsScore}
-          newScore={buildResult.newScore}
-          oldParams={parameters}
-          newParams={buildResult.newParams}
-          addedKeywords={buildResult.addedKeywords}
-          pdfUrl={pdfUrl}
-          onEditMore={handleEditMore}
-          onRebuildFromThis={handleRebuildFromThis}
-        />
-      )}
-
-      {showAddGap && (
-        <AddGapModal
-          onClose={() => setShowAddGap(false)}
-          onAdd={card => setGapCards(p => [card, ...p])}
-        />
-      )}
     </div>
   );
 };
