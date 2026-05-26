@@ -1615,11 +1615,41 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
         {/* ── Skills ── */}
         {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-            <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>One skill per line.</div>
-            <textarea style={{ ...inp, minHeight: 180, resize: 'vertical', flex: 1 }}
-              value={data.skills.join('\n')}
-              onChange={e => setSkills(e.target.value)}
-              placeholder={'Python\nMachine Learning\nSQL\nSpark\nNLP'} />
+            <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>Press Enter or comma to add a skill. Backspace removes the last one.</div>
+            <div
+              style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '10px 12px', background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 8, minHeight: 80, cursor: 'text', alignContent: 'flex-start' }}
+              onClick={() => document.getElementById('skill-inp')?.focus()}
+            >
+              {data.skills.filter(s => s.trim()).map((skill, i) => (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,212,255,.1)', border: '1px solid rgba(0,212,255,.25)', color: 'var(--lp-teal)', borderRadius: 5, padding: '3px 8px 3px 10px', fontSize: 12, fontWeight: 600, lineHeight: 1.4 }}>
+                  {skill}
+                  <button
+                    onClick={e => { e.stopPropagation(); edit(d => ({ ...d, skills: d.skills.filter((_, idx) => idx !== i) })); }}
+                    style={{ background: 'none', border: 'none', color: 'rgba(0,212,255,.6)', cursor: 'pointer', padding: '0 2px', fontSize: 14, lineHeight: 1, fontFamily: 'inherit' }}
+                  >×</button>
+                </span>
+              ))}
+              <input
+                id="skill-inp"
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const val = e.target.value.replace(/,/g, '').trim();
+                    if (val) edit(d => ({ ...d, skills: [...d.skills.filter(s => s.trim()), val] }));
+                    e.target.value = '';
+                  } else if (e.key === 'Backspace' && !e.target.value) {
+                    const filled = data.skills.filter(s => s.trim());
+                    if (filled.length > 0) edit(d => ({ ...d, skills: filled.slice(0, -1) }));
+                  }
+                }}
+                onBlur={e => {
+                  const val = e.target.value.replace(/,/g, '').trim();
+                  if (val) { edit(d => ({ ...d, skills: [...d.skills.filter(s => s.trim()), val] })); e.target.value = ''; }
+                }}
+                placeholder={data.skills.filter(s => s.trim()).length ? '' : 'Python, Machine Learning, SQL…'}
+                style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 12, color: 'var(--lp-text)', fontFamily: 'var(--lp-ff)', minWidth: 140, padding: '3px 4px', flex: 1 }}
+              />
+            </div>
           </div>
         )}
 
@@ -1716,6 +1746,7 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
 const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveModule, resumeText: globalResume, setResumeText: setGlobalResumeText }) => {
   const hasSavedResume = !!memory?.scanPdfBase64;
   const [mainTab, setMainTab] = useState('parse');
+  const [entryMode, setEntryMode] = useState(null); // null=choose, 'scratch', 'existing'
   const [phase, setPhase] = useState(hasSavedResume ? 'scanning' : 'upload'); // upload | scanning | kanban | building | results
   const [scanStep, setScanStep] = useState(SCAN_STEPS[0]);
   const [error, setError] = useState(null);
@@ -1776,6 +1807,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
 
   const handleRestore = (version) => {
     setRestoredData(version.data);
+    setEntryMode('existing');
     setMainTab('builder');
   };
 
@@ -1978,7 +2010,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
         <div style={{ color: 'var(--lp-text3)', fontSize: 13, marginTop: 2, marginBottom: 0 }}>
           Upload your resume, build it with 5 templates, and save versions.
         </div>
-        <ResumeBuilderTabBar active={mainTab} onTab={setMainTab} />
+        <ResumeBuilderTabBar active={mainTab} onTab={tab => { if (tab === 'builder') setEntryMode(null); setMainTab(tab); }} />
       </div>
 
       {/* Tab routing */}
@@ -1991,15 +2023,55 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
           onResumeExtracted={handleResumeExtracted}
           onPdfUploaded={handlePdfUploaded}
           onProfileParsed={handleProfileParsed}
-          onGoToBuilder={() => setMainTab('builder')}
+          onGoToBuilder={() => { setEntryMode('existing'); setMainTab('builder'); }}
         />
       )}
-      {mainTab === 'builder' && (
+      {mainTab === 'builder' && entryMode === null && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 24px', gap: 32 }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--lp-text)', marginBottom: 8 }}>How do you want to start?</div>
+            <div style={{ fontSize: 13, color: 'var(--lp-text3)' }}>Choose a path to build your resume.</div>
+          </div>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 640 }}>
+            <button
+              onClick={() => setMainTab('parse')}
+              style={{ flex: '1 1 260px', background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 14, padding: '28px 24px', cursor: 'pointer', textAlign: 'left', transition: 'border-color .15s' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--lp-teal)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--lp-bdr)'}
+            >
+              <div style={{ fontSize: 28, marginBottom: 12 }}>📄</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--lp-text)', marginBottom: 6 }}>Upload existing resume</div>
+              <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>Upload your current CV. We'll parse it, check it against the universal resume standard, and load it into the builder pre-filled.</div>
+              <div style={{ marginTop: 16, fontSize: 12, fontWeight: 700, color: 'var(--lp-teal)' }}>Go to Upload & Parse →</div>
+            </button>
+            <button
+              onClick={() => setEntryMode('scratch')}
+              style={{ flex: '1 1 260px', background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 14, padding: '28px 24px', cursor: 'pointer', textAlign: 'left', transition: 'border-color .15s' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--lp-teal)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--lp-bdr)'}
+            >
+              <div style={{ fontSize: 28, marginBottom: 12 }}>✍️</div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--lp-text)', marginBottom: 6 }}>Build from scratch</div>
+              <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>Start with a blank resume. Fill in your details step-by-step, pick a template, and download a professional PDF.</div>
+              <div style={{ marginTop: 16, fontSize: 12, fontWeight: 700, color: 'var(--lp-teal)' }}>Start blank →</div>
+            </button>
+          </div>
+        </div>
+      )}
+      {mainTab === 'builder' && entryMode === 'existing' && (
         <BuilderTab
           initialProfile={memory?.parseProfile || null}
           memory={memory}
           onSaveVersion={handleSaveVersion}
           restoredData={restoredData}
+        />
+      )}
+      {mainTab === 'builder' && entryMode === 'scratch' && (
+        <BuilderTab
+          initialProfile={null}
+          memory={memory}
+          onSaveVersion={handleSaveVersion}
+          restoredData={null}
         />
       )}
       {mainTab === 'history' && (

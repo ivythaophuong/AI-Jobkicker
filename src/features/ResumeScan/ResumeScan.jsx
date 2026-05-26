@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import './resumeScan.css';
 import { OrbitSpinner } from '../../components/OrbitMark';
 import { callLLM, extractJSON } from '../../lib/ai.jsx';
+import { TEMPLATES } from '../ATSBuilder/resumeTemplates.jsx';
+import html2pdf from 'html2pdf.js';
 
 // ── Preserved scan logic ──────────────────────────────────────────────────────
 
@@ -246,6 +248,34 @@ function deriveProgBars(result) {
   return { bullet, metrics, ownership };
 }
 
+// ── Clean text-to-PDF renderer used for scanner PDF export ────────────────────
+function TextResumePDF({ text, accent }) {
+  const lines = text.split('\n');
+  const firstNonEmpty = lines.findIndex(l => l.trim());
+  const SECTION_RE = /^(EXPERIENCE|EDUCATION|SKILLS?|SUMMARY|PROFILE|WORK|PROJECTS?|AWARDS?|CERTIF|PUBLICATIONS?|LANGUAGES?|REFERENCES?|CONTACT|PROFESSIONAL|ACHIEVEMENTS?|VOLUNTEER)/i;
+  const effectiveAccent = accent === '#111' ? '#333' : accent;
+  return (
+    <div style={{ padding: '48px 52px', fontFamily: 'Arial, Helvetica, sans-serif', background: '#fff', color: '#222', width: 794, minHeight: 1122, boxSizing: 'border-box' }}>
+      {lines.map((line, i) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={i} style={{ height: 7 }} />;
+        if (i === firstNonEmpty) return <div key={i} style={{ fontSize: 24, fontWeight: 700, color: '#111', marginBottom: 6, letterSpacing: 0.3 }}>{trimmed}</div>;
+        const isSection = SECTION_RE.test(trimmed) && trimmed.length < 60 && trimmed === trimmed.toUpperCase();
+        if (isSection) return (
+          <div key={i} style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: effectiveAccent, borderBottom: `1.5px solid ${effectiveAccent}`, paddingBottom: 3, marginTop: 20, marginBottom: 8 }}>{trimmed}</div>
+        );
+        if (trimmed.match(/^[•\-·*]/)) return (
+          <div key={i} style={{ fontSize: 11, color: '#333', lineHeight: 1.65, paddingLeft: 14, position: 'relative', marginBottom: 3 }}>
+            <span style={{ position: 'absolute', left: 0, color: effectiveAccent }}>•</span>
+            {trimmed.replace(/^[•\-·*]\s*/, '')}
+          </div>
+        );
+        return <div key={i} style={{ fontSize: 11.5, color: '#333', lineHeight: 1.65, marginBottom: 2 }}>{trimmed}</div>;
+      })}
+    </div>
+  );
+}
+
 // ── ATS Scanner main view (matches reference: no tabs, left card + right results) ──
 function JDMatchTab({ resumeText, form, setActiveModule, updateMemory, memory }) {
   const [jd, setJd]           = useState('');
@@ -260,6 +290,10 @@ function JDMatchTab({ resumeText, form, setActiveModule, updateMemory, memory })
   const [editorText, setEditorText]           = useState('');
   const [copyDone, setCopyDone]               = useState(false);
   const [editorPatchStatus, setEditorPatchStatus] = useState({});
+  const [showTplModal, setShowTplModal]       = useState(false);
+  const [selectedTpl, setSelectedTpl]         = useState('modern');
+  const [pdfDownloading, setPdfDownloading]   = useState(false);
+  const pdfExportRef = useRef(null);
 
   const resumeCtx = resumeText
     ? (typeof resumeText === 'string' ? resumeText : resumeText.content || '') : '';
@@ -344,6 +378,29 @@ Generate 3-5 issues hyper-specific to this resume's actual bullets and the JD's 
     setEditorText(t => t + (t.endsWith('\n') ? '' : '\n') + `[Add: ${kw}]`);
   };
 
+  const handleExportPdf = async () => {
+    if (!pdfExportRef.current) return;
+    setPdfDownloading(true);
+    const tpl = TEMPLATES.find(t => t.id === selectedTpl) || TEMPLATES[0];
+    const firstName = (editorText.split('\n').find(l => l.trim()) || 'resume').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_').slice(0, 30);
+    try {
+      await html2pdf()
+        .set({
+          margin: 0,
+          filename: `${firstName}_${tpl.label.replace(/\s+/g, '_')}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false, width: 794, windowWidth: 794 },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        })
+        .from(pdfExportRef.current)
+        .save();
+      setShowTplModal(false);
+    } finally {
+      setPdfDownloading(false);
+    }
+  };
+
   return (
     <div style={{ padding: '24px 28px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
 
@@ -381,11 +438,50 @@ Generate 3-5 issues hyper-specific to this resume's actual bullets and the JD's 
               color: copyDone ? '#00E5A0' : 'var(--lp-text2)',
               borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all .2s',
             }}>{copyDone ? 'Copied ✓' : 'Copy resume'}</button>
-            <button onClick={downloadTxt} style={{
-              padding: '10px 14px', background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)',
-              color: 'var(--lp-text2)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            }}>Download .txt</button>
+            <button onClick={() => setShowTplModal(true)} style={{
+              padding: '10px 16px', background: 'var(--lp-teal)', border: 'none',
+              color: '#000', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+            }}>⬇ Export PDF</button>
           </div>
+
+          {/* Hidden render target for PDF export */}
+          <div ref={pdfExportRef} style={{ position: 'fixed', left: -9999, top: 0, zIndex: -1, width: 794 }}>
+            {(() => { const tpl = TEMPLATES.find(t => t.id === selectedTpl) || TEMPLATES[0]; return <TextResumePDF text={editorText} accent={tpl.accent} />; })()}
+          </div>
+
+          {/* Template picker modal */}
+          {showTplModal && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+              onClick={() => setShowTplModal(false)}>
+              <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 16, padding: 28, width: 380, maxWidth: '90vw' }}
+                onClick={e => e.stopPropagation()}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--lp-text)', marginBottom: 4 }}>Choose PDF style</div>
+                <div style={{ fontSize: 11, color: 'var(--lp-text3)', marginBottom: 18 }}>Exports your edited resume text as a styled PDF.</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                  {TEMPLATES.map(t => (
+                    <button key={t.id} onClick={() => setSelectedTpl(t.id)} style={{
+                      display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px',
+                      background: selectedTpl === t.id ? 'rgba(0,212,255,.08)' : 'var(--lp-bg3)',
+                      border: `1px solid ${selectedTpl === t.id ? 'rgba(0,212,255,.35)' : 'var(--lp-bdr)'}`,
+                      borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+                    }}>
+                      <div style={{ width: 14, height: 14, borderRadius: 3, background: t.accent === '#111' ? '#333' : t.accent, flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, color: 'var(--lp-text)', fontWeight: selectedTpl === t.id ? 700 : 400, fontFamily: 'inherit' }}>{t.label}</span>
+                      {selectedTpl === t.id && <span style={{ marginLeft: 'auto', color: 'var(--lp-teal)', fontSize: 13 }}>✓</span>}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={handleExportPdf} disabled={pdfDownloading} style={{
+                  width: '100%', padding: '12px 0', borderRadius: 8, border: 'none',
+                  background: pdfDownloading ? 'var(--lp-bdr)' : 'var(--lp-teal)',
+                  color: pdfDownloading ? 'var(--lp-text3)' : '#000',
+                  fontSize: 13, fontWeight: 800, cursor: pdfDownloading ? 'default' : 'pointer', fontFamily: 'inherit',
+                }}>
+                  {pdfDownloading ? 'Generating PDF…' : 'Export PDF →'}
+                </button>
+              </div>
+            </div>
+          )}
 
           {result?.missingKeywords?.length > 0 && (
             <div>
