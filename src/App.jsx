@@ -646,7 +646,7 @@ function App() {
   };
 
   return (
-    <div data-theme={darkMode ? "dark" : "light"} style={{ minHeight: "100vh", background: 'var(--lp-bg)', fontFamily: "var(--lp-ff, 'DM Sans', system-ui, sans-serif)", color: 'var(--lp-text)', '--card-bg': 'var(--lp-bg2)', '--card-bdr': 'rgba(0,212,255,0.09)' }}>
+    <div data-theme={darkMode ? "dark" : "light"} style={{ minHeight: "100vh", background: 'var(--lp-bg)', fontFamily: "var(--lp-ff, 'Inter', system-ui, sans-serif)", color: 'var(--lp-text)', '--card-bg': 'var(--lp-bg2)', '--card-bdr': 'rgba(0,212,255,0.09)' }}>
       
       {/* Modals */}
       {authModal && <AuthModal

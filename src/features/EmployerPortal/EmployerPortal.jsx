@@ -13,7 +13,7 @@ const T = {
   bdr: 'rgba(0,212,255,.09)', bdr2: 'rgba(0,212,255,.16)',
   grad: 'linear-gradient(135deg,#00D4FF 0%,#B026FF 100%)',
   gradHR: 'linear-gradient(135deg,#B026FF 0%,#FF46E5 60%,#FFD233 100%)',
-  ff: "'Poppins',system-ui,sans-serif",
+  ff: "'Inter',system-ui,sans-serif",
   ffm: "'JetBrains Mono',monospace",
   r: 10, rs: 7, rl: 16,
 };
