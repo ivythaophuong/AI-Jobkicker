@@ -3728,24 +3728,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
       {/* ── NAV ── */}
       <nav className="v36-nav">
         <a className="v36-nav-logo" href="#" onClick={e => e.preventDefault()}>
-          <svg width="26" height="26" viewBox="0 0 80 80" fill="none">
-            <defs><linearGradient id="v36NavGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6366F1"/><stop offset="55%" stopColor="#EC4899"/><stop offset="100%" stopColor="#F59E0B"/></linearGradient></defs>
-            <circle cx="40" cy="40" r="34" stroke="url(#v36NavGrad)" strokeWidth="2.5" opacity="0.25"/>
-            <line x1="40" y1="26" x2="40" y2="10" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
-            <line x1="51.96" y1="33" x2="65.57" y2="25.1" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
-            <line x1="51.96" y1="47" x2="65.57" y2="54.9" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
-            <line x1="40" y1="54" x2="40" y2="70" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
-            <line x1="28.04" y1="47" x2="14.43" y2="54.9" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
-            <line x1="28.04" y1="33" x2="14.43" y2="25.1" stroke="url(#v36NavGrad)" strokeWidth="2.5" strokeLinecap="round"/>
-            <circle cx="40" cy="8" r="3" fill="url(#v36NavGrad)"/>
-            <circle cx="67" cy="24" r="3" fill="url(#v36NavGrad)"/>
-            <circle cx="67" cy="56" r="3" fill="url(#v36NavGrad)"/>
-            <circle cx="40" cy="72" r="3" fill="url(#v36NavGrad)"/>
-            <circle cx="13" cy="56" r="3" fill="url(#v36NavGrad)"/>
-            <circle cx="13" cy="24" r="3" fill="url(#v36NavGrad)"/>
-            <circle cx="40" cy="40" r="10" fill="url(#v36NavGrad)"/>
-            <circle cx="40" cy="40" r="4" fill="white"/>
-          </svg>
+          <OrbitMark size={26} animated duration={18} />
           <div className="v36-nav-logo-text">
             <span className="v36-nav-wordmark"><span>career</span><span className="v36-nav-wm-ai">ai</span><span>hub</span></span>
             <span className="v36-nav-tagline">Build. Verified. Connect.</span>
