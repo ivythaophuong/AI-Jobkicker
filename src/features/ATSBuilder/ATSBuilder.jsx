@@ -1415,14 +1415,29 @@ function mapProfileToData(profile) {
   };
 }
 
+const BUILDER_DRAFT_KEY = 'careerai_builder_draft';
+
 function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
   const [step, setStep] = useState(0);
   const [activeTemplate, setActiveTemplate] = useState('modern');
-  const [data, setData] = useState(() => restoredData || mapProfileToData(initialProfile));
-  const [isSample, setIsSample] = useState(!initialProfile && !restoredData);
+  const [data, setData] = useState(() => {
+    if (restoredData) return restoredData;
+    try {
+      const saved = localStorage.getItem(BUILDER_DRAFT_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return mapProfileToData(initialProfile);
+  });
+  const [isSample, setIsSample] = useState(!initialProfile && !restoredData && !localStorage.getItem(BUILDER_DRAFT_KEY));
   const [saved, setSaved] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const previewRef = useRef(null);
+
+  // Autosave draft to localStorage on every change (skip sample placeholder data)
+  useEffect(() => {
+    if (isSample) return;
+    try { localStorage.setItem(BUILDER_DRAFT_KEY, JSON.stringify(data)); } catch {}
+  }, [data, isSample]);
 
   // Sync restored data when user clicks Restore in history — only fires when non-null
   useEffect(() => {
