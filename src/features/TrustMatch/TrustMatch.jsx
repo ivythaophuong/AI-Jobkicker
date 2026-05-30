@@ -238,7 +238,7 @@ export default function TrustMatch({ user, memory, updateMemory }) {
 
   // ── Left panel ─────────────────────────────────────────────────────────────
   const renderLeft = () => (
-    <div style={{ width: 260, minWidth: 260, background: T.bg2, borderRight: `1px solid ${T.bdr}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="tm-left-pane" style={{ width: 260, minWidth: 260, background: T.bg2, borderRight: `1px solid ${T.bdr}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ padding: '13px 16px', borderBottom: `1px solid ${T.bdr}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.09em', color: T.text3 }}>My Profile</span>
         <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 5, background: T.emeraldDim, color: T.emerald, border: `1px solid ${T.emeraldB}`, fontWeight: 700 }}>Candidate</span>
@@ -437,7 +437,7 @@ export default function TrustMatch({ user, memory, updateMemory }) {
 
   // ── Right panel ─────────────────────────────────────────────────────────────
   const renderRight = () => (
-    <div style={{ width: 300, minWidth: 300, background: T.bg2, borderLeft: `1px solid ${T.bdr}`, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+    <div className="tm-right-pane" style={{ width: 300, minWidth: 300, background: T.bg2, borderLeft: `1px solid ${T.bdr}`, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
       <div style={{ padding: '13px 16px', borderBottom: `1px solid ${T.bdr}`, flexShrink: 0 }}>
         <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.09em', color: T.text3 }}>Trust &amp; Activity</span>
       </div>
@@ -565,7 +565,7 @@ export default function TrustMatch({ user, memory, updateMemory }) {
   };
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 116px)', overflow: 'hidden', background: T.bg, fontFamily: FF, fontSize: 14, lineHeight: 1.6, color: T.text }}>
+    <div className="tm-outer" style={{ display: 'flex', height: 'calc(100vh - 116px)', overflow: 'hidden', background: T.bg, fontFamily: FF, fontSize: 14, lineHeight: 1.6, color: T.text }}>
       {renderLeft()}
       {renderCenter()}
       {renderRight()}

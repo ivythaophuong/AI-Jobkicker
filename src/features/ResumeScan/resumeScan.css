@@ -960,3 +960,38 @@
   padding: 8px 10px;
   border-left-width: 2px;
 }
+
+/* ── Mobile responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Input phase: stack resume + JD vertically */
+  .rs-input-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Edit phase: stack preview + text editor vertically */
+  .rs-edit-split {
+    grid-template-columns: 1fr !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+  }
+
+  /* Result score hero: stack score + verdict vertically */
+  .rs-score-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+  }
+
+  /* Remove fixed bar label width on mobile */
+  .rs-bar-label {
+    width: auto !important;
+    min-width: 80px;
+  }
+
+  /* Reduce side padding on mobile */
+  .rs-input-grid,
+  .rs-score-row {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}

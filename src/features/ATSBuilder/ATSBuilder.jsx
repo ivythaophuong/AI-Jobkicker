@@ -142,7 +142,7 @@ function AtsScannerDemo() {
           <div style={{ fontSize:12, color:'var(--lp-text3)' }}>Before → Scanning → After · auto-plays on load</div>
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1.15fr 1fr', gap:14, alignItems:'start', marginBottom:20 }}>
+        <div className="atb-demo-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1.15fr 1fr', gap:14, alignItems:'start', marginBottom:20 }}>
 
           {/* Card 1: Before */}
           <div style={{ background:C.glass, border:'1px solid rgba(255,77,106,.22)', borderRadius:12, overflow:'hidden' }}>
@@ -937,6 +937,12 @@ function UploadAndParseTab({ user, memory, resumeText: globalResumeText, initial
   );
   const [profile, setProfile]   = useState(initialProfile || null);
   const [error, setError]       = useState('');
+  const [localSkills, setLocalSkills] = useState(initialProfile?.skills?.filter(s => s.trim()) || []);
+  const [skillInputVal, setSkillInputVal] = useState('');
+
+  useEffect(() => {
+    if (profile?.skills) setLocalSkills(profile.skills.filter(s => s.trim()));
+  }, [profile]);
 
   const parseResume = async (text) => {
     setLoading(true); setProfile(null); setError('');
@@ -1020,7 +1026,7 @@ For extras: include every section not already captured above (e.g. Certification
     : 'var(--lp-text3)';
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, minHeight: 500 }}>
+    <div className="atb-parse-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, minHeight: 500 }}>
       {/* Left */}
       <div style={{ borderRight: '1px solid var(--lp-bdr)', padding: 24, display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
         <div style={{ color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
@@ -1132,7 +1138,7 @@ For extras: include every section not already captured above (e.g. Certification
       </div>
 
       {/* Right — AI Parse Preview */}
-      <div style={{ padding: 24 }}>
+      <div className="atb-parse-preview-pane" style={{ padding: 24 }}>
         <div style={{ color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>
           AI Parse Preview
         </div>
@@ -1185,21 +1191,46 @@ For extras: include every section not already captured above (e.g. Certification
               </div>
             )}
 
-            {/* Skills */}
-            {profile.skills?.length > 0 && (
+            {/* Skills — editable */}
+            {profile && (
               <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 10, padding: 14 }}>
-                <div style={{ color: 'var(--lp-text3)', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
-                  Skills Detected ({profile.skills.length})
+                <div style={{ color: 'var(--lp-text3)', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+                  Skills ({localSkills.length}) — click × to remove, type to add
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {profile.skills.map((s, i) => (
-                    <span key={i} style={{
-                      background: i < 3 ? 'rgba(0,212,255,.15)' : 'var(--lp-bg3)',
-                      border: `1px solid ${i < 3 ? 'rgba(0,212,255,.3)' : 'var(--lp-bdr)'}`,
-                      color: i < 3 ? 'var(--lp-teal)' : 'var(--lp-text2)',
-                      borderRadius: 5, padding: '3px 9px', fontSize: 11, fontWeight: 600,
-                    }}>{s}</span>
+                <div
+                  style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 10px', background: 'var(--lp-bg3)', borderRadius: 7, minHeight: 44, cursor: 'text', alignContent: 'flex-start' }}
+                  onClick={() => document.getElementById('parse-skill-inp')?.focus()}
+                >
+                  {localSkills.map((s, i) => (
+                    <span key={s + i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: i < 3 ? 'rgba(0,212,255,.15)' : 'var(--lp-bg2)', border: `1px solid ${i < 3 ? 'rgba(0,212,255,.3)' : 'var(--lp-bdr)'}`, color: i < 3 ? 'var(--lp-teal)' : 'var(--lp-text2)', borderRadius: 5, padding: '3px 8px 3px 10px', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      {s}
+                      <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); setLocalSkills(ls => ls.filter((_, idx) => idx !== i)); }}
+                        style={{ background: 'none', border: 'none', color: 'rgba(0,212,255,.55)', cursor: 'pointer', padding: '0 2px', fontSize: 13, lineHeight: 1, minHeight: 'unset' }}
+                      >×</button>
+                    </span>
                   ))}
+                  <input
+                    id="parse-skill-inp"
+                    value={skillInputVal}
+                    onChange={e => setSkillInputVal(e.target.value.replace(/,/g, ''))}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ',') {
+                        e.preventDefault();
+                        const val = skillInputVal.trim();
+                        if (val) { setLocalSkills(ls => [...ls, val]); setSkillInputVal(''); }
+                      } else if (e.key === 'Backspace' && !skillInputVal) {
+                        setLocalSkills(ls => ls.slice(0, -1));
+                      }
+                    }}
+                    onBlur={() => {
+                      const val = skillInputVal.trim();
+                      if (val) { setLocalSkills(ls => [...ls, val]); setSkillInputVal(''); }
+                    }}
+                    placeholder={localSkills.length ? '' : 'Add a skill…'}
+                    style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 11, color: 'var(--lp-text)', minWidth: 90, padding: '3px 4px', flex: 1 }}
+                  />
                 </div>
               </div>
             )}
@@ -1207,7 +1238,10 @@ For extras: include every section not already captured above (e.g. Certification
             {/* Guiding button → Builder */}
             {onGoToBuilder && (
               <button
-                onClick={onGoToBuilder}
+                onClick={() => {
+                  if (profile && onProfileParsed) onProfileParsed({ ...profile, skills: localSkills });
+                  onGoToBuilder();
+                }}
                 style={{
                   width: '100%', padding: '13px 0',
                   background: 'var(--lp-teal)', color: '#000',
@@ -1420,6 +1454,7 @@ const BUILDER_DRAFT_KEY = 'careerai_builder_draft';
 function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
   const [step, setStep] = useState(0);
   const [activeTemplate, setActiveTemplate] = useState('modern');
+  const [skillInput, setSkillInput] = useState('');
   const [data, setData] = useState(() => {
     if (restoredData) return restoredData;
     try {
@@ -1535,7 +1570,7 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
   );
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: 640 }}>
+    <div className="atb-builder-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: 640 }}>
 
       {/* ── LEFT: step form ── */}
       <div style={{ borderRight: '1px solid var(--lp-bdr)', padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
@@ -1630,36 +1665,44 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
         {/* ── Skills ── */}
         {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-            <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>Press Enter or comma to add a skill. Backspace removes the last one.</div>
+            <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>Press Enter or comma to add a skill. Click × to remove.</div>
             <div
               style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '10px 12px', background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 8, minHeight: 80, cursor: 'text', alignContent: 'flex-start' }}
               onClick={() => document.getElementById('skill-inp')?.focus()}
             >
               {data.skills.filter(s => s.trim()).map((skill, i) => (
-                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,212,255,.1)', border: '1px solid rgba(0,212,255,.25)', color: 'var(--lp-teal)', borderRadius: 5, padding: '3px 8px 3px 10px', fontSize: 12, fontWeight: 600, lineHeight: 1.4 }}>
+                <span key={skill + i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,212,255,.1)', border: '1px solid rgba(0,212,255,.25)', color: 'var(--lp-teal)', borderRadius: 5, padding: '3px 8px 3px 10px', fontSize: 12, fontWeight: 600, lineHeight: 1.4, whiteSpace: 'nowrap' }}>
                   {skill}
                   <button
-                    onClick={e => { e.stopPropagation(); edit(d => ({ ...d, skills: d.skills.filter((_, idx) => idx !== i) })); }}
-                    style={{ background: 'none', border: 'none', color: 'rgba(0,212,255,.6)', cursor: 'pointer', padding: '0 2px', fontSize: 14, lineHeight: 1, fontFamily: 'inherit' }}
+                    type="button"
+                    onClick={e => { e.stopPropagation(); edit(d => { const filled = d.skills.filter(s => s.trim()); filled.splice(i, 1); return { ...d, skills: filled }; }); }}
+                    style={{ background: 'none', border: 'none', color: 'rgba(0,212,255,.6)', cursor: 'pointer', padding: '0 2px', fontSize: 14, lineHeight: 1, fontFamily: 'inherit', minHeight: 'unset' }}
                   >×</button>
                 </span>
               ))}
               <input
                 id="skill-inp"
+                value={skillInput}
+                onChange={e => setSkillInput(e.target.value.replace(/,/g, ''))}
                 onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ',') {
+                  if (e.key === 'Enter') {
                     e.preventDefault();
-                    const val = e.target.value.replace(/,/g, '').trim();
-                    if (val) edit(d => ({ ...d, skills: [...d.skills.filter(s => s.trim()), val] }));
-                    e.target.value = '';
-                  } else if (e.key === 'Backspace' && !e.target.value) {
-                    const filled = data.skills.filter(s => s.trim());
-                    if (filled.length > 0) edit(d => ({ ...d, skills: filled.slice(0, -1) }));
+                    const val = skillInput.trim();
+                    if (val) { edit(d => ({ ...d, skills: [...d.skills.filter(s => s.trim()), val] })); setSkillInput(''); }
+                  } else if (e.key === ',' ) {
+                    e.preventDefault();
+                    const val = skillInput.trim();
+                    if (val) { edit(d => ({ ...d, skills: [...d.skills.filter(s => s.trim()), val] })); setSkillInput(''); }
+                  } else if (e.key === 'Backspace' && !skillInput) {
+                    edit(d => {
+                      const filled = d.skills.filter(s => s.trim());
+                      return filled.length > 0 ? { ...d, skills: filled.slice(0, -1) } : d;
+                    });
                   }
                 }}
-                onBlur={e => {
-                  const val = e.target.value.replace(/,/g, '').trim();
-                  if (val) { edit(d => ({ ...d, skills: [...d.skills.filter(s => s.trim()), val] })); e.target.value = ''; }
+                onBlur={() => {
+                  const val = skillInput.trim();
+                  if (val) { edit(d => ({ ...d, skills: [...d.skills.filter(s => s.trim()), val] })); setSkillInput(''); }
                 }}
                 placeholder={data.skills.filter(s => s.trim()).length ? '' : 'Python, Machine Learning, SQL…'}
                 style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 12, color: 'var(--lp-text)', fontFamily: 'var(--lp-ff)', minWidth: 140, padding: '3px 4px', flex: 1 }}

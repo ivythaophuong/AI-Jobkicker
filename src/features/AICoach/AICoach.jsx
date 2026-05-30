@@ -153,7 +153,7 @@ export default function AICoach({ memory, form, updateMemory, showToast }) {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 14, alignItems: 'start' }}>
+      <div className="aic-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 14, alignItems: 'start' }}>
         {/* Chat area */}
         <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 10, display: 'flex', flexDirection: 'column', height: 560 }}>
           {/* Messages */}

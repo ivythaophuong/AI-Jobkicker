@@ -260,6 +260,110 @@
     justify-content: center;
     align-items: center;
   }
+  /* Hide non-primary items in mobile bottom bar */
+  .app-sidebar-item[data-mobile-hide] { display: none; }
   .app-sidebar-badge { display: none; }
   .app-sidebar-icon { font-size: 18px; width: auto; }
+}
+
+/* ── Global module area responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-module-area {
+    padding: 16px;
+    min-height: calc(100dvh - 120px);
+  }
+}
+
+/* ── Onboarding stats grid ──────────────────────────────────────────────────── */
+.onboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 32px;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .onboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Touch targets ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  button, [role="button"], input[type="button"], input[type="submit"] {
+    min-height: 44px;
+  }
+
+  /* Sidebar items already handled above — no double-apply */
+  .app-sidebar-item {
+    min-height: unset;
+  }
+}
+
+/* ── Prevent horizontal overflow ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* ── Cross-feature mobile grid fixes ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* TrustMatch: fixed-width 260px left + 300px right pane → stack */
+  .tm-outer {
+    flex-direction: column !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .tm-left-pane {
+    width: 100% !important;
+    min-width: unset !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    max-height: 320px;
+  }
+  .tm-right-pane {
+    width: 100% !important;
+    min-width: unset !important;
+    border-left: none !important;
+    border-top: 1px solid rgba(255,255,255,.07);
+  }
+
+  /* AI Coach: chat + context panel → stack, context panel collapses */
+  .aic-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .aic-grid > *:last-child {
+    display: none;
+  }
+
+  /* Salary Coach: 2-col salary data → 1-col */
+  .sal-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Cover Letter: form + preview → 1-col */
+  .cl-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Career Roadmap: journey + salary tab → 1-col */
+  .rm-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Interview Coach: readiness plan cards → 1-col */
+  .ic-plan-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Verify Creds: Trust Score panel + credentials panel → 1-col */
+  .vc-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* Verify Creds: issuer + date form row → 1-col */
+  .vc-form-grid {
+    grid-template-columns: 1fr !important;
+  }
 }

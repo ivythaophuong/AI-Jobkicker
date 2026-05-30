@@ -126,7 +126,7 @@ export default function CareerRoadmap({ memory, form, user, setActiveModule }) {
         {stepsCompleted === 5 && <> All 5 steps complete — you're fully prepared. Activate TrustMatch to start receiving recruiter matches.</>}
       </AiBubble>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+      <div className="rm-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {/* Roadmap steps */}
         <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 10, padding: '18px 20px' }}>
           <SectionLabel>Your journey · Step {stepsCompleted + 1} of 5</SectionLabel>

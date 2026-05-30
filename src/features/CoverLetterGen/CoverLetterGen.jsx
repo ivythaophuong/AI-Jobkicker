@@ -106,7 +106,7 @@ Write a real letter — no [brackets] or placeholders. Match the tone exactly.` 
       </div>
 
       {/* 2-col */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'start' }}>
+      <div className="cl-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'start' }}>
 
         {/* ── Left: settings ── */}
         <div style={{ background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>

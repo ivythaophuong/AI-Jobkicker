@@ -200,7 +200,7 @@ function InterviewDashboard({ memory, onNavigate }) {
         <div style={{ color: 'var(--lp-text3)', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.12em', marginBottom: 10 }}>
           Your readiness plan
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <div className="ic-plan-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {plan.map((p, i) => (
             <div key={i} style={{
               background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)',

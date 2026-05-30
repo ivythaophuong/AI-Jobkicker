@@ -292,19 +292,50 @@ function JDMatchTab({ resumeText, setResumeText, form, setActiveModule, updateMe
   const [editorText, setEditorText]           = useState('');
   const [copyDone, setCopyDone]               = useState(false);
   const [editorPatchStatus, setEditorPatchStatus] = useState({});
-  const [showTplModal, setShowTplModal]       = useState(false);
   const [selectedTpl, setSelectedTpl]         = useState('modern');
   const [pdfDownloading, setPdfDownloading]   = useState(false);
   const [pdfExported, setPdfExported]         = useState(false);
+  const [showRawEditor, setShowRawEditor]     = useState(false);
   const [failDismissed, setFailDismissed]     = useState(false);
   const [uploadParsing, setUploadParsing]     = useState(false);
   const [uploadErr, setUploadErr]             = useState('');
   const [uploadDragOver, setUploadDragOver]   = useState(false);
+  const [templateProfile, setTemplateProfile] = useState(null);
+  const [parsingTemplate, setParsingTemplate] = useState(false);
   const uploadRef = useRef(null);
   const pdfExportRef = useRef(null);
 
   const resumeCtx = resumeText
     ? (typeof resumeText === 'string' ? resumeText : resumeText.content || '') : '';
+
+  const parseForTemplate = async (textToUse) => {
+    if (templateProfile || parsingTemplate) return;
+    const src = (textToUse || resumeCtx).trim();
+    if (!src) return;
+    setParsingTemplate(true);
+    try {
+      const raw = await callLLM([{ role: 'user', content:
+        `Parse this resume and extract structured data. Return ONLY raw JSON (no markdown, start with {):
+{"name":"full name","email":"email","phone":"phone","linkedin":"linkedin url or handle","location":"city/region","summary":"professional summary","workExperience":[{"title":"job title","company":"company","period":"date range","bullets":["bullet 1"]}],"education":[{"degree":"degree","institution":"school","year":"graduation year"}],"skills":["skill1","skill2"],"awards":["award 1"],"extras":[{"heading":"Section Name","items":["item 1"]}]}
+
+Resume:
+${src.slice(0, 4000)}` }], 3000);
+      const parsed = extractJSON(raw);
+      if (!parsed.error) setTemplateProfile(parsed);
+    } catch (_) { /* silently fall back to TextResumePDF */ } finally {
+      setParsingTemplate(false);
+    }
+  };
+
+  const profileToTemplateData = (p) => ({
+    contact: { name: p.name || '', email: p.email || '', phone: p.phone || '', linkedin: p.linkedin || '', location: p.location || '' },
+    summary: p.summary || '',
+    experience: (p.workExperience || []).map((w, i) => ({ id: i, company: w.company || '', title: w.title || '', period: w.period || '', bullets: w.bullets || [] })),
+    education: (p.education || []).map((e, i) => ({ id: i, institution: e.institution || '', degree: e.degree || '', year: e.year || '' })),
+    skills: p.skills || [],
+    awards: p.awards || [],
+    extras: (p.extras || []).filter(s => s.heading && s.items?.length),
+  });
 
   const handleResumeUpload = async (file) => {
     if (!file) return;
@@ -385,7 +416,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
     navigator.clipboard.writeText(text).catch(() => {});
   };
 
-  const openEditor = () => { setEditorText(resumeCtx); setEditMode(true); };
+  const openEditor = () => { setEditorText(resumeCtx); setEditMode(true); parseForTemplate(resumeCtx); };
 
   const copyEditor = () => {
     navigator.clipboard.writeText(editorText).catch(() => {});
@@ -409,7 +440,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
     if (!pdfExportRef.current) return;
     setPdfDownloading(true);
     const tpl = TEMPLATES.find(t => t.id === selectedTpl) || TEMPLATES[0];
-    const firstName = (editorText.split('\n').find(l => l.trim()) || 'resume').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_').slice(0, 30);
+    const firstName = ((templateProfile?.name || editorText.split('\n').find(l => l.trim()) || 'resume')).replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_').slice(0, 30);
     try {
       await html2pdf()
         .set({
@@ -423,11 +454,13 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
         .from(pdfExportRef.current)
         .save();
       setPdfExported(true);
-      setShowTplModal(false);
     } finally {
       setPdfDownloading(false);
     }
   };
+
+  // Reset templateProfile when resume changes so export re-parses
+  useEffect(() => { setTemplateProfile(null); }, [resumeCtx]);
 
   const phase = loading ? 'scanning' : editMode ? 'edit' : result ? 'results' : 'input';
   const scoreColor = result
@@ -435,50 +468,25 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
     : '#00D4FF';
   const barColor = (s) => s >= 80 ? '#00E5A0' : s >= 60 ? '#FFB84D' : '#FF5A5A';
 
-  /* ─── PDF export modal (always rendered so ref stays mounted) ─── */
+  /* ─── Hidden PDF render target — always mounted so ref is valid ─── */
   const pdfModal = (
-    <>
-      <div ref={pdfExportRef} style={{ position: 'fixed', left: -9999, top: 0, zIndex: -1, width: 794 }}>
-        {(() => { const tpl = TEMPLATES.find(t => t.id === selectedTpl) || TEMPLATES[0]; return <TextResumePDF text={editorText} accent={tpl.accent} />; })()}
-      </div>
-      {showTplModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
-          onClick={() => setShowTplModal(false)}>
-          <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 16, padding: 28, width: 380, maxWidth: '90vw' }}
-            onClick={e => e.stopPropagation()}>
-            <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--lp-text)', marginBottom: 4 }}>Choose PDF style</div>
-            <div style={{ fontSize: 11, color: 'var(--lp-text3)', marginBottom: 18 }}>Exports your edited resume as a styled PDF.</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-              {TEMPLATES.map(t => (
-                <button key={t.id} onClick={() => setSelectedTpl(t.id)} style={{
-                  display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px',
-                  background: selectedTpl === t.id ? 'rgba(0,212,255,.08)' : 'var(--lp-bg3)',
-                  border: `1px solid ${selectedTpl === t.id ? 'rgba(0,212,255,.35)' : 'var(--lp-bdr)'}`,
-                  borderRadius: 8, cursor: 'pointer', textAlign: 'left',
-                }}>
-                  <div style={{ width: 14, height: 14, borderRadius: 3, background: t.accent === '#111' ? '#333' : t.accent, flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: 'var(--lp-text)', fontWeight: selectedTpl === t.id ? 700 : 400, fontFamily: 'inherit' }}>{t.label}</span>
-                  {selectedTpl === t.id && <span style={{ marginLeft: 'auto', color: 'var(--lp-teal)', fontSize: 13 }}>✓</span>}
-                </button>
-              ))}
-            </div>
-            <button onClick={handleExportPdf} disabled={pdfDownloading} style={{
-              width: '100%', padding: '12px 0', borderRadius: 8, border: 'none',
-              background: pdfDownloading ? 'var(--lp-bdr)' : 'var(--lp-teal)',
-              color: pdfDownloading ? 'var(--lp-text3)' : '#000',
-              fontSize: 13, fontWeight: 800, cursor: pdfDownloading ? 'default' : 'pointer', fontFamily: 'inherit',
-            }}>{pdfDownloading ? 'Generating PDF…' : 'Export PDF →'}</button>
-          </div>
-        </div>
-      )}
-    </>
+    <div ref={pdfExportRef} style={{ position: 'fixed', left: -9999, top: 0, zIndex: -1, width: 794 }}>
+      {(() => {
+        const tpl = TEMPLATES.find(t => t.id === selectedTpl) || TEMPLATES[0];
+        if (templateProfile && tpl.component) {
+          const T = tpl.component;
+          return <T {...profileToTemplateData(templateProfile)} />;
+        }
+        return <TextResumePDF text={editorText} accent={tpl.accent === '#111' ? '#333' : tpl.accent} />;
+      })()}
+    </div>
   );
 
   /* ════════════════════ INPUT PHASE ════════════════════ */
   if (phase === 'input') return (
     <div style={{ padding: '32px 36px', display: 'flex', flexDirection: 'column', gap: 24, animation: 'rs-fadein .3s ease' }}>
       <style>{`@keyframes rs-fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'stretch' }}>
+      <div className="rs-input-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'stretch' }}>
 
         {/* Resume zone */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -591,67 +599,127 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
   );
 
   /* ════════════════════ EDIT PHASE ════════════════════ */
-  if (phase === 'edit') return (
-    <div style={{ padding: '28px 36px', display: 'flex', flexDirection: 'column', gap: 16, animation: 'rs-fadein .25s ease' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button onClick={() => setEditMode(false)} style={{ background: 'none', border: 'none', color: 'var(--lp-text3)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5 }}>
-          ← Back to results
-        </button>
-        <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--lp-text3)' }}>Resume Editor</div>
-      </div>
-
-      {!resumeCtx && !editorText && (
-        <div style={{ fontSize: 11, color: '#FFB84D', background: 'rgba(255,184,77,.07)', border: '1px solid rgba(255,184,77,.2)', borderRadius: 8, padding: '10px 12px' }}>
-          PDF text not extracted — paste resume text below to edit.
+  if (phase === 'edit') {
+    const ActiveTpl = TEMPLATES.find(t => t.id === selectedTpl)?.component;
+    const tplData   = templateProfile ? profileToTemplateData(templateProfile) : null;
+    const showTextPanel = !tplData || showRawEditor;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', animation: 'rs-fadein .25s ease' }}>
+        {/* ── Top bar ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 24px', borderBottom: '1px solid var(--lp-bdr)', flexShrink: 0 }}>
+          <button type="button" onClick={() => setEditMode(false)} style={{ background: 'none', border: 'none', color: 'var(--lp-text3)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 5 }}>
+            ← Back
+          </button>
+          <div style={{ flex: 1, fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--lp-text3)' }}>Resume Editor</div>
+          <button type="button" onClick={handleExportPdf} disabled={pdfDownloading || parsingTemplate} style={{
+            padding: '9px 20px', background: (pdfDownloading || parsingTemplate) ? 'var(--lp-bdr)' : 'var(--lp-teal)',
+            border: 'none', color: (pdfDownloading || parsingTemplate) ? 'var(--lp-text3)' : '#000',
+            borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: (pdfDownloading || parsingTemplate) ? 'default' : 'pointer', whiteSpace: 'nowrap',
+          }}>
+            {pdfDownloading ? 'Generating…' : parsingTemplate ? 'Parsing…' : '⬇ Download PDF'}
+          </button>
         </div>
-      )}
 
-      <textarea
-        value={editorText}
-        onChange={e => setEditorText(e.target.value)}
-        placeholder="Your resume text…"
-        style={{
-          minHeight: 380, background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)',
-          borderRadius: 12, color: 'var(--lp-text)', padding: '14px 16px',
-          fontSize: 12.5, outline: 'none', lineHeight: 1.7, resize: 'vertical', boxSizing: 'border-box',
-          fontFamily: "'JetBrains Mono', monospace", width: '100%',
-          transition: 'border-color .15s',
-        }}
-        onFocus={e => { e.target.style.borderColor = 'rgba(0,212,255,.35)'; }}
-        onBlur={e => { e.target.style.borderColor = 'var(--lp-bdr)'; }}
-      />
+        {/* ── Template carousel ── */}
+        <div style={{ display: 'flex', gap: 6, padding: '8px 24px', borderBottom: '1px solid var(--lp-bdr)', overflowX: 'auto', scrollbarWidth: 'none', background: 'var(--lp-bg3)', flexShrink: 0 }}>
+          {TEMPLATES.map(t => (
+            <button key={t.id} type="button" onClick={() => setSelectedTpl(t.id)} style={{
+              padding: '5px 14px', fontSize: 11, fontWeight: 700, borderRadius: 6, cursor: 'pointer', whiteSpace: 'nowrap',
+              background: selectedTpl === t.id ? 'var(--lp-teal)' : 'transparent',
+              color: selectedTpl === t.id ? '#000' : 'var(--lp-text2)',
+              border: `1px solid ${selectedTpl === t.id ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`,
+              borderLeft: `3px solid ${t.accent === '#111' ? '#555' : t.accent}`,
+            }}>
+              {selectedTpl === t.id ? '✓ ' : ''}{t.label}
+            </button>
+          ))}
+        </div>
 
-      {result?.missingKeywords?.length > 0 && (
-        <div>
-          <div style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--lp-text3)', marginBottom: 8 }}>Click to append missing keywords</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {result.missingKeywords.map((kw, i) => (
-              <button key={i} onClick={() => appendKeyword(kw)} style={{
-                background: 'rgba(255,90,90,.08)', border: '1px solid rgba(255,90,90,.2)',
-                color: '#FF5A5A', borderRadius: 5, padding: '4px 10px', fontSize: 11, fontWeight: 600,
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}>{kw} +</button>
-            ))}
+        {/* ── Two-pane body ── */}
+        <div className="rs-edit-split" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', flex: 1, overflow: 'hidden', minHeight: 0 }}>
+
+          {/* Left — template preview */}
+          <div style={{ background: '#d4d4d4', overflow: 'auto', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {parsingTemplate && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '60px 0', color: 'var(--lp-text3)' }}>
+                <OrbitSpinner size={36} />
+                <div style={{ fontSize: 12 }}>Parsing resume into template…</div>
+              </div>
+            )}
+            {!parsingTemplate && tplData && ActiveTpl && (
+              <div style={{ width: 794, transformOrigin: 'top center', boxShadow: '0 4px 24px rgba(0,0,0,.25)' }}>
+                <ActiveTpl {...tplData} />
+              </div>
+            )}
+            {!parsingTemplate && !tplData && (
+              <div style={{ width: 794, boxShadow: '0 4px 24px rgba(0,0,0,.25)' }}>
+                <TextResumePDF text={editorText} accent="#333" />
+              </div>
+            )}
+          </div>
+
+          {/* Right — actions panel */}
+          <div style={{ borderLeft: '1px solid var(--lp-bdr)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+            {/* Header row */}
+            <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--lp-bdr)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+              <div style={{ flex: 1, fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--lp-text3)' }}>
+                {showTextPanel ? 'Text Editor' : 'Actions'}
+              </div>
+              {tplData && (
+                <button type="button" onClick={() => setShowRawEditor(v => !v)} style={{
+                  background: showRawEditor ? 'rgba(0,212,255,.1)' : 'transparent',
+                  border: `1px solid ${showRawEditor ? 'rgba(0,212,255,.3)' : 'var(--lp-bdr)'}`,
+                  color: showRawEditor ? 'var(--lp-teal)' : 'var(--lp-text3)',
+                  borderRadius: 5, padding: '3px 8px', fontSize: 10, fontWeight: 700, cursor: 'pointer',
+                }}>✏ Edit text</button>
+              )}
+            </div>
+
+            {/* Textarea — only when no template OR user toggled it on */}
+            {showTextPanel && (
+              <textarea
+                value={editorText}
+                onChange={e => setEditorText(e.target.value)}
+                placeholder="Your resume text…"
+                style={{
+                  flex: 1, background: 'var(--lp-bg3)', border: 'none', resize: 'none',
+                  color: 'var(--lp-text)', padding: '12px 14px', fontSize: 11.5,
+                  outline: 'none', lineHeight: 1.7, boxSizing: 'border-box',
+                  fontFamily: "'JetBrains Mono', monospace", width: '100%',
+                }}
+              />
+            )}
+
+            {/* Actions — always visible */}
+            <div style={{ padding: '12px 14px', borderTop: showTextPanel ? '1px solid var(--lp-bdr)' : 'none', display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0, overflowY: 'auto', flex: showTextPanel ? '0 0 auto' : 1 }}>
+              {result?.missingKeywords?.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--lp-text3)', marginBottom: 8 }}>Missing keywords</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                    {result.missingKeywords.map((kw, i) => (
+                      <button key={i} type="button" onClick={() => appendKeyword(kw)} style={{
+                        background: 'rgba(255,90,90,.08)', border: '1px solid rgba(255,90,90,.2)',
+                        color: '#FF5A5A', borderRadius: 5, padding: '4px 10px', fontSize: 11, fontWeight: 600,
+                        cursor: 'pointer', fontFamily: 'inherit', minHeight: 'unset',
+                      }}>{kw} +</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <button type="button" onClick={copyEditor} style={{
+                padding: '9px 0', background: copyDone ? 'rgba(0,229,160,.1)' : 'var(--lp-bg2)',
+                border: `1px solid ${copyDone ? 'rgba(0,229,160,.3)' : 'var(--lp-bdr)'}`,
+                color: copyDone ? '#00E5A0' : 'var(--lp-text2)',
+                borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all .2s', minHeight: 'unset',
+              }}>{copyDone ? 'Copied ✓' : 'Copy text'}</button>
+            </div>
           </div>
         </div>
-      )}
-
-      <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={copyEditor} style={{
-          flex: 1, padding: '11px 0',
-          background: copyDone ? 'rgba(0,229,160,.1)' : 'var(--lp-bg3)',
-          border: `1px solid ${copyDone ? 'rgba(0,229,160,.3)' : 'var(--lp-bdr)'}`,
-          color: copyDone ? '#00E5A0' : 'var(--lp-text2)',
-          borderRadius: 9, fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all .2s',
-        }}>{copyDone ? 'Copied ✓' : 'Copy text'}</button>
-        <button onClick={() => setShowTplModal(true)} style={{
-          padding: '11px 20px', background: 'var(--lp-teal)', border: 'none',
-          color: '#000', borderRadius: 9, fontSize: 12, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
-        }}>⬇ Export PDF</button>
+        {pdfModal}
       </div>
-      {pdfModal}
-    </div>
-  );
+    );
+  }
 
   /* ════════════════════ RESULTS PHASE ════════════════════ */
   return (
@@ -705,7 +773,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
 
         {/* Score hero */}
         <div style={{ background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 16, padding: '28px 32px' }}>
-          <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+          <div className="rs-score-row" style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
             {/* Big score */}
             <div style={{ textAlign: 'center', flexShrink: 0 }}>
               <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 64, fontWeight: 900, color: scoreColor, lineHeight: 1, letterSpacing: -2 }}>
@@ -733,7 +801,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 {(result.bars || []).map((b, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ fontSize: 11, color: 'var(--lp-text3)', width: 130, flexShrink: 0 }}>{b.label}</div>
+                    <div className="rs-bar-label" style={{ fontSize: 11, color: 'var(--lp-text3)', width: 130, flexShrink: 0 }}>{b.label}</div>
                     <div style={{ flex: 1, height: 5, background: 'var(--lp-bg2)', borderRadius: 3, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${b.score}%`, background: barColor(b.score), borderRadius: 3, transition: 'width .8s cubic-bezier(.4,0,.2,1)' }} />
                     </div>

@@ -112,6 +112,7 @@ export default function AppSidebar({ activeModule, onNavigate, user, onLogout, c
                     className={`app-sidebar-item${active ? ' active' : ''}`}
                     onClick={() => onNavigate(item.id)}
                     title={collapsed ? item.label : undefined}
+                    data-mobile-hide={!MOBILE_ITEMS.includes(item.id) ? '' : undefined}
                   >
                     <span className="app-sidebar-icon">
                       <Icon id={item.id} size={15} color={active ? 'var(--lp-teal)' : 'var(--lp-text3)'} />

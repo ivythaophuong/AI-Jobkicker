@@ -133,7 +133,7 @@ Return ONLY raw JSON (no markdown, start with {):
 
   return (
     <div style={{ padding: 24 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
+      <div className="sal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
 
         {/* Left: salary range bars */}
         <div>

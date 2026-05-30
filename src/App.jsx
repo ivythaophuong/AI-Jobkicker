@@ -109,11 +109,13 @@ function App() {
   // State is now fully managed by useMemory relational sync
   // localStorage used as resilient fallback — survives refreshes even if Supabase write is delayed
   const resumeKey = user?.id ? `careerai_rt_${user.id}` : 'careerai_rt_guest';
-  const resumeText = memory.resumeText || localStorage.getItem(resumeKey) || null;
+  const _rawStored = localStorage.getItem(resumeKey);
+  const _storedResume = _rawStored ? (() => { try { return JSON.parse(_rawStored); } catch { return _rawStored; } })() : null;
+  const resumeText = memory.resumeText || _storedResume || null;
   const scanResult = memory.scanResult || null;
 
   const setResumeText = (val) => {
-    if (val) localStorage.setItem(resumeKey, val);
+    if (val) localStorage.setItem(resumeKey, typeof val === 'string' ? val : JSON.stringify(val));
     else localStorage.removeItem(resumeKey);
     updateMemory(m => ({ ...m, resumeText: val }));
   };
@@ -619,7 +621,7 @@ function App() {
           </div>
 
           {/* Stats Grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginTop: 32, width: "100%" }}>
+          <div className="onboard-stats-grid">
             {[
               { stat: "75%", label: "rejection rate", color: C.red },
               { stat: "$18K", label: "salary gap", color: C.gold },

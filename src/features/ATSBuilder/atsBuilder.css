@@ -997,3 +997,65 @@
 .atb-text-preview::-webkit-scrollbar-thumb,
 .atb-result-new-text::-webkit-scrollbar-thumb,
 .atb-diff-section::-webkit-scrollbar-thumb { background: var(--atb-bdr2); border-radius: 2px; }
+
+/* ── Mobile responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Demo section: stack 3 cards vertically */
+  .atb-demo-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Builder tab: stack form + preview vertically */
+  .atb-builder-grid {
+    grid-template-columns: 1fr !important;
+    min-height: unset !important;
+  }
+
+  /* Fix min-height to use dynamic viewport */
+  .atb {
+    min-height: calc(100dvh - 110px);
+  }
+
+  /* Upload phase: reduce padding */
+  .atb-upload-wrap {
+    padding: 28px 16px 32px;
+  }
+
+  /* Upload zone: smaller on mobile */
+  .atb-upload-zone {
+    padding: 28px 16px;
+    min-height: 160px;
+  }
+
+  /* Kanban columns: stack vertically if still used */
+  .atb-columns {
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .atb-col {
+    border-right: none;
+    border-bottom: 1px solid var(--atb-bdr);
+    min-height: 200px;
+  }
+
+  .atb-col:last-child {
+    border-bottom: none;
+  }
+
+  /* Diff view: stack columns */
+  .atb-diff-columns {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Upload+Parse tab: stack form above preview on mobile */
+  .atb-parse-grid {
+    grid-template-columns: 1fr !important;
+    min-height: unset !important;
+  }
+
+  .atb-parse-preview-pane {
+    border-top: 1px solid var(--atb-bdr);
+    padding: 16px !important;
+  }
+}
