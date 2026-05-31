@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LogoMark } from '../features/Landing/LandingPage';
 
 // ── SVG icon set — 16×16 viewBox, stroke-based ───────────────────────────────
@@ -83,13 +83,59 @@ function initials(name) {
   return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
+const MOB_PRIMARY = [
+  { id: 'dashboard', label: 'Home' },
+  { id: 'jobs',      label: 'Jobs' },
+  { id: 'scan',      label: 'Scan' },
+  { id: 'star',      label: 'STAR' },
+];
+
+const MOB_DRAWER_TOOLS = [
+  { id: 'simulate',   label: 'Interviews'  },
+  { id: 'salary',     label: 'Salary'      },
+  { id: 'cover',      label: 'Cover'       },
+  { id: 'ats',        label: 'ATS Builder' },
+  { id: 'radar',      label: 'Radar'       },
+  { id: 'score',      label: 'Readiness'   },
+  { id: 'market',     label: 'Market'      },
+  { id: 'memory',     label: 'Memory'      },
+  { id: 'jd',         label: 'JD Analyzer' },
+  { id: 'trustmatch', label: 'TrustMatch'  },
+  { id: 'verify',     label: 'Verify'      },
+  { id: 'aichat',     label: 'AI Coach'    },
+];
+
+const MOB_DRAWER_IDS = new Set(MOB_DRAWER_TOOLS.map(t => t.id));
+
+function getMobActiveIdx(moduleId, moreOpen) {
+  if (moreOpen || MOB_DRAWER_IDS.has(moduleId)) return 4;
+  const idx = MOB_PRIMARY.findIndex(t => t.id === moduleId);
+  return idx >= 0 ? idx : 0;
+}
+
+function MobNavIcon({ id, active }) {
+  const col = active ? '#00D484' : '#5a6e8a';
+  const p = { fill: 'none', stroke: col, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  const s = { width: 18, height: 18, display: 'block' };
+  switch (id) {
+    case 'dashboard': return <svg viewBox="0 0 24 24" style={s}><path {...p} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline {...p} points="9 22 9 12 15 12 15 22"/></svg>;
+    case 'jobs':      return <svg viewBox="0 0 24 24" style={s}><rect {...p} x="2" y="7" width="20" height="14" rx="2"/><path {...p} d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>;
+    case 'scan':      return <svg viewBox="0 0 24 24" style={s}><path {...p} d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline {...p} points="14 2 14 8 20 8"/><line {...p} x1="16" y1="13" x2="8" y2="13"/><line {...p} x1="16" y1="17" x2="8" y2="17"/></svg>;
+    case 'star':      return <svg viewBox="0 0 24 24" style={s}><polygon {...p} points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+    case 'more':      return <svg viewBox="0 0 24 24" style={s}><line {...p} x1="8" y1="6" x2="21" y2="6"/><line {...p} x1="8" y1="12" x2="21" y2="12"/><line {...p} x1="8" y1="18" x2="21" y2="18"/><line {...p} x1="3" y1="6" x2="3.01" y2="6"/><line {...p} x1="3" y1="12" x2="3.01" y2="12"/><line {...p} x1="3" y1="18" x2="3.01" y2="18"/></svg>;
+    default:          return <svg viewBox="0 0 24 24" style={s}><circle {...p} cx="12" cy="12" r="9"/></svg>;
+  }
+}
+
 export default function AppSidebar({ activeModule, onNavigate, user, onLogout, collapsed, onToggle }) {
+  const [moreOpen, setMoreOpen] = useState(false);
   const allItems   = NAV_GROUPS.flatMap(g => g.items);
   const mobileItems = allItems.filter(i => MOBILE_ITEMS.includes(i.id));
+  const mobActiveIdx = getMobActiveIdx(activeModule, moreOpen);
 
   return (
     <>
-      {/* Desktop sidebar */}
+      {/* ── Desktop sidebar ── */}
       <div className={`app-sidebar${collapsed ? ' collapsed' : ''}`}>
         {/* Logo */}
         <div className="app-sidebar-logo">
@@ -177,7 +223,7 @@ export default function AppSidebar({ activeModule, onNavigate, user, onLogout, c
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             width: '100%', padding: '10px 0',
             background: 'transparent', border: 'none',
-            borderTop: '1px solid var(--lp-bdr, rgba(0,212,255,.08))',
+            borderTop: '1px solid var(--lp-bdr, rgba(236,72,153,.08))',
             color: 'var(--lp-text3)', cursor: 'pointer',
             flexShrink: 0,
             transition: 'color 0.15s ease',
@@ -194,26 +240,66 @@ export default function AppSidebar({ activeModule, onNavigate, user, onLogout, c
         </button>
       </div>
 
-      {/* Mobile bottom nav */}
-      <div className="app-sidebar" style={{ display: 'none' }}>
-        <nav className="app-sidebar-nav">
-          {mobileItems.map(item => {
-            const active = activeModule === item.id;
-            return (
-              <button
-                key={item.id}
-                className={`app-sidebar-item${active ? ' active' : ''}`}
-                onClick={() => onNavigate(item.id)}
-              >
-                <span className="app-sidebar-icon">
-                  <Icon id={item.id} size={15} color={active ? 'var(--lp-teal)' : 'var(--lp-text3)'} />
-                </span>
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+      {/* ── Mobile nav: glass top bar + bottom 5-tab nav + More drawer ── */}
+
+      {/* Glass top bar */}
+      <div className="mob-glass-bar">
+        <div className="mob-glass-brand">
+          <LogoMark size={18} />
+          <span className="mob-glass-name">CareerAiHub</span>
+        </div>
+        <div className="mob-glass-avatar">{initials(user?.name)}</div>
       </div>
+
+      {/* Bottom nav */}
+      <div className="mob-bottom-nav">
+        <div
+          className="mob-nav-indicator"
+          style={{ left: `calc(${mobActiveIdx * 20 + 10}% - 12px)` }}
+        />
+        {MOB_PRIMARY.map((item) => {
+          const active = mobActiveIdx === MOB_PRIMARY.indexOf(item) && !moreOpen;
+          return (
+            <button
+              key={item.id}
+              className={`mob-bn-tab${active ? ' active' : ''}`}
+              onClick={() => { setMoreOpen(false); onNavigate(item.id); }}
+            >
+              <MobNavIcon id={item.id} active={active} />
+              <span className="mob-bn-label">{item.label}</span>
+            </button>
+          );
+        })}
+        <button
+          className={`mob-bn-tab${moreOpen ? ' active' : ''}`}
+          onClick={() => setMoreOpen(o => !o)}
+        >
+          <MobNavIcon id="more" active={moreOpen} />
+          <span className="mob-bn-label">More</span>
+        </button>
+      </div>
+
+      {/* More drawer */}
+      {moreOpen && (
+        <div className="mob-drawer-overlay" onClick={() => setMoreOpen(false)}>
+          <div className="mob-drawer" onClick={e => e.stopPropagation()}>
+            <div className="mob-drawer-handle" />
+            <div className="mob-drawer-title">All tools</div>
+            <div className="mob-drawer-grid">
+              {MOB_DRAWER_TOOLS.map(item => (
+                <button
+                  key={item.id}
+                  className="mob-di"
+                  onClick={() => { setMoreOpen(false); onNavigate(item.id); }}
+                >
+                  <Icon id={item.id} size={16} color="#5a6e8a" />
+                  <span className="mob-di-label">{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

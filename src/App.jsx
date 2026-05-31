@@ -121,6 +121,13 @@ function App() {
   };
   const setScanResult = (val) => updateMemory(m => ({ ...m, scanResult: val }));
 
+  // Capture beta/UTM source from URL params — persists through signup
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const ref = p.get('ref') || p.get('utm_source');
+    if (ref) localStorage.setItem('careerai_signup_source', ref);
+  }, []);
+
   // Browser history support
   useEffect(() => {
     window.history.replaceState({ showLanding: true }, '', window.location.pathname);
@@ -405,7 +412,7 @@ function App() {
                     onKeyDown={e => e.key === 'Enter' && form.role.trim() && setOnboardStep(2)}
                     style={{
                       width: '100%', boxSizing: 'border-box',
-                      background: 'rgba(0,212,255,0.04)',
+                      background: 'rgba(236,72,153,0.04)',
                       border: `1.5px solid ${form.role.trim() ? C.accent + '55' : 'rgba(255,255,255,0.08)'}`,
                       borderRadius: 12, padding: '15px 16px 15px 46px',
                       fontSize: 15, color: C.text, fontFamily: 'inherit',
@@ -533,9 +540,9 @@ function App() {
                   </button>
                 </div>
                 {resumeText === null ? (
-                  <div style={{ border: `2px dashed rgba(0,212,255,0.2)`, borderRadius: 12, padding: 24, textAlign: "center", cursor: "pointer", background: 'rgba(0,212,255,0.03)', transition: 'border-color 0.2s' }} onClick={() => document.getElementById('setup-file').click()}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.45)'}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.2)'}
+                  <div style={{ border: `2px dashed rgba(236,72,153,0.2)`, borderRadius: 12, padding: 24, textAlign: "center", cursor: "pointer", background: 'rgba(236,72,153,0.03)', transition: 'border-color 0.2s' }} onClick={() => document.getElementById('setup-file').click()}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(236,72,153,0.45)'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(236,72,153,0.2)'}
                   >
                     <input type="file" id="setup-file" accept=".pdf,.docx" hidden onChange={handleSetupFile} />
                     <div style={{ fontSize: 28, marginBottom: 8 }}>{resumeParsing ? '⏳' : '📄'}</div>
@@ -549,13 +556,13 @@ function App() {
                     placeholder="Paste your full resume text here..."
                     style={{
                       width: '100%', boxSizing: 'border-box', minHeight: 140, resize: 'vertical',
-                      background: 'rgba(0,212,255,0.03)', border: '1.5px solid rgba(0,212,255,0.15)',
+                      background: 'rgba(236,72,153,0.03)', border: '1.5px solid rgba(236,72,153,0.15)',
                       borderRadius: 10, color: C.text, padding: '12px 14px', fontSize: 13,
                       fontFamily: 'inherit', outline: 'none', lineHeight: 1.6,
                       transition: 'border-color 0.2s',
                     }}
-                    onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.45)'}
-                    onBlur={e => e.target.style.borderColor = 'rgba(0,212,255,0.15)'}
+                    onFocus={e => e.target.style.borderColor = 'rgba(236,72,153,0.45)'}
+                    onBlur={e => e.target.style.borderColor = 'rgba(236,72,153,0.15)'}
                   />
                 )}
               </div>
@@ -648,7 +655,7 @@ function App() {
   };
 
   return (
-    <div data-theme={darkMode ? "dark" : "light"} style={{ minHeight: "100vh", background: 'var(--lp-bg)', fontFamily: "var(--lp-ff, 'Inter', system-ui, sans-serif)", color: 'var(--lp-text)', '--card-bg': 'var(--lp-bg2)', '--card-bdr': 'rgba(0,212,255,0.09)' }}>
+    <div data-theme={darkMode ? "dark" : "light"} style={{ minHeight: "100vh", background: 'var(--lp-bg)', fontFamily: "var(--lp-ff, 'Inter', system-ui, sans-serif)", color: 'var(--lp-text)', '--card-bg': 'var(--lp-bg2)', '--card-bdr': 'rgba(236,72,153,0.09)' }}>
       
       {/* Modals */}
       {authModal && <AuthModal
@@ -680,7 +687,7 @@ function App() {
           />
           <div className={`app-sidebar-layout${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
             {/* Thin top bar: ⌘K + dark mode toggle */}
-            <div style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--lp-bg)', borderBottom: '1px solid var(--lp-bdr)', padding: '0 20px', height: 44, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+            <div className="desktop-topbar" style={{ position: 'sticky', top: 0, zIndex: 100, background: 'var(--lp-bg)', borderBottom: '1px solid var(--lp-bdr)', padding: '0 20px', height: 44, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
               <button onClick={() => setDarkMode(d => !d)} title="Toggle theme" style={{ background: 'transparent', border: `1px solid var(--lp-bdr2)`, color: 'var(--lp-text2)', borderRadius: 6, padding: '3px 8px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', lineHeight: 1 }}>
                 {darkMode ? '☀️' : '🌙'}
               </button>

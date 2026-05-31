@@ -1,14 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
 
 :root {
   --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
   --space-5:20px; --space-6:24px; --space-8:32px; --space-10:40px; --space-12:48px;
   --radius-sm:6px; --radius-md:10px; --radius-lg:14px; --radius-xl:20px; --radius-full:9999px;
-  --font-display:'Bricolage Grotesque',sans-serif;
+  --font-display:'Inter',sans-serif;
   --font-body:'Inter',sans-serif;
   --font-mono:'JetBrains Mono',monospace;
   --lp-ff:'Inter',system-ui,sans-serif;
-  --lp-ffm:'Bricolage Grotesque',sans-serif;
+  --lp-ffm:'DM Mono',monospace;
   --lp-mono:'JetBrains Mono',monospace;
   --transition-fast:all 0.12s ease;
   --transition-base:all 0.2s ease;
@@ -50,7 +50,7 @@ body {
   transition:var(--transition-base);font-family:var(--font-mono);
   position:relative;
 }
-.mod-tab:hover{border-color:#00D4FF55;color:#E8F0FE;background:#0F1520}
+.mod-tab:hover{border-color:#EC489955;color:#E8F0FE;background:#0F1520}
 .mod-tab.active{font-size:12px;font-weight:800}
 
 .skeleton{background:#0F1520;border-radius:6px;overflow:hidden;position:relative}
@@ -62,8 +62,8 @@ body {
 .spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(0, 212, 255, 0.1);
-  border-top-color: #00D4FF;
+  border: 2px solid rgba(236, 72, 153, 0.1);
+  border-top-color: #EC4899;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
