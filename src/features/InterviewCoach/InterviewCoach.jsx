@@ -17,8 +17,8 @@ const TABS = [
 const tabBarStyle = {
   display: 'flex', alignItems: 'center', gap: 4,
   padding: '8px 20px',
-  background: 'rgba(0,212,255,.04)',
-  borderBottom: '1px solid rgba(0,212,255,.1)',
+  background: 'rgba(236,72,153,.04)',
+  borderBottom: '1px solid rgba(236,72,153,.1)',
   overflowX: 'auto', flexWrap: 'nowrap', scrollbarWidth: 'none',
 };
 
@@ -143,7 +143,7 @@ function InterviewDashboard({ memory, onNavigate }) {
       {/* AI bubble */}
       <div style={{
         background: 'var(--lp-bg3)',
-        border: '1px solid rgba(0,212,255,.18)',
+        border: '1px solid rgba(236,72,153,.18)',
         borderLeft: '4px solid var(--lp-teal)',
         borderRadius: 10, padding: '14px 16px',
         display: 'flex', gap: 12, alignItems: 'flex-start',
@@ -249,7 +249,7 @@ export default function InterviewCoach(props) {
         }}>
           ✦ INTERVIEW COACH
         </span>
-        <div style={{ width: 1, height: 16, background: 'rgba(0,212,255,.15)', flexShrink: 0, marginRight: 2 }} />
+        <div style={{ width: 1, height: 16, background: 'rgba(236,72,153,.15)', flexShrink: 0, marginRight: 2 }} />
         {TABS.map(tab => (
           <button
             key={tab.id}

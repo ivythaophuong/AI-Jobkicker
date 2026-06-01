@@ -7,15 +7,15 @@ function SectionLabel({ children }) {
 
 function AiBubble({ children }) {
   return (
-    <div style={{ background: 'var(--lp-bg3)', border: '1px solid rgba(0,212,255,.18)', borderRadius: 10, padding: '14px 16px', display: 'flex', gap: 12, position: 'relative', overflow: 'hidden', marginBottom: 14 }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at top left,rgba(0,212,255,.04),transparent 60%)', pointerEvents: 'none' }} />
-      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#00D4FF,#B026FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#000', flexShrink: 0 }}>AI</div>
+    <div style={{ background: 'var(--lp-bg3)', border: '1px solid rgba(236,72,153,.18)', borderRadius: 10, padding: '14px 16px', display: 'flex', gap: 12, position: 'relative', overflow: 'hidden', marginBottom: 14 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at top left,rgba(236,72,153,.04),transparent 60%)', pointerEvents: 'none' }} />
+      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#EC4899,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#000', flexShrink: 0 }}>AI</div>
       <div style={{ fontSize: 12.5, color: 'var(--lp-text)', lineHeight: 1.65, flex: 1 }}>{children}</div>
     </div>
   );
 }
 
-const STEP_COLORS = { done: '#00E5A0', active: '#00D4FF', locked: '#4A5A7A' };
+const STEP_COLORS = { done: '#00E5A0', active: '#EC4899', locked: '#4A5A7A' };
 
 function RoadmapStep({ num, state, title, desc, cta, onCta, isLast }) {
   const color = STEP_COLORS[state];
@@ -33,7 +33,7 @@ function RoadmapStep({ num, state, title, desc, cta, onCta, isLast }) {
       <div style={{ flex: 1, paddingTop: 4 }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: state === 'locked' ? 'var(--lp-text3)' : 'var(--lp-text)', marginBottom: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
           {title}
-          {state === 'active' && <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', background: 'rgba(0,212,255,.12)', color: 'var(--lp-teal)', border: '1px solid rgba(0,212,255,.2)', borderRadius: 20, padding: '2px 7px', fontFamily: 'var(--lp-ffm)' }}>In progress</span>}
+          {state === 'active' && <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.07em', textTransform: 'uppercase', background: 'rgba(236,72,153,.12)', color: 'var(--lp-teal)', border: '1px solid rgba(236,72,153,.2)', borderRadius: 20, padding: '2px 7px', fontFamily: 'var(--lp-ffm)' }}>In progress</span>}
         </div>
         <div style={{ fontSize: 12, color: state === 'locked' ? 'var(--lp-text3)' : 'var(--lp-text2)', lineHeight: 1.55, marginBottom: cta ? 8 : 0 }}>{desc}</div>
         {cta && (
@@ -108,7 +108,7 @@ export default function CareerRoadmap({ memory, form, user, setActiveModule }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 20, fontWeight: 800, color: 'var(--lp-text)', letterSpacing: '-.02em' }}>Career Roadmap</div>
-            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', background: 'linear-gradient(90deg,rgba(99,102,241,.18),rgba(236,72,153,.12))', color: '#8B7CF6', border: '1px solid rgba(139,124,246,.22)', borderRadius: 20, padding: '2px 8px', fontFamily: 'var(--lp-ffm)' }}>New</span>
+            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', background: 'linear-gradient(90deg,rgba(236,72,153,.18),rgba(245,158,11,.12))', color: '#8B7CF6', border: '1px solid rgba(139,124,246,.22)', borderRadius: 20, padding: '2px 8px', fontFamily: 'var(--lp-ffm)' }}>New</span>
           </div>
           <div style={{ fontSize: 12.5, color: 'var(--lp-text2)' }}>
             Your personalised path to {targetRole} · {stepsCompleted}/5 steps complete · est. {estimatedDays}
@@ -119,7 +119,7 @@ export default function CareerRoadmap({ memory, form, user, setActiveModule }) {
       {/* AI summary */}
       <AiBubble>
         Your goal: <strong style={{ color: 'var(--lp-text)' }}>{targetRole}</strong>
-        {form?.market ? ` in ${form.market}` : ''}. You're <strong style={{ color: '#00D4FF' }}>{progressPct}%</strong> of the way there.
+        {form?.market ? ` in ${form.market}` : ''}. You're <strong style={{ color: '#EC4899' }}>{progressPct}%</strong> of the way there.
         {stepsCompleted < 5 && (
           <> The next unlock: <strong style={{ color: '#F5B340' }}>{!s1Done ? 'get your ATS score above 75' : !s2Done ? 'clear 75+ interview readiness with 5+ STAR stories' : !s3Done ? 'run skills gap analysis' : !s4Done ? 'verify credentials to reach trust score 65+' : 'activate TrustMatch visibility'}</strong>. Estimated offer timeline: {estimatedDays} at current pace.</>
         )}
@@ -133,7 +133,7 @@ export default function CareerRoadmap({ memory, form, user, setActiveModule }) {
 
           {/* Progress bar */}
           <div style={{ height: 4, background: 'var(--lp-bg4, #1A2540)', borderRadius: 2, marginBottom: 20, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${progressPct}%`, background: 'linear-gradient(90deg,#00D4FF,#8B7CF6)', borderRadius: 2, transition: 'width .7s ease' }} />
+            <div style={{ height: '100%', width: `${progressPct}%`, background: 'linear-gradient(90deg,#EC4899,#8B7CF6)', borderRadius: 2, transition: 'width .7s ease' }} />
           </div>
 
           <RoadmapStep num={1} state={stepState(s1Done, true)}
@@ -209,7 +209,7 @@ export default function CareerRoadmap({ memory, form, user, setActiveModule }) {
 
           {/* Upgrade nudge if not complete */}
           {stepsCompleted < 5 && (
-            <div style={{ background: 'linear-gradient(90deg,rgba(0,212,255,.06),rgba(139,124,246,.06))', border: '1px solid rgba(0,212,255,.13)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ background: 'linear-gradient(90deg,rgba(236,72,153,.06),rgba(139,124,246,.06))', border: '1px solid rgba(236,72,153,.13)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontSize: 18 }}>🗺️</span>
               <div style={{ fontSize: 12, color: 'var(--lp-text2)', flex: 1, lineHeight: 1.5 }}>
                 <strong style={{ color: 'var(--lp-text)' }}>Estimated offer timeline: {estimatedDays}</strong> at your current pace. Complete all 5 steps to unlock your Readiness Certificate.

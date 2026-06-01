@@ -7,9 +7,9 @@ function SectionLabel({ children }) {
 
 function AiBubble({ children }) {
   return (
-    <div style={{ background: 'var(--lp-bg3)', border: '1px solid rgba(0,212,255,.18)', borderRadius: 10, padding: '14px 16px', display: 'flex', gap: 12, position: 'relative', overflow: 'hidden', marginBottom: 14 }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at top left,rgba(0,212,255,.04),transparent 60%)', pointerEvents: 'none' }} />
-      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#00D4FF,#B026FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#000', flexShrink: 0 }}>AI</div>
+    <div style={{ background: 'var(--lp-bg3)', border: '1px solid rgba(236,72,153,.18)', borderRadius: 10, padding: '14px 16px', display: 'flex', gap: 12, position: 'relative', overflow: 'hidden', marginBottom: 14 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at top left,rgba(236,72,153,.04),transparent 60%)', pointerEvents: 'none' }} />
+      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#EC4899,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#000', flexShrink: 0 }}>AI</div>
       <div style={{ fontSize: 12.5, color: 'var(--lp-text)', lineHeight: 1.65, flex: 1 }}>{children}</div>
     </div>
   );
@@ -122,7 +122,7 @@ Include 6-9 skills. Be specific to their actual profile.` }], 1500);
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 20, fontWeight: 800, color: 'var(--lp-text)', letterSpacing: '-.02em' }}>Skills Gap Analysis</div>
-            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', background: 'linear-gradient(90deg,rgba(99,102,241,.18),rgba(236,72,153,.12))', color: '#8B7CF6', border: '1px solid rgba(139,124,246,.22)', borderRadius: 20, padding: '2px 8px', fontFamily: 'var(--lp-ffm)' }}>New</span>
+            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', background: 'linear-gradient(90deg,rgba(236,72,153,.18),rgba(245,158,11,.12))', color: '#8B7CF6', border: '1px solid rgba(139,124,246,.22)', borderRadius: 20, padding: '2px 8px', fontFamily: 'var(--lp-ffm)' }}>New</span>
           </div>
           <div style={{ fontSize: 12.5, color: 'var(--lp-text2)' }}>
             AI compares your profile to active {form?.role || 'tech'} roles in {form?.market || 'Singapore'}

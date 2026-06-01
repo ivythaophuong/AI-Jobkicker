@@ -57,8 +57,8 @@ function Bubble({ msg }) {
         <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--lp-teal)', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'var(--lp-ffm)' }}>AI Coach</div>
       )}
       <div style={{
-        background: isUser ? 'rgba(0,212,255,.1)' : 'var(--lp-bg3)',
-        border: `1px solid ${isUser ? 'rgba(0,212,255,.2)' : 'var(--lp-bdr)'}`,
+        background: isUser ? 'rgba(236,72,153,.1)' : 'var(--lp-bg3)',
+        border: `1px solid ${isUser ? 'rgba(236,72,153,.2)' : 'var(--lp-bdr)'}`,
         borderRadius: isUser ? '10px 10px 2px 10px' : '2px 10px 10px 10px',
         padding: '10px 14px',
         fontSize: 13,
@@ -142,7 +142,7 @@ export default function AICoach({ memory, form, updateMemory, showToast }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 20, fontWeight: 800, color: 'var(--lp-text)', letterSpacing: '-.02em' }}>AI Career Coach</div>
-            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', background: 'linear-gradient(90deg,rgba(99,102,241,.18),rgba(236,72,153,.12))', color: '#8B7CF6', border: '1px solid rgba(139,124,246,.22)', borderRadius: 20, padding: '2px 8px', fontFamily: 'var(--lp-ffm)' }}>New</span>
+            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', background: 'linear-gradient(90deg,rgba(236,72,153,.18),rgba(245,158,11,.12))', color: '#8B7CF6', border: '1px solid rgba(139,124,246,.22)', borderRadius: 20, padding: '2px 8px', fontFamily: 'var(--lp-ffm)' }}>New</span>
           </div>
           <div style={{ fontSize: 12.5, color: 'var(--lp-text2)' }}>
             Ask anything · knows your full profile, sessions, STAR bank, and goals
@@ -172,7 +172,7 @@ export default function AICoach({ memory, form, updateMemory, showToast }) {
               placeholder="Ask about resume, interview prep, salary, strategy…"
               disabled={loading}
               style={{ flex: 1, background: 'var(--lp-bg4, #1A2540)', border: '1px solid var(--lp-bdr2)', borderRadius: 8, padding: '10px 14px', fontFamily: 'var(--lp-ff)', fontSize: 13, color: 'var(--lp-text)', outline: 'none', transition: 'border-color .15s' }}
-              onFocus={e => (e.target.style.borderColor = 'rgba(0,212,255,.35)')}
+              onFocus={e => (e.target.style.borderColor = 'rgba(236,72,153,.35)')}
               onBlur={e => (e.target.style.borderColor = 'var(--lp-bdr2)')}
             />
             <button

@@ -31,7 +31,7 @@ function AtsScannerDemo() {
   const [scanScore, setScanScore] = useState(0);
   const [afterVisible, setAfterVisible] = useState(false);
   const [cardTitle, setCardTitle] = useState('AI Scanning…');
-  const [badgeColor, setBadgeColor] = useState('#00D4FF');
+  const [badgeColor, setBadgeColor] = useState('#EC4899');
   const [fixStep, setFixStep] = useState(0);
   const [fixApplied, setFixApplied] = useState(new Array(6).fill(false));
   const [afterScore, setAfterScore] = useState(38);
@@ -57,7 +57,7 @@ function AtsScannerDemo() {
     setAfterVisible(true);
     setAfterTitle('Scan complete — apply fixes');
     setAfterSub('Press "Apply next fix" to see AI improve each issue');
-    addT(() => { setPhase('fixmode'); setCardTitle('ATS engine — 6 checks'); setBadgeColor('#B026FF'); }, 600);
+    addT(() => { setPhase('fixmode'); setCardTitle('ATS engine — 6 checks'); setBadgeColor('#F59E0B'); }, 600);
   }, []);
 
   const startScan = useCallback(() => {
@@ -83,7 +83,7 @@ function AtsScannerDemo() {
     clearAll();
     setPhase('pre'); setScanPct(0); setStepsLit([false,false,false,false,false]);
     setLineStates([0,0,0,0,0]); setScanScore(0); setAfterVisible(false);
-    setCardTitle('AI Scanning…'); setBadgeColor('#00D4FF');
+    setCardTitle('AI Scanning…'); setBadgeColor('#EC4899');
     setFixStep(0); setFixApplied(new Array(6).fill(false)); setAfterScore(38);
     setDimVals({ d0:'—', d1:'—', d2:'—', d3:'—' }); setDimBars({ b0:0, b1:0, b2:0, b3:0 });
     setAfterTitle('Waiting for scan…'); setAfterSub('Results will appear here');
@@ -117,10 +117,10 @@ function AtsScannerDemo() {
   };
 
   const lw = [false,true,false,true,false];
-  const lineColor = i => lineStates[i]===1 ? 'rgba(0,212,255,.15)' : lineStates[i]===2 ? (lw[i] ? 'rgba(255,210,51,.1)' : 'rgba(0,229,160,.14)') : 'rgba(255,255,255,.07)';
-  const lineBdr = i => lineStates[i]===1 ? '2px solid #00D4FF' : lineStates[i]===2 ? (lw[i] ? '2px solid rgba(255,210,51,.5)' : '2px solid #00E5A0') : '';
+  const lineColor = i => lineStates[i]===1 ? 'rgba(236,72,153,.15)' : lineStates[i]===2 ? (lw[i] ? 'rgba(255,210,51,.1)' : 'rgba(0,229,160,.14)') : 'rgba(255,255,255,.07)';
+  const lineBdr = i => lineStates[i]===1 ? '2px solid #EC4899' : lineStates[i]===2 ? (lw[i] ? '2px solid rgba(255,210,51,.5)' : '2px solid #00E5A0') : '';
   const stepLabels = ['Reading structure','Extracting keywords','Matching PM roles','Scoring 5 dimensions','Generating fix recommendations'];
-  const dimColors = ['#00D4FF','#00E5A0','#B026FF','#FFD233'];
+  const dimColors = ['#EC4899','#00E5A0','#F59E0B','#FFD233'];
   const dimKeys = ['d0','d1','d2','d3'];
   const barKeys = ['b0','b1','b2','b3'];
   const dimLabels = ['Keywords','Formatting','Impact','Role fit'];
@@ -136,7 +136,7 @@ function AtsScannerDemo() {
         <button onClick={replay} style={{ padding:'4px 10px', borderRadius:6, background:'rgba(255,255,255,.05)', border:'1px solid rgba(255,255,255,.1)', color:'var(--lp-text2)', fontSize:11, cursor:'pointer', fontFamily:'var(--lp-ff)' }}>↺ Replay</button>
       </div>
 
-      <div style={{ background:'rgba(13,20,40,.7)', border:'1px solid rgba(0,212,255,.2)', borderRadius:16, overflow:'hidden', padding:24, backdropFilter:'blur(20px)', boxShadow:'0 0 60px rgba(0,212,255,.08),0 24px 64px rgba(0,0,0,.5)' }}>
+      <div style={{ background:'rgba(13,20,40,.7)', border:'1px solid rgba(236,72,153,.2)', borderRadius:16, overflow:'hidden', padding:24, backdropFilter:'blur(20px)', boxShadow:'0 0 60px rgba(236,72,153,.08),0 24px 64px rgba(0,0,0,.5)' }}>
         <div style={{ textAlign:'center', marginBottom:20 }}>
           <div style={{ fontSize:18, fontWeight:800, color:'var(--lp-text)', letterSpacing:'-.3px', marginBottom:6 }}>Watch the ATS system scan your resume and how AI fixes it</div>
           <div style={{ fontSize:12, color:'var(--lp-text3)' }}>Before → Scanning → After · auto-plays on load</div>
@@ -179,8 +179,8 @@ function AtsScannerDemo() {
           </div>
 
           {/* Card 2: Scanning / ATS Engine */}
-          <div style={{ background:C.glass, border:`1.5px solid ${phase==='scanning'?'rgba(0,212,255,.35)':badgeColor==='#B026FF'?'rgba(176,38,255,.35)':'rgba(0,229,160,.35)'}`, borderRadius:12, overflow:'hidden', boxShadow:`0 0 40px ${phase==='scanning'?'rgba(0,212,255,.12)':'rgba(176,38,255,.08)'}` }}>
-            <div style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 14px', background:'rgba(0,212,255,.06)', borderBottom:`1px solid rgba(0,212,255,.1)` }}>
+          <div style={{ background:C.glass, border:`1.5px solid ${phase==='scanning'?'rgba(236,72,153,.35)':badgeColor==='#F59E0B'?'rgba(245,158,11,.35)':'rgba(0,229,160,.35)'}`, borderRadius:12, overflow:'hidden', boxShadow:`0 0 40px ${phase==='scanning'?'rgba(236,72,153,.12)':'rgba(245,158,11,.08)'}` }}>
+            <div style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 14px', background:'rgba(236,72,153,.06)', borderBottom:`1px solid rgba(236,72,153,.1)` }}>
               <span style={{ width:8, height:8, borderRadius:'50%', background:phase==='done'?'#00E5A0':badgeColor, flexShrink:0, boxShadow:`0 0 8px ${badgeColor}80`, animation:phase==='scanning'?'lp-pulse 2s infinite':'' }} />
               <span style={{ fontSize:11, fontWeight:700, color:C.text2, flex:1 }}>{cardTitle}</span>
               <span style={{ fontSize:9, fontWeight:700, padding:'2px 7px', borderRadius:5, background:`${badgeColor}18`, color:badgeColor, border:`1px solid ${badgeColor}40` }}>
@@ -192,17 +192,17 @@ function AtsScannerDemo() {
                 <div>
                   {[0,1,2,3,4].map(i => (
                     <div key={i} style={{ height:6, borderRadius:3, background:lineColor(i), borderLeft:lineBdr(i), marginBottom:4, width:i===1?'88%':i===2?'95%':i===3?'80%':i===4?'92%':'100%', overflow:'hidden', position:'relative' }}>
-                      {lineStates[i]===1 && <div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg,transparent,rgba(0,212,255,.5),transparent)', animation:'lp-sweepLine 1s ease-in-out infinite' }} />}
+                      {lineStates[i]===1 && <div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg,transparent,rgba(236,72,153,.5),transparent)', animation:'lp-sweepLine 1s ease-in-out infinite' }} />}
                     </div>
                   ))}
                   <div style={{ height:4, borderRadius:2, background:'rgba(255,255,255,.06)', overflow:'hidden', marginBottom:4 }}>
-                    <div style={{ height:4, borderRadius:2, background:'linear-gradient(90deg,#00D4FF,#B026FF)', width:`${scanPct}%`, transition:'width .35s ease' }} />
+                    <div style={{ height:4, borderRadius:2, background:'linear-gradient(90deg,#EC4899,#F59E0B)', width:`${scanPct}%`, transition:'width .35s ease' }} />
                   </div>
                   <div style={{ display:'flex', justifyContent:'space-between', fontSize:9, color:'#4A5A7A', marginBottom:10 }}>
-                    <span>Scanning progress</span><span style={{ color:'#00D4FF', fontWeight:700, fontFamily:'monospace' }}>{scanPct}%</span>
+                    <span>Scanning progress</span><span style={{ color:'#EC4899', fontWeight:700, fontFamily:'monospace' }}>{scanPct}%</span>
                   </div>
-                  <div style={{ textAlign:'center', padding:10, background:'rgba(0,212,255,.05)', borderRadius:8, border:'1px solid rgba(0,212,255,.12)' }}>
-                    <div style={{ fontSize:32, fontWeight:800, color:'#00D4FF', fontFamily:'var(--lp-ffm)', letterSpacing:'-1.5px', lineHeight:1 }}>{scanPct>0?scanScore+'%':'—'}</div>
+                  <div style={{ textAlign:'center', padding:10, background:'rgba(236,72,153,.05)', borderRadius:8, border:'1px solid rgba(236,72,153,.12)' }}>
+                    <div style={{ fontSize:32, fontWeight:800, color:'#EC4899', fontFamily:'var(--lp-ffm)', letterSpacing:'-1.5px', lineHeight:1 }}>{scanPct>0?scanScore+'%':'—'}</div>
                     <div style={{ fontSize:9, color:C.text3, marginTop:3 }}>ATS score building…</div>
                   </div>
                   <div style={{ display:'flex', flexDirection:'column', gap:5, marginTop:10 }}>
@@ -227,12 +227,12 @@ function AtsScannerDemo() {
                     ))}
                   </div>
                   <div style={{ display:'flex', gap:6, marginTop:10 }}>
-                    <button onClick={applyFix} disabled={phase==='done'} style={{ flex:1, padding:'7px 10px', borderRadius:8, background:'linear-gradient(135deg,#00D4FF,#B026FF)', color:'#fff', fontSize:11, fontWeight:700, border:'none', cursor:phase==='done'?'default':'pointer', fontFamily:'var(--lp-ff)', opacity:phase==='done'?.4:1, transition:'opacity .2s' }}>
+                    <button onClick={applyFix} disabled={phase==='done'} style={{ flex:1, padding:'7px 10px', borderRadius:8, background:'linear-gradient(135deg,#EC4899,#F59E0B)', color:'#fff', fontSize:11, fontWeight:700, border:'none', cursor:phase==='done'?'default':'pointer', fontFamily:'var(--lp-ff)', opacity:phase==='done'?.4:1, transition:'opacity .2s' }}>
                       {phase==='done'?'All fixes applied ✓':`⚡ Apply fix ${fixStep+1} of ${ATS_ENGINES.length} →`}
                     </button>
                     <button onClick={replay} style={{ padding:'7px 10px', borderRadius:8, background:'rgba(255,255,255,.05)', color:C.text2, fontSize:11, fontWeight:600, border:`1px solid ${C.bdr}`, cursor:'pointer', fontFamily:'var(--lp-ff)' }}>↺</button>
                   </div>
-                  {insight && <div style={{ marginTop:9, fontSize:10, color:C.text2, lineHeight:1.6, padding:'8px 10px', background:'rgba(0,212,255,.04)', borderLeft:'2px solid #00D4FF', borderRadius:'0 6px 6px 0', transition:'opacity .3s' }}>{insight}</div>}
+                  {insight && <div style={{ marginTop:9, fontSize:10, color:C.text2, lineHeight:1.6, padding:'8px 10px', background:'rgba(236,72,153,.04)', borderLeft:'2px solid #EC4899', borderRadius:'0 6px 6px 0', transition:'opacity .3s' }}>{insight}</div>}
                 </div>
               )}
             </div>
@@ -274,7 +274,7 @@ function AtsScannerDemo() {
                 {['product strategy','OKR framework','roadmap','SQL'].map(k => <span key={k} style={{ fontSize:8, fontWeight:600, padding:'2px 6px', borderRadius:4, background:'rgba(0,229,160,.1)', color:'#00E5A0', border:'1px solid rgba(0,229,160,.2)' }}>{k}</span>)}
                 <span style={{ fontSize:8, fontWeight:600, padding:'2px 6px', borderRadius:4, background:'rgba(255,77,106,.09)', color:'#FF4D6A', border:'1px solid rgba(255,77,106,.18)' }}>go-to-market</span>
               </div>
-              {showNote && <div style={{ fontSize:10, color:C.text2, lineHeight:1.6, padding:'8px 10px', background:'rgba(0,212,255,.04)', borderLeft:'2px solid #00D4FF', borderRadius:'0 6px 6px 0', opacity:showNote?1:0, transition:'opacity .5s' }}><strong style={{ color:'#00D4FF' }}>AI:</strong> 4 keywords added, 3 bullets quantified. Passes 94% of Senior PM roles in Singapore.</div>}
+              {showNote && <div style={{ fontSize:10, color:C.text2, lineHeight:1.6, padding:'8px 10px', background:'rgba(236,72,153,.04)', borderLeft:'2px solid #EC4899', borderRadius:'0 6px 6px 0', opacity:showNote?1:0, transition:'opacity .5s' }}><strong style={{ color:'#EC4899' }}>AI:</strong> 4 keywords added, 3 bullets quantified. Passes 94% of Senior PM roles in Singapore.</div>}
               {finalBanner && <div style={{ marginTop:8, padding:'8px 10px', borderRadius:8, background:'rgba(0,229,160,.07)', border:'1px solid rgba(0,229,160,.28)' }}>
                 <div style={{ fontSize:11, fontWeight:700, color:'#00E5A0' }}>Interview-ready — all 6 fixes applied</div>
                 <div style={{ fontSize:10, color:'#00E5A0', opacity:.75, marginTop:2 }}>Passes 94% of Senior PM roles in SG</div>
@@ -379,7 +379,7 @@ function UploadPhase({ onFile, hasScanResume, onUseScanResume, error, onClearErr
           value={targetRole}
           onChange={e => onTargetRoleChange(e.target.value)}
           placeholder="e.g. Senior Product Manager, Software Engineer"
-          style={{ width: '100%', background: 'var(--lp-bg2)', border: `1px solid ${roleReady ? 'rgba(0,212,255,.3)' : 'var(--lp-bdr)'}`, borderRadius: 8, padding: '9px 12px', color: 'var(--lp-text)', fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color .15s' }}
+          style={{ width: '100%', background: 'var(--lp-bg2)', border: `1px solid ${roleReady ? 'rgba(236,72,153,.3)' : 'var(--lp-bdr)'}`, borderRadius: 8, padding: '9px 12px', color: 'var(--lp-text)', fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', transition: 'border-color .15s' }}
         />
         {!roleReady && <div style={{ fontSize: 10.5, color: 'var(--lp-text3)', marginTop: 5, fontFamily: 'var(--lp-ffm)' }}>Required — AI calibrates keyword matching to your target role.</div>}
       </div>
@@ -427,8 +427,8 @@ function UploadPhase({ onFile, hasScanResume, onUseScanResume, error, onClearErr
 
 // ── Loading Phase (scan + build) ───────────────────────────────────────────────
 const LOAD_VARIANTS = {
-  teal:   { bar: '#00D4FF' },
-  violet: { bar: '#B026FF' },
+  teal:   { bar: '#EC4899' },
+  violet: { bar: '#F59E0B' },
 };
 
 function LoadingPhase({ label, step, variant = 'teal' }) {
@@ -599,7 +599,7 @@ function DoneCard({ card, onDragStart, onMove }) {
         <div onClick={e => e.stopPropagation()}>
           <div className="atb-card-section">📍 {card.section}</div>
           {card.userNotes?.trim() && (
-            <div className="atb-card-desc" style={{ marginTop: 6, borderLeft: '2px solid rgba(0,212,255,.35)', paddingLeft: 8 }}>
+            <div className="atb-card-desc" style={{ marginTop: 6, borderLeft: '2px solid rgba(236,72,153,.35)', paddingLeft: 8 }}>
               {card.userNotes}
             </div>
           )}
@@ -927,7 +927,7 @@ function ResumeBuilderTabBar({ active, onTab }) {
 }
 
 // ── Upload & Parse Tab ────────────────────────────────────────────────────────
-function UploadAndParseTab({ user, memory, resumeText: globalResumeText, initialProfile, onResumeExtracted, onPdfUploaded, onProfileParsed, onGoToBuilder }) {
+function UploadAndParseTab({ user, memory, resumeText: globalResumeText, initialProfile, onResumeExtracted, onPdfUploaded, onProfileParsed, onGoToBuilder, setActiveModule }) {
   const inputRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
   const [loading, setLoading]   = useState(false);
@@ -939,6 +939,7 @@ function UploadAndParseTab({ user, memory, resumeText: globalResumeText, initial
   const [error, setError]       = useState('');
   const [localSkills, setLocalSkills] = useState(initialProfile?.skills?.filter(s => s.trim()) || []);
   const [skillInputVal, setSkillInputVal] = useState('');
+  const [verifyOpen, setVerifyOpen] = useState(false);
 
   useEffect(() => {
     if (profile?.skills) setLocalSkills(profile.skills.filter(s => s.trim()));
@@ -963,15 +964,67 @@ Return ONLY raw JSON (no markdown, start with {):
   "experience": "X years",
   "topSkills": ["skill1","skill2","skill3"],
   "market": "city / region",
-  "atsScore": 67,
+  "atsScore": 0,
   "summary": "professional summary paragraph if present, else empty string",
   "workExperience": [{"title":"job title","company":"company name","period":"date range","duration":"X years","bullets":["bullet point 1","bullet point 2"]}],
   "education": [{"degree":"degree name","institution":"school","year":"graduation year","gpa":"if present"}],
   "skills": ["skill1","skill2","skill3","skill4","skill5","skill6","skill7","skill8"],
   "awards": ["award 1","award 2"],
-  "extras": [{"heading":"Section Name as written in resume","items":["item 1","item 2"]}]
+  "extras": [{"heading":"Section Name as written in resume","items":["item 1","item 2"]}],
+  "scoreBreakdown": [
+    {"dimension":"Impact Metrics","score":0},
+    {"dimension":"Bullet Quality","score":0},
+    {"dimension":"Keywords","score":0},
+    {"dimension":"Structure","score":0},
+    {"dimension":"Career Signals","score":0}
+  ],
+  "issues": [
+    {"severity":"critical","title":"4-6 word specific title","description":"2-3 sentences: what is wrong and why it hurts.","before":"exact weak text quoted from resume","after":"improved version with specifics","builderStep":2,"module":null}
+  ]
 }
-For extras: include every section not already captured above (e.g. Certifications, Publications, Projects, Volunteer, Languages, Interests, Patents, etc.). Do NOT put work experience, education, skills, awards, or summary into extras.` }], 4000);
+For extras: include every section not already captured above (e.g. Certifications, Publications, Projects, Volunteer, Languages, Interests, Patents, etc.). Do NOT put work experience, education, skills, awards, or summary into extras.
+
+scoreBreakdown: Score each dimension 0-100. These five scores should aggregate to the overall atsScore.
+- Impact Metrics: quantified achievements with numbers, %, $, timeframes in bullets
+- Bullet Quality: action verb openers, specificity, outcome-focus (not vague openers like "worked on")
+- Keywords: domain keyword density relevant to the target role
+- Structure: section completeness, standard headers, appropriate length, no ATS-breaking formatting
+- Career Signals: clear progression, healthy tenure, no unexplained gaps
+
+issues: List 3-6 specific, actionable problems found in THIS resume. Rules:
+- severity: "critical" (score <50), "high" (50-69), "medium" (70-79) — based on the dimension score driving this issue
+- title: 4-6 words, hyper-specific (NOT "Improve bullet quality" — instead "No metrics in any bullet")
+- description: 2-3 sentences. Name the exact problem and why it hurts ATS or recruiter screening.
+- before: quote exact weak text from the resume (keep short, max 12 words)
+- after: rewritten version showing the fix for that specific text
+- builderStep: 1=Contact, 2=Experience, 3=Education, 4=Skills, 5=Summary — the builder step where this is fixed; null if not fixable in builder
+- module: "scan" if this issue requires comparing against a JD (keyword gaps); null otherwise
+Only include issues that are genuinely present. Do not fabricate problems.
+
+Compute atsScore as an honest general resume quality score (0-100) based solely on the resume content. Evaluate every criterion below and weight them in aggregate:
+
+CONTENT QUALITY
+- Impact metrics: quantified achievements with numbers, %, $, timeframes. Vague bullets ("responsible for managing") with no proof penalise heavily.
+- Bullet quality: action verbs at start, specific, outcome-focused. Generic openers ("worked on", "helped with") lower score.
+- Buzzword overuse: "synergy", "passionate", "results-driven", "dynamic", "thought leader" with no evidence behind them = penalty.
+
+CAREER SIGNALS
+- Career continuity: unexplained employment gaps of 6+ months penalise score. Gaps with context ("career break", "freelance", "study leave", "relocation") are acceptable and should not penalise.
+- Job title progression: clear upward trajectory (Junior → Senior → Lead) improves score. Flat or downward moves without context lower it.
+- Tenure per role: multiple roles under 12 months signals job-hopping and lowers score. One short stint is acceptable; a pattern is not.
+
+STRUCTURE & COMPLETENESS
+- Section completeness: summary/headline, experience, education, skills all present. Missing any major section penalises.
+- Resume length: too long (4+ pages for <10 years experience) or too short (half a page for a senior candidate) both penalise.
+- Date format consistency: mixing formats (Jan 2020 vs 2020-01 vs 01/2020) across roles penalises.
+
+PROFESSIONAL PRESENTATION
+- Contact completeness: missing LinkedIn, location, or phone when they are standard for the target role penalises.
+- Email professionalism: unprofessional email addresses (coolhacker99@, nicknames, old ISP domains) penalise mildly.
+- Keyword density: role-relevant terms present without stuffing. Completely absent domain keywords lower score.
+- Formatting & readability: clear section headings, consistent structure, no walls of text, no tables/columns that break ATS parsing.
+
+Score calibration: most real resumes score 35–60. A well-structured resume with some quantified bullets and no gaps scores 60–75. Strong metrics, complete sections, compelling summary, clear progression, no red flags = 75–88. Near-perfect resume = 88–95. Do NOT output 67 as a default — compute the real score from the criteria above.` }], 4000);
       const parsed = extractJSON(raw);
       if (!parsed.error) {
         setProfile(parsed);
@@ -1028,7 +1081,7 @@ For extras: include every section not already captured above (e.g. Certification
   return (
     <div className="atb-parse-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0, minHeight: 500 }}>
       {/* Left */}
-      <div style={{ borderRight: '1px solid var(--lp-bdr)', padding: 24, display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+      <div className="atb-parse-left-pane" style={{ borderRight: '1px solid var(--lp-bdr)', padding: 24, display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
         <div style={{ color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
           Import Resume
         </div>
@@ -1039,7 +1092,7 @@ For extras: include every section not already captured above (e.g. Certification
             border: `2px dashed ${fileInfo ? '#00E5A0' : dragOver ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`,
             borderRadius: 10, padding: '24px 20px', textAlign: 'center',
             cursor: fileInfo ? 'default' : 'pointer', transition: 'all .15s',
-            background: fileInfo ? 'rgba(0,229,160,.05)' : dragOver ? 'rgba(0,212,255,.04)' : 'transparent',
+            background: fileInfo ? 'rgba(0,229,160,.05)' : dragOver ? 'rgba(236,72,153,.04)' : 'transparent',
           }}
           onDragOver={e => { if (!fileInfo) { e.preventDefault(); setDragOver(true); } }}
           onDragLeave={() => setDragOver(false)}
@@ -1085,11 +1138,11 @@ For extras: include every section not already captured above (e.g. Certification
               placeholder="Paste your resume text here..."
               style={{
                 width: '100%', boxSizing: 'border-box', minHeight: 120, resize: 'vertical',
-                background: 'rgba(0,212,255,0.03)', border: '1px solid var(--lp-bdr)',
+                background: 'rgba(236,72,153,0.03)', border: '1px solid var(--lp-bdr)',
                 borderRadius: 8, color: 'var(--lp-text)', padding: '10px 12px',
                 fontSize: 13, outline: 'none', fontFamily: 'inherit', lineHeight: 1.5,
               }}
-              onFocus={e => e.target.style.borderColor = 'rgba(0,212,255,0.4)'}
+              onFocus={e => e.target.style.borderColor = 'rgba(236,72,153,0.4)'}
               onBlur={e => e.target.style.borderColor = 'var(--lp-bdr)'}
             />
           </>
@@ -1124,7 +1177,6 @@ For extras: include every section not already captured above (e.g. Certification
             {[
               { k: 'Target role',  v: profile.targetRole  },
               { k: 'Experience',   v: profile.experience  },
-              { k: 'Top skills',   v: (profile.topSkills || []).join(', ') },
               { k: 'Market',       v: profile.market      },
               { k: 'ATS score',    v: profile.atsScore ? `${profile.atsScore}/100` : '—', color: atsColor },
             ].map(row => (
@@ -1133,127 +1185,222 @@ For extras: include every section not already captured above (e.g. Certification
                 <span style={{ color: row.color || 'var(--lp-text)', fontSize: 12, fontWeight: 600, textAlign: 'right', maxWidth: '60%' }}>{row.v || '—'}</span>
               </div>
             ))}
+            {/* Top skills as pills */}
+            {(profile.topSkills || []).length > 0 && (
+              <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--lp-bdr2, rgba(255,255,255,.03))' }}>
+                <div style={{ fontSize: 12, color: 'var(--lp-text3)', marginBottom: 8 }}>Top skills</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {(profile.topSkills || []).map((s, i) => (
+                    <span key={i} style={{
+                      fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
+                      background: 'rgba(0,229,160,.10)', color: '#00E5A0',
+                      border: '1px solid rgba(0,229,160,.25)',
+                    }}>{s}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* ATS score contextual CTA */}
+            {profile.atsScore && setActiveModule && (
+              <div style={{ padding: '10px 14px', fontSize: 11.5, color: 'var(--lp-text3)', lineHeight: 1.6 }}>
+                {profile.atsScore < 80
+                  ? <>Score below 80 — <button onClick={() => setActiveModule('scan')} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--lp-teal)', fontSize: 11.5, cursor: 'pointer', fontWeight: 700 }}>scan vs a JD in Resume Scanner →</button></>
+                  : <>Strong resume — <button onClick={() => setActiveModule('scan')} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--lp-teal)', fontSize: 11.5, cursor: 'pointer', fontWeight: 700 }}>scan vs a target JD to optimise keywords →</button></>
+                }
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Verify extracted content accordion */}
+        {profile && (
+          <div style={{ border: '1px solid var(--lp-bdr)', borderRadius: 10, overflow: 'hidden' }}>
+            <button
+              onClick={() => setVerifyOpen(v => !v)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--lp-bg2)', border: 'none', cursor: 'pointer', color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}
+            >
+              <span>Verify extracted content</span>
+              <span style={{ fontSize: 9 }}>{verifyOpen ? '▲' : '▼'}</span>
+            </button>
+            {verifyOpen && (
+              <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--lp-bg3)' }}>
+                {profile.workExperience?.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--lp-text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+                      Work Experience ({profile.workExperience.length})
+                    </div>
+                    {profile.workExperience.slice(0, 3).map((w, i) => (
+                      <div key={i} style={{ padding: '6px 0', borderBottom: i < Math.min(profile.workExperience.length, 3) - 1 ? '1px solid var(--lp-bdr2)' : 'none' }}>
+                        <div style={{ color: 'var(--lp-text)', fontSize: 12, fontWeight: 700 }}>{w.title} · {w.company}</div>
+                        <div style={{ color: 'var(--lp-text3)', fontSize: 10, marginTop: 2 }}>{w.period}{w.duration ? ` · ${w.duration}` : ''}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {profile.education?.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 9, color: 'var(--lp-text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Education</div>
+                    {profile.education.slice(0, 2).map((e, i) => (
+                      <div key={i} style={{ color: 'var(--lp-text)', fontSize: 12, fontWeight: 700 }}>{e.degree} · {e.institution}</div>
+                    ))}
+                  </div>
+                )}
+                {profile.skills?.length > 0 && (
+                  <div style={{ fontSize: 10, color: 'var(--lp-text3)' }}>{profile.skills.length} skills extracted</div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Right — AI Parse Preview */}
-      <div className="atb-parse-preview-pane" style={{ padding: 24 }}>
-        <div style={{ color: 'var(--lp-text3)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>
-          AI Parse Preview
-        </div>
+      {/* Right — Diagnostic Report */}
+      <div className="atb-parse-preview-pane" style={{ padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-        {loading && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, gap: 12, color: 'var(--lp-text3)', fontSize: 13 }}>
-            <OrbitSpinner size={40} />
-            Parsing resume…
-          </div>
-        )}
-
+        {/* Empty state */}
         {!loading && !profile && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--lp-text3)', gap: 8, opacity: .5 }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
-            <div style={{ fontSize: 12 }}>Upload a resume to see the AI parse preview</div>
+            <div style={{ fontSize: 12 }}>Upload a resume to see your diagnostic report</div>
           </div>
         )}
 
-        {!loading && profile && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {/* Work Experience */}
-            {profile.workExperience?.length > 0 && (
-              <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 10, overflow: 'hidden' }}>
-                <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--lp-bdr)', color: 'var(--lp-text3)', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
-                  Work Experience ({profile.workExperience.length})
-                </div>
-                {profile.workExperience.slice(0, 2).map((w, i) => (
-                  <div key={i} style={{ padding: '12px 14px', borderBottom: i < Math.min(profile.workExperience.length, 2) - 1 ? '1px solid var(--lp-bdr)' : 'none' }}>
-                    <div style={{ color: 'var(--lp-text)', fontSize: 13, fontWeight: 700 }}>{w.title} · {w.company}</div>
-                    <div style={{ color: 'var(--lp-text3)', fontSize: 11, marginTop: 2 }}>{w.period} · {w.duration}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Loading */}
+        {loading && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 300, gap: 12, color: 'var(--lp-text3)', fontSize: 13 }}>
+            <OrbitSpinner size={40} />
+            Analysing resume…
+          </div>
+        )}
 
-            {/* Education */}
-            {profile.education?.length > 0 && (
-              <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 10, overflow: 'hidden' }}>
-                <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--lp-bdr)', color: 'var(--lp-text3)', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
-                  Education
-                </div>
-                {profile.education.slice(0, 1).map((e, i) => (
-                  <div key={i} style={{ padding: '12px 14px' }}>
-                    <div style={{ color: 'var(--lp-text)', fontSize: 13, fontWeight: 700 }}>{e.degree} · {e.institution}</div>
-                    <div style={{ color: 'var(--lp-text3)', fontSize: 11, marginTop: 2 }}>{e.period}{e.gpa ? ` · GPA ${e.gpa}` : ''}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+        {!loading && profile && (() => {
+          const score = profile.atsScore || 0;
+          const scoreColor = score >= 80 ? '#00E5A0' : score >= 60 ? '#FFB84D' : '#FF5A5A';
+          const scoreLabel = score >= 80 ? 'Strong Resume' : score >= 60 ? 'Needs Improvement' : 'Needs Major Work';
+          const circumference = 2 * Math.PI * 28;
+          const goToBuilder = () => { if (onProfileParsed) onProfileParsed({ ...profile, skills: localSkills }); if (onGoToBuilder) onGoToBuilder(); };
 
-            {/* Skills — editable */}
-            {profile && (
-              <div style={{ background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 10, padding: 14 }}>
-                <div style={{ color: 'var(--lp-text3)', fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
-                  Skills ({localSkills.length}) — click × to remove, type to add
+          return (
+            <>
+              {/* Section 1 — Score Hero */}
+              <div className="atb-score-hero" style={{ background: 'var(--lp-bg2)', borderRadius: 12, border: '1px solid var(--lp-bdr)', padding: '20px 20px 18px' }}>
+                <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--lp-text3)', marginBottom: 18 }}>
+                  ATS Score
                 </div>
-                <div
-                  style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 10px', background: 'var(--lp-bg3)', borderRadius: 7, minHeight: 44, cursor: 'text', alignContent: 'flex-start' }}
-                  onClick={() => document.getElementById('parse-skill-inp')?.focus()}
-                >
-                  {localSkills.map((s, i) => (
-                    <span key={s + i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: i < 3 ? 'rgba(0,212,255,.15)' : 'var(--lp-bg2)', border: `1px solid ${i < 3 ? 'rgba(0,212,255,.3)' : 'var(--lp-bdr)'}`, color: i < 3 ? 'var(--lp-teal)' : 'var(--lp-text2)', borderRadius: 5, padding: '3px 8px 3px 10px', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
-                      {s}
-                      <button
-                        type="button"
-                        onClick={e => { e.stopPropagation(); setLocalSkills(ls => ls.filter((_, idx) => idx !== i)); }}
-                        style={{ background: 'none', border: 'none', color: 'rgba(0,212,255,.55)', cursor: 'pointer', padding: '0 2px', fontSize: 13, lineHeight: 1, minHeight: 'unset' }}
-                      >×</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 16 }}>
+                  <svg className="atb-score-ring" width="72" height="72" viewBox="0 0 72 72" style={{ flexShrink: 0 }}>
+                    <circle cx="36" cy="36" r="28" fill="none" stroke="var(--lp-bdr2, rgba(255,255,255,.13))" strokeWidth="6"/>
+                    <circle cx="36" cy="36" r="28" fill="none" stroke={scoreColor} strokeWidth="6"
+                      strokeDasharray={`${circumference * score / 100} ${circumference}`}
+                      strokeLinecap="round"
+                      transform="rotate(-90 36 36)"
+                      style={{ transition: 'stroke-dasharray .6s ease' }}
+                    />
+                  </svg>
+                  <div>
+                    <div className="atb-score-number" style={{ fontSize: 42, fontWeight: 900, color: scoreColor, lineHeight: 1, letterSpacing: '-2px' }}>{score}</div>
+                    <div style={{ fontSize: 11, color: 'var(--lp-text3)', marginTop: 2 }}>out of 100</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: scoreColor, marginTop: 6 }}>{scoreLabel}</div>
+                  </div>
+                </div>
+                <div style={{ height: 4, borderRadius: 2, background: 'var(--lp-bdr)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${score}%`, background: scoreColor, borderRadius: 2, transition: 'width .6s ease' }} />
+                </div>
+              </div>
+
+              {/* Section 2 — Score Breakdown */}
+              {profile.scoreBreakdown?.length > 0 && (
+                <div style={{ background: 'var(--lp-bg2)', borderRadius: 12, border: '1px solid var(--lp-bdr)', overflow: 'hidden' }}>
+                  <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--lp-bdr)', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--lp-text3)' }}>
+                    Score Breakdown
+                  </div>
+                  <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 11 }}>
+                    {profile.scoreBreakdown.map(dim => {
+                      const c = dim.score >= 80 ? '#00E5A0' : dim.score >= 60 ? '#FFB84D' : '#FF5A5A';
+                      return (
+                        <div key={dim.dimension} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <span className="atb-dim-label" style={{ fontSize: 11.5, color: 'var(--lp-text2)', width: 118, flexShrink: 0 }}>{dim.dimension}</span>
+                          <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'var(--lp-bdr)' }}>
+                            <div style={{ height: '100%', width: `${dim.score}%`, background: c, borderRadius: 2, transition: 'width .5s ease' }} />
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: c, width: 26, textAlign: 'right', flexShrink: 0 }}>{dim.score}</span>
+                          <span style={{ fontSize: 11, width: 14, flexShrink: 0, color: dim.score >= 80 ? '#00E5A0' : '#FFB84D' }}>
+                            {dim.score >= 80 ? '✓' : '⚠'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Section 3 — Issues */}
+              {profile.issues?.length > 0 && (
+                <div className="atb-issues-list" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--lp-text3)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    Issues to Fix
+                    <span style={{ background: 'rgba(255,90,90,.12)', color: '#FF5A5A', border: '1px solid rgba(255,90,90,.25)', borderRadius: 10, padding: '1px 8px', fontSize: 10, fontWeight: 700, textTransform: 'none', letterSpacing: 0 }}>
+                      {profile.issues.length} found
                     </span>
-                  ))}
-                  <input
-                    id="parse-skill-inp"
-                    value={skillInputVal}
-                    onChange={e => setSkillInputVal(e.target.value.replace(/,/g, ''))}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' || e.key === ',') {
-                        e.preventDefault();
-                        const val = skillInputVal.trim();
-                        if (val) { setLocalSkills(ls => [...ls, val]); setSkillInputVal(''); }
-                      } else if (e.key === 'Backspace' && !skillInputVal) {
-                        setLocalSkills(ls => ls.slice(0, -1));
-                      }
-                    }}
-                    onBlur={() => {
-                      const val = skillInputVal.trim();
-                      if (val) { setLocalSkills(ls => [...ls, val]); setSkillInputVal(''); }
-                    }}
-                    placeholder={localSkills.length ? '' : 'Add a skill…'}
-                    style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 11, color: 'var(--lp-text)', minWidth: 90, padding: '3px 4px', flex: 1 }}
-                  />
+                  </div>
+                  {profile.issues.map((issue, i) => {
+                    const sev = issue.severity === 'critical'
+                      ? { color: '#FF5A5A', label: 'CRITICAL' }
+                      : issue.severity === 'high'
+                      ? { color: '#FFB84D', label: 'HIGH' }
+                      : { color: '#8B9CC8', label: 'MEDIUM' };
+                    return (
+                      <div key={i} className="atb-issue-card" style={{ background: 'var(--lp-bg2)', borderRadius: 10, border: '1px solid var(--lp-bdr)', borderLeft: `3px solid ${sev.color}`, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text)', lineHeight: 1.3 }}>{issue.title}</span>
+                          <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 10, background: `${sev.color}18`, color: sev.color, border: `1px solid ${sev.color}30`, letterSpacing: .5, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                            {sev.label}
+                          </span>
+                        </div>
+                        <p style={{ margin: 0, fontSize: 12, color: 'var(--lp-text2)', lineHeight: 1.65 }}>{issue.description}</p>
+                        {(issue.before || issue.after) && (
+                          <div className="atb-before-after" style={{ background: 'var(--lp-bg3)', borderRadius: 7, padding: '9px 12px', fontSize: 11, fontFamily: 'monospace', display: 'flex', flexDirection: 'column', gap: 5, border: '1px solid var(--lp-bdr)' }}>
+                            {issue.before && (
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                <span style={{ color: '#FF5A5A', fontWeight: 700, flexShrink: 0 }}>Before</span>
+                                <span style={{ color: 'var(--lp-text2)' }}>{issue.before}</span>
+                              </div>
+                            )}
+                            {issue.after && (
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                <span style={{ color: '#00E5A0', fontWeight: 700, flexShrink: 0 }}>After  </span>
+                                <span style={{ color: 'var(--lp-text)' }}>{issue.after}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {issue.builderStep != null
+                          ? <button onClick={goToBuilder} style={{ alignSelf: 'flex-start', background: 'none', border: '1px solid var(--lp-teal)', color: 'var(--lp-teal)', borderRadius: 7, padding: '5px 14px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                              Fix in Builder →
+                            </button>
+                          : issue.module === 'scan' && setActiveModule
+                          ? <button onClick={() => setActiveModule('scan')} style={{ alignSelf: 'flex-start', background: 'none', border: '1px solid var(--lp-bdr)', color: 'var(--lp-text2)', borderRadius: 7, padding: '5px 14px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                              Scan vs JD →
+                            </button>
+                          : null
+                        }
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Guiding button → Builder */}
-            {onGoToBuilder && (
-              <button
-                onClick={() => {
-                  if (profile && onProfileParsed) onProfileParsed({ ...profile, skills: localSkills });
-                  onGoToBuilder();
-                }}
-                style={{
-                  width: '100%', padding: '13px 0',
-                  background: 'var(--lp-teal)', color: '#000',
-                  border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                }}
-              >
-                Build Resume →
-              </button>
-            )}
-          </div>
-        )}
+              {/* Bottom CTA */}
+              {onGoToBuilder && (
+                <button onClick={goToBuilder} style={{ width: '100%', padding: '14px 0', background: 'var(--lp-teal)', color: '#000', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer', marginTop: 4 }}>
+                  Fix These Issues in Builder →
+                </button>
+              )}
+            </>
+          );
+        })()}
       </div>
     </div>
   );
@@ -1451,10 +1598,12 @@ function mapProfileToData(profile) {
 
 const BUILDER_DRAFT_KEY = 'careerai_builder_draft';
 
-function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
+function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData, setActiveModule }) {
   const [step, setStep] = useState(0);
   const [activeTemplate, setActiveTemplate] = useState('modern');
   const [skillInput, setSkillInput] = useState('');
+  const [previewScale, setPreviewScale] = useState(1);
+  const containerRef = useRef(null);
   const [data, setData] = useState(() => {
     if (restoredData) return restoredData;
     try {
@@ -1466,6 +1615,7 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
   const [isSample, setIsSample] = useState(!initialProfile && !restoredData && !localStorage.getItem(BUILDER_DRAFT_KEY));
   const [saved, setSaved] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [versionLabel, setVersionLabel] = useState('');
   const previewRef = useRef(null);
 
   // Autosave draft to localStorage on every change (skip sample placeholder data)
@@ -1482,6 +1632,17 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
     setSaved(false);
     setStep(0);
   }, [restoredData]);
+
+  // Scale live preview to fit the panel width without horizontal overflow
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(([e]) => {
+      const available = e.contentRect.width - 32;
+      setPreviewScale(available < 794 ? available / 794 : 1);
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
 
   const inp = {
     width: '100%', background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)',
@@ -1519,6 +1680,11 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
     if (!previewRef.current || !ActiveTemplate) return;
     if (!previewRef.current.textContent?.trim()) return;
     setDownloading(true);
+    const el = previewRef.current;
+    const savedTransform = el.style.transform;
+    const savedTransformOrigin = el.style.transformOrigin;
+    el.style.transform = '';
+    el.style.transformOrigin = '';
     const name = (data.contact.name || 'resume').replace(/\s+/g, '_');
     const tplLabel = TEMPLATES.find(t => t.id === activeTemplate)?.label || activeTemplate;
     try {
@@ -1531,23 +1697,27 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
         })
-        .from(previewRef.current)
+        .from(el)
         .save();
     } finally {
+      el.style.transform = savedTransform;
+      el.style.transformOrigin = savedTransformOrigin;
       setDownloading(false);
     }
   };
 
   const handleSave = () => {
     const tpl = TEMPLATES.find(t => t.id === activeTemplate);
+    const autoLabel = `Version ${(memory?.resumeVersions?.length || 0) + 1}`;
     const version = {
       date: new Date().toISOString(),
       template: activeTemplate,
       templateLabel: tpl?.label || activeTemplate,
-      label: `Version ${(memory?.resumeVersions?.length || 0) + 1}`,
+      label: versionLabel.trim() || autoLabel,
       data: JSON.parse(JSON.stringify(data)),
     };
     onSaveVersion(version);
+    setVersionLabel('');
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
@@ -1577,7 +1747,7 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
 
         {/* Sample data banner */}
         {isSample && (
-          <div style={{ background: 'rgba(0,212,255,.08)', border: '1px solid rgba(0,212,255,.2)', borderRadius: 8, padding: '8px 12px', marginBottom: 14, fontSize: 11.5, color: 'var(--lp-teal)', lineHeight: 1.5 }}>
+          <div style={{ background: 'rgba(236,72,153,.08)', border: '1px solid rgba(236,72,153,.2)', borderRadius: 8, padding: '8px 12px', marginBottom: 14, fontSize: 11.5, color: 'var(--lp-teal)', lineHeight: 1.5 }}>
             👆 Sample resume shown — go to <strong>Upload & Parse</strong> tab to load yours
           </div>
         )}
@@ -1671,12 +1841,12 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
               onClick={() => document.getElementById('skill-inp')?.focus()}
             >
               {data.skills.filter(s => s.trim()).map((skill, i) => (
-                <span key={skill + i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,212,255,.1)', border: '1px solid rgba(0,212,255,.25)', color: 'var(--lp-teal)', borderRadius: 5, padding: '3px 8px 3px 10px', fontSize: 12, fontWeight: 600, lineHeight: 1.4, whiteSpace: 'nowrap' }}>
+                <span key={skill + i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(236,72,153,.1)', border: '1px solid rgba(236,72,153,.25)', color: 'var(--lp-teal)', borderRadius: 5, padding: '3px 8px 3px 10px', fontSize: 12, fontWeight: 600, lineHeight: 1.4, whiteSpace: 'nowrap' }}>
                   {skill}
                   <button
                     type="button"
                     onClick={e => { e.stopPropagation(); edit(d => { const filled = d.skills.filter(s => s.trim()); filled.splice(i, 1); return { ...d, skills: filled }; }); }}
-                    style={{ background: 'none', border: 'none', color: 'rgba(0,212,255,.6)', cursor: 'pointer', padding: '0 2px', fontSize: 14, lineHeight: 1, fontFamily: 'inherit', minHeight: 'unset' }}
+                    style={{ background: 'none', border: 'none', color: 'rgba(236,72,153,.6)', cursor: 'pointer', padding: '0 2px', fontSize: 14, lineHeight: 1, fontFamily: 'inherit', minHeight: 'unset' }}
                   >×</button>
                 </span>
               ))}
@@ -1736,6 +1906,17 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
                 <div>📄 Template: {TEMPLATES.find(t => t.id === activeTemplate)?.label}</div>
               </div>
             </>)}
+            <input
+              value={versionLabel}
+              onChange={e => setVersionLabel(e.target.value)}
+              placeholder={`Version ${(memory?.resumeVersions?.length || 0) + 1} — add a label (optional)`}
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                padding: '9px 12px', fontSize: 12, borderRadius: 8,
+                border: '1px solid var(--lp-bdr)', background: 'var(--lp-bg3)',
+                color: 'var(--lp-text)', outline: 'none', fontFamily: 'var(--lp-ff)',
+              }}
+            />
             <button onClick={handleSave} style={{
               width: '100%', padding: '14px 0', fontSize: 14, fontWeight: 800, borderRadius: 10, cursor: 'pointer', border: 'none',
               background: saved ? '#00E5A0' : 'var(--lp-teal)', color: '#000', transition: 'background .2s',
@@ -1748,11 +1929,31 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
             }}>
               {downloading ? 'Generating PDF…' : '⬇ Download PDF'}
             </button>
+            {setActiveModule && (
+              <div style={{ marginTop: 8, padding: '12px 14px', background: 'var(--lp-bg3)', borderRadius: 10, border: '1px solid var(--lp-bdr)' }}>
+                <div style={{ fontSize: 10, color: 'var(--lp-text3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>What's next?</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'Scan vs JD', module: 'scan' },
+                    { label: 'Cover Letter', module: 'cover' },
+                    { label: 'Browse Jobs', module: 'jobs' },
+                  ].map(({ label, module }) => (
+                    <button key={module} onClick={() => setActiveModule(module)} style={{
+                      flex: 1, minWidth: 90, padding: '8px 10px', fontSize: 11.5, fontWeight: 700, borderRadius: 8, cursor: 'pointer',
+                      border: '1px solid var(--lp-bdr)', background: 'transparent', color: 'var(--lp-text2)', transition: 'all .15s',
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--lp-teal)'; e.currentTarget.style.color = 'var(--lp-teal)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--lp-bdr)'; e.currentTarget.style.color = 'var(--lp-text2)'; }}
+                    >{label} →</button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* Navigation */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--lp-bdr)' }}>
+        <div style={{ position: 'sticky', bottom: 0, display: 'flex', justifyContent: 'space-between', paddingTop: 14, paddingBottom: 10, borderTop: '1px solid var(--lp-bdr)', background: 'var(--lp-bg)', zIndex: 10, marginTop: 8 }}>
           {step > 0 ? navBtn('← Back', () => setStep(s => s - 1), false) : <div />}
           {step < BUILDER_STEPS.length - 1 && navBtn('Next →', () => setStep(s => s + 1), true)}
         </div>
@@ -1787,12 +1988,20 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData }) {
         </div>
 
         {/* Live preview — A4 width (794px = 210mm @ 96dpi) */}
-        <div style={{ flex: 1, overflow: 'auto', background: '#e0e0e0', padding: '16px' }}>
+        <div ref={containerRef} style={{ flex: 1, overflow: 'auto', background: '#e0e0e0', padding: '16px' }}>
           <div style={{ fontSize: 9, color: '#999', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, textAlign: 'center', marginBottom: 10 }}>
             Live Preview · A4
           </div>
-          <div ref={previewRef} style={{ width: 794, margin: '0 auto', boxShadow: '0 4px 24px rgba(0,0,0,.2)' }}>
-            {ActiveTemplate && <ActiveTemplate {...data} />}
+          {/* Clip wrapper prevents horizontal layout overflow when scaled */}
+          <div style={{ width: previewScale < 1 ? Math.round(794 * previewScale) : 794, overflow: 'hidden', margin: '0 auto' }}>
+            <div ref={previewRef} style={{
+              width: 794,
+              transform: `scale(${previewScale})`,
+              transformOrigin: 'top left',
+              boxShadow: '0 4px 24px rgba(0,0,0,.2)',
+            }}>
+              {ActiveTemplate && <ActiveTemplate {...data} />}
+            </div>
           </div>
         </div>
       </div>
@@ -2082,6 +2291,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
           onPdfUploaded={handlePdfUploaded}
           onProfileParsed={handleProfileParsed}
           onGoToBuilder={() => { setEntryMode('existing'); setMainTab('builder'); }}
+          setActiveModule={setActiveModule}
         />
       )}
       {mainTab === 'builder' && entryMode === null && (
@@ -2122,6 +2332,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
           memory={memory}
           onSaveVersion={handleSaveVersion}
           restoredData={restoredData}
+          setActiveModule={setActiveModule}
         />
       )}
       {mainTab === 'builder' && entryMode === 'scratch' && (
@@ -2130,6 +2341,7 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
           memory={memory}
           onSaveVersion={handleSaveVersion}
           restoredData={null}
+          setActiveModule={setActiveModule}
         />
       )}
       {mainTab === 'history' && (

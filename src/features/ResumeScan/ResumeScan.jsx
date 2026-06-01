@@ -465,7 +465,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
   const phase = loading ? 'scanning' : editMode ? 'edit' : result ? 'results' : 'input';
   const scoreColor = result
     ? result.matchScore >= 80 ? '#00E5A0' : result.matchScore >= 60 ? '#FFB84D' : '#FF5A5A'
-    : '#00D4FF';
+    : '#EC4899';
   const barColor = (s) => s >= 80 ? '#00E5A0' : s >= 60 ? '#FFB84D' : '#FF5A5A';
 
   /* ─── Hidden PDF render target — always mounted so ref is valid ─── */
@@ -518,7 +518,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
                 border: `2px dashed ${uploadDragOver ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`,
                 borderRadius: 14, display: 'flex', flexDirection: 'column', alignItems: 'center',
                 justifyContent: 'center', gap: 10, cursor: uploadParsing ? 'default' : 'pointer',
-                background: uploadDragOver ? 'rgba(0,212,255,.04)' : 'transparent',
+                background: uploadDragOver ? 'rgba(236,72,153,.04)' : 'transparent',
                 transition: 'all .2s',
               }}
             >
@@ -555,7 +555,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
                 fontSize: 13, outline: 'none', lineHeight: 1.6, resize: 'none', boxSizing: 'border-box',
                 fontFamily: 'inherit', transition: 'border-color .15s',
               }}
-              onFocus={e => { e.target.style.borderColor = 'rgba(0,212,255,.4)'; }}
+              onFocus={e => { e.target.style.borderColor = 'rgba(236,72,153,.4)'; }}
               onBlur={e => { e.target.style.borderColor = 'var(--lp-bdr)'; }}
             />
             {scanErr && <div style={{ fontSize: 11, color: '#FF5A5A' }}>⚠ {scanErr}</div>}
@@ -564,12 +564,12 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
               disabled={!jd.trim() || !resumeCtx}
               style={{
                 width: '100%', padding: '14px 0',
-                background: (!jd.trim() || !resumeCtx) ? 'var(--lp-bdr)' : 'linear-gradient(135deg, #00D4FF, #B026FF)',
+                background: (!jd.trim() || !resumeCtx) ? 'var(--lp-bdr)' : 'linear-gradient(135deg, #EC4899, #F59E0B)',
                 color: (!jd.trim() || !resumeCtx) ? 'var(--lp-text3)' : '#fff',
                 border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800,
                 cursor: (!jd.trim() || !resumeCtx) ? 'default' : 'pointer',
                 letterSpacing: .3, transition: 'all .2s',
-                boxShadow: (!jd.trim() || !resumeCtx) ? 'none' : '0 4px 20px rgba(0,212,255,.25)',
+                boxShadow: (!jd.trim() || !resumeCtx) ? 'none' : '0 4px 20px rgba(236,72,153,.25)',
               }}
             >
               {!resumeCtx ? 'Upload resume first' : !jd.trim() ? 'Paste a job description' : 'Scan match →'}
@@ -668,8 +668,8 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
               </div>
               {tplData && (
                 <button type="button" onClick={() => setShowRawEditor(v => !v)} style={{
-                  background: showRawEditor ? 'rgba(0,212,255,.1)' : 'transparent',
-                  border: `1px solid ${showRawEditor ? 'rgba(0,212,255,.3)' : 'var(--lp-bdr)'}`,
+                  background: showRawEditor ? 'rgba(236,72,153,.1)' : 'transparent',
+                  border: `1px solid ${showRawEditor ? 'rgba(236,72,153,.3)' : 'var(--lp-bdr)'}`,
                   color: showRawEditor ? 'var(--lp-teal)' : 'var(--lp-text3)',
                   borderRadius: 5, padding: '3px 8px', fontSize: 10, fontWeight: 700, cursor: 'pointer',
                 }}>✏ Edit text</button>
@@ -750,7 +750,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
               {steps.map((s, i) => {
                 const isDone = s.done;
                 const isCurrent = !isDone && i === lastDone + 1;
-                const col = isDone ? '#00E5A0' : isCurrent ? '#00D4FF' : 'var(--lp-bdr)';
+                const col = isDone ? '#00E5A0' : isCurrent ? '#EC4899' : 'var(--lp-bdr)';
                 return (
                   <React.Fragment key={i}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -831,11 +831,11 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
         {/* AI insight */}
         {result.aiInsight && (
           <div style={{
-            background: 'rgba(0,212,255,.04)', border: '1px solid rgba(0,212,255,.15)',
+            background: 'rgba(236,72,153,.04)', border: '1px solid rgba(236,72,153,.15)',
             borderLeft: '4px solid var(--lp-teal)', borderRadius: 12,
             padding: '16px 20px', display: 'flex', gap: 14, alignItems: 'flex-start',
           }}>
-            <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#00D4FF,#B026FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 900, color: '#fff', flexShrink: 0, marginTop: 1 }}>AI</div>
+            <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#EC4899,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 900, color: '#fff', flexShrink: 0, marginTop: 1 }}>AI</div>
             <div style={{ fontSize: 13, color: 'var(--lp-text)', lineHeight: 1.65 }}>{result.aiInsight}</div>
           </div>
         )}
@@ -918,8 +918,8 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
                         onClick={() => { setEditingIdx(i); setEditDraft(issue.fix); }}
                         style={{
                           alignSelf: 'flex-start', padding: '8px 18px',
-                          background: 'linear-gradient(135deg, rgba(0,212,255,.15), rgba(176,38,255,.1))',
-                          border: '1px solid rgba(0,212,255,.3)',
+                          background: 'linear-gradient(135deg, rgba(236,72,153,.15), rgba(245,158,11,.1))',
+                          border: '1px solid rgba(236,72,153,.3)',
                           color: 'var(--lp-teal)', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
                           transition: 'all .15s',
                         }}
@@ -934,7 +934,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
                         onChange={e => setEditDraft(e.target.value)}
                         style={{
                           width: '100%', minHeight: 80, background: 'var(--lp-bg2)',
-                          border: '1px solid rgba(0,212,255,.35)', borderRadius: 9,
+                          border: '1px solid rgba(236,72,153,.35)', borderRadius: 9,
                           color: 'var(--lp-text)', padding: '10px 14px', fontSize: 13,
                           outline: 'none', resize: 'vertical', lineHeight: 1.6, boxSizing: 'border-box',
                         }}
@@ -989,8 +989,8 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
             onClick={openEditor}
             style={{
               width: '100%', padding: '15px 0',
-              background: 'linear-gradient(135deg, rgba(0,212,255,.12), rgba(176,38,255,.1))',
-              border: '1px solid rgba(0,212,255,.3)', borderRadius: 12,
+              background: 'linear-gradient(135deg, rgba(236,72,153,.12), rgba(245,158,11,.1))',
+              border: '1px solid rgba(236,72,153,.3)', borderRadius: 12,
               color: 'var(--lp-text)', fontSize: 14, fontWeight: 800, cursor: 'pointer',
               letterSpacing: .2, transition: 'all .2s',
             }}

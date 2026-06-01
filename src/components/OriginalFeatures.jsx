@@ -111,7 +111,8 @@ export function AuthModal({ initialMode, onSuccess, onClose, onViewLegal }) {
     e.preventDefault(); setErr(""); setLoading(true);
     try {
       if (mode === "register") {
-        const { data, error } = await sb.signUp(email, pass, name, { role: accountType, company: accountType === 'recruiter' ? company : null });
+        const signupSource = localStorage.getItem('careerai_signup_source') || 'organic';
+        const { data, error } = await sb.signUp(email, pass, name, { role: accountType, company: accountType === 'recruiter' ? company : null, source: signupSource, is_beta: signupSource !== 'organic' });
         if (error) throw error;
         if (!data?.user) throw new Error("Registration started. Please check your email for confirmation.");
         onSuccess(data.session || { user: data.user });
@@ -147,12 +148,12 @@ export function AuthModal({ initialMode, onSuccess, onClose, onViewLegal }) {
   const LP = {
     bg:      '#07090F',
     card:    'rgba(10,15,28,0.98)',
-    border:  'rgba(0,212,255,0.13)',
-    borderFocus: 'rgba(0,212,255,0.45)',
-    inputBg: 'rgba(0,212,255,0.03)',
+    border:  'rgba(236,72,153,0.13)',
+    borderFocus: 'rgba(236,72,153,0.45)',
+    inputBg: 'rgba(236,72,153,0.03)',
     text:    '#E8F0FE',
     muted:   '#6B7E9F',
-    teal:    '#00D4FF',
+    teal:    '#EC4899',
     red:     '#FF4757',
     surface: 'rgba(255,255,255,0.04)',
   };
@@ -167,14 +168,14 @@ export function AuthModal({ initialMode, onSuccess, onClose, onViewLegal }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(4,7,14,0.92)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(16px)', animation: 'fadeIn 0.18s ease-out' }}>
-      <div style={{ background: LP.card, border: `1px solid ${LP.border}`, borderRadius: 22, padding: '38px 32px 32px', width: '100%', maxWidth: 420, boxShadow: `0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,212,255,0.06), 0 0 80px rgba(0,212,255,0.05)`, position: 'relative', backdropFilter: 'blur(20px)' }}>
+      <div style={{ background: LP.card, border: `1px solid ${LP.border}`, borderRadius: 22, padding: '38px 32px 32px', width: '100%', maxWidth: 420, boxShadow: `0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(236,72,153,0.06), 0 0 80px rgba(236,72,153,0.05)`, position: 'relative', backdropFilter: 'blur(20px)' }}>
 
         {/* Close */}
         <button onClick={onClose} style={{ position: 'absolute', right: 18, top: 18, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: LP.muted, cursor: 'pointer', fontSize: 16, width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, transition: 'all 0.15s' }}>×</button>
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginBottom: 14, background: 'rgba(0,212,255,0.07)', border: '1px solid rgba(0,212,255,0.15)', borderRadius: 100, padding: '5px 14px 5px 10px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, marginBottom: 14, background: 'rgba(236,72,153,0.07)', border: '1px solid rgba(236,72,153,0.15)', borderRadius: 100, padding: '5px 14px 5px 10px' }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: LP.teal, boxShadow: `0 0 8px ${LP.teal}`, display: 'inline-block', flexShrink: 0 }} />
             <span style={{ fontSize: 11, fontWeight: 700, color: LP.teal, letterSpacing: '0.06em', textTransform: 'uppercase' }}>CareerAiHub</span>
           </div>
@@ -192,7 +193,7 @@ export function AuthModal({ initialMode, onSuccess, onClose, onViewLegal }) {
                     style={{ flex: 1, padding: '9px 12px', borderRadius: 9, border: 'none', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', transition: 'all .18s',
                       background: accountType === val ? (val === 'recruiter' ? 'linear-gradient(135deg,#9333EA,#E040FB)' : `linear-gradient(135deg,${LP.teal},#0096CC)`) : 'transparent',
                       color: accountType === val ? (val === 'recruiter' ? '#fff' : '#06090F') : LP.muted,
-                      boxShadow: accountType === val ? (val === 'recruiter' ? '0 4px 16px rgba(147,51,234,0.3)' : `0 4px 16px rgba(0,212,255,0.25)`) : 'none' }}>
+                      boxShadow: accountType === val ? (val === 'recruiter' ? '0 4px 16px rgba(147,51,234,0.3)' : `0 4px 16px rgba(236,72,153,0.25)`) : 'none' }}>
                     {label}
                   </button>
                 ))}
@@ -200,13 +201,13 @@ export function AuthModal({ initialMode, onSuccess, onClose, onViewLegal }) {
 
               <div>
                 <div style={{ color: LP.muted, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6, fontWeight: 700 }}>Full Name</div>
-                <input placeholder="Your full name" value={name} onChange={e => { setName(e.target.value); setErr(''); }} required style={inputStyle} onFocus={e => { e.target.style.borderColor = LP.borderFocus; e.target.style.boxShadow = `0 0 0 3px rgba(0,212,255,0.08)`; }} onBlur={e => { e.target.style.borderColor = LP.border; e.target.style.boxShadow = 'none'; }} />
+                <input placeholder="Your full name" value={name} onChange={e => { setName(e.target.value); setErr(''); }} required style={inputStyle} onFocus={e => { e.target.style.borderColor = LP.borderFocus; e.target.style.boxShadow = `0 0 0 3px rgba(236,72,153,0.08)`; }} onBlur={e => { e.target.style.borderColor = LP.border; e.target.style.boxShadow = 'none'; }} />
               </div>
 
               {accountType === 'recruiter' && (
                 <div>
                   <div style={{ color: LP.muted, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6, fontWeight: 700 }}>Company Name</div>
-                  <input placeholder="e.g. Acme Corp" value={company} onChange={e => { setCompany(e.target.value); setErr(''); }} required style={inputStyle} onFocus={e => { e.target.style.borderColor = LP.borderFocus; e.target.style.boxShadow = `0 0 0 3px rgba(0,212,255,0.08)`; }} onBlur={e => { e.target.style.borderColor = LP.border; e.target.style.boxShadow = 'none'; }} />
+                  <input placeholder="e.g. Acme Corp" value={company} onChange={e => { setCompany(e.target.value); setErr(''); }} required style={inputStyle} onFocus={e => { e.target.style.borderColor = LP.borderFocus; e.target.style.boxShadow = `0 0 0 3px rgba(236,72,153,0.08)`; }} onBlur={e => { e.target.style.borderColor = LP.border; e.target.style.boxShadow = 'none'; }} />
                 </div>
               )}
             </>
@@ -214,13 +215,13 @@ export function AuthModal({ initialMode, onSuccess, onClose, onViewLegal }) {
 
           <div>
             <div style={{ color: LP.muted, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6, fontWeight: 700 }}>Email Address</div>
-            <input type="email" placeholder="you@email.com" value={email} onChange={e => { setEmail(e.target.value); setErr(''); }} required style={inputStyle} onFocus={e => { e.target.style.borderColor = LP.borderFocus; e.target.style.boxShadow = `0 0 0 3px rgba(0,212,255,0.08)`; }} onBlur={e => { e.target.style.borderColor = LP.border; e.target.style.boxShadow = 'none'; }} />
+            <input type="email" placeholder="you@email.com" value={email} onChange={e => { setEmail(e.target.value); setErr(''); }} required style={inputStyle} onFocus={e => { e.target.style.borderColor = LP.borderFocus; e.target.style.boxShadow = `0 0 0 3px rgba(236,72,153,0.08)`; }} onBlur={e => { e.target.style.borderColor = LP.border; e.target.style.boxShadow = 'none'; }} />
           </div>
 
           <div>
             <div style={{ color: LP.muted, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6, fontWeight: 700 }}>Password</div>
             <div style={{ position: 'relative' }}>
-              <input type={showPass ? 'text' : 'password'} placeholder="••••••••" value={pass} onChange={e => { setPass(e.target.value); setErr(''); }} required style={{ ...inputStyle, paddingRight: 42 }} onFocus={e => { e.target.style.borderColor = LP.borderFocus; e.target.style.boxShadow = `0 0 0 3px rgba(0,212,255,0.08)`; }} onBlur={e => { e.target.style.borderColor = LP.border; e.target.style.boxShadow = 'none'; }} />
+              <input type={showPass ? 'text' : 'password'} placeholder="••••••••" value={pass} onChange={e => { setPass(e.target.value); setErr(''); }} required style={{ ...inputStyle, paddingRight: 42 }} onFocus={e => { e.target.style.borderColor = LP.borderFocus; e.target.style.boxShadow = `0 0 0 3px rgba(236,72,153,0.08)`; }} onBlur={e => { e.target.style.borderColor = LP.border; e.target.style.boxShadow = 'none'; }} />
               <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: LP.muted, cursor: 'pointer', fontSize: 13 }}>
                 {showPass ? '🙈' : '👁'}
               </button>
@@ -229,7 +230,7 @@ export function AuthModal({ initialMode, onSuccess, onClose, onViewLegal }) {
 
           {err && <div style={{ color: LP.red, fontSize: 12, textAlign: 'center', background: `${LP.red}12`, padding: '9px 12px', borderRadius: 9, border: `1px solid ${LP.red}30` }}>⚠ {err}</div>}
 
-          <button type="submit" disabled={loading} style={{ width: '100%', background: loading ? 'rgba(255,255,255,0.06)' : `linear-gradient(135deg,${LP.teal},#0086BB)`, color: loading ? LP.muted : '#04080F', border: 'none', borderRadius: 11, padding: '14px', fontWeight: 900, fontSize: 14, fontFamily: 'inherit', cursor: loading ? 'not-allowed' : 'pointer', marginTop: 6, transition: 'all 0.2s', boxShadow: loading ? 'none' : `0 6px 24px rgba(0,212,255,0.25)`, letterSpacing: '0.01em' }}>
+          <button type="submit" disabled={loading} style={{ width: '100%', background: loading ? 'rgba(255,255,255,0.06)' : `linear-gradient(135deg,${LP.teal},#0086BB)`, color: loading ? LP.muted : '#04080F', border: 'none', borderRadius: 11, padding: '14px', fontWeight: 900, fontSize: 14, fontFamily: 'inherit', cursor: loading ? 'not-allowed' : 'pointer', marginTop: 6, transition: 'all 0.2s', boxShadow: loading ? 'none' : `0 6px 24px rgba(236,72,153,0.25)`, letterSpacing: '0.01em' }}>
             {loading ? 'Connecting…' : config.btn + ' →'}
           </button>
 

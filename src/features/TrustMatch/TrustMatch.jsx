@@ -5,12 +5,12 @@ import './trustMatch.css';
 const T = {
   bg: '#0B0F1A', bg2: '#0E1420', bg3: '#131B2E', bg4: '#1A2540',
   text: '#F0F4FF', text2: '#8B9DC3', text3: '#4A5A7A',
-  teal: '#00D4FF', tealDim: 'rgba(0,212,255,.08)', tealB: 'rgba(0,212,255,.25)', tealB2: 'rgba(0,212,255,.5)',
-  violet: '#B026FF', violetDim: 'rgba(176,38,255,.08)', violetB: 'rgba(176,38,255,.3)', violetTxt: '#C470FF',
+  teal: '#EC4899', tealDim: 'rgba(236,72,153,.08)', tealB: 'rgba(236,72,153,.25)', tealB2: 'rgba(236,72,153,.5)',
+  violet: '#F59E0B', violetDim: 'rgba(245,158,11,.08)', violetB: 'rgba(245,158,11,.3)', violetTxt: '#C470FF',
   emerald: '#00E5A0', emeraldDim: 'rgba(0,229,160,.08)', emeraldB: 'rgba(0,229,160,.28)',
   gold: '#FFD233', red: '#FF4D6A',
-  bdr: 'rgba(0,212,255,.1)', bdr2: 'rgba(0,212,255,.18)',
-  grad: 'linear-gradient(135deg,#00D4FF 0%,#B026FF 100%)',
+  bdr: 'rgba(236,72,153,.1)', bdr2: 'rgba(236,72,153,.18)',
+  grad: 'linear-gradient(135deg,#EC4899 0%,#F59E0B 100%)',
 };
 const FF  = "'Inter', system-ui, sans-serif";
 const FFM = "'JetBrains Mono', monospace";
@@ -79,7 +79,7 @@ function ProfileModal({ user, trustProfile, onSave, onClose }) {
   return (
     <div onClick={e => e.target === e.currentTarget && onClose()}
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.88)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
-      <div style={{ background: T.bg2, border: `1px solid ${T.tealB}`, borderRadius: 18, padding: '28px 24px', maxWidth: 460, width: '92%', maxHeight: '85vh', overflowY: 'auto', boxShadow: `0 0 80px rgba(0,212,255,.1), 0 32px 80px rgba(0,0,0,.7)` }}>
+      <div style={{ background: T.bg2, border: `1px solid ${T.tealB}`, borderRadius: 18, padding: '28px 24px', maxWidth: 460, width: '92%', maxHeight: '85vh', overflowY: 'auto', boxShadow: `0 0 80px rgba(236,72,153,.1), 0 32px 80px rgba(0,0,0,.7)` }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ fontSize: 16, fontWeight: 800, color: T.text }}>Candidate Profile</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: T.text3, fontSize: 20, cursor: 'pointer' }}>×</button>
@@ -139,7 +139,7 @@ function ProfileModal({ user, trustProfile, onSave, onClose }) {
         </div>
 
         <button onClick={save} disabled={saving}
-          style={{ width: '100%', marginTop: 20, padding: '12px', borderRadius: 10, background: saving ? 'rgba(0,212,255,.1)' : 'linear-gradient(135deg,rgba(0,212,255,.2),rgba(176,38,255,.2))', border: `1px solid ${T.tealB}`, color: T.teal, fontSize: 14, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: FF, transition: 'all .2s' }}>
+          style={{ width: '100%', marginTop: 20, padding: '12px', borderRadius: 10, background: saving ? 'rgba(236,72,153,.1)' : 'linear-gradient(135deg,rgba(236,72,153,.2),rgba(245,158,11,.2))', border: `1px solid ${T.tealB}`, color: T.teal, fontSize: 14, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', fontFamily: FF, transition: 'all .2s' }}>
           {saving ? 'Saving…' : 'Save Profile →'}
         </button>
       </div>
@@ -250,7 +250,7 @@ export default function TrustMatch({ user, memory, updateMemory }) {
         <div style={{ background: T.bg3, border: `1px solid ${T.tealB}`, borderRadius: 12, padding: 14, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: T.grad }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 10 }}>
-            <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#534AB7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#fff', border: `2px solid ${T.tealB}`, boxShadow: '0 0 14px rgba(0,212,255,.2)', flexShrink: 0 }}>{userInits}</div>
+            <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#534AB7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#fff', border: `2px solid ${T.tealB}`, boxShadow: '0 0 14px rgba(236,72,153,.2)', flexShrink: 0 }}>{userInits}</div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: T.text, letterSpacing: '-.2px' }}>{userName}</div>
               <div style={{ fontSize: 10, color: T.text3, marginTop: 1 }}>{trustProfile?.headline || 'Complete your profile →'}</div>
@@ -361,8 +361,8 @@ export default function TrustMatch({ user, memory, updateMemory }) {
             const logoBg   = job.employer_bg || '#534AB7';
             return (
               <div key={job.id} className="tm-co-card"
-                style={{ background: 'linear-gradient(145deg,rgba(13,20,40,.96),rgba(11,16,26,.98))', border: `1px solid ${on ? 'rgba(0,229,160,.35)' : 'rgba(0,212,255,.12)'}`, borderRadius: 18, padding: 18, position: 'relative', overflow: 'hidden', boxShadow: on ? '0 0 24px rgba(0,229,160,.08)' : 'none', transition: 'border-color .2s, box-shadow .2s', animationDelay: `${i * 0.07}s` }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(0,212,255,.2),transparent)' }} />
+                style={{ background: 'linear-gradient(145deg,rgba(13,20,40,.96),rgba(11,16,26,.98))', border: `1px solid ${on ? 'rgba(0,229,160,.35)' : 'rgba(236,72,153,.12)'}`, borderRadius: 18, padding: 18, position: 'relative', overflow: 'hidden', boxShadow: on ? '0 0 24px rgba(0,229,160,.08)' : 'none', transition: 'border-color .2s, box-shadow .2s', animationDelay: `${i * 0.07}s` }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg,transparent,rgba(236,72,153,.2),transparent)' }} />
 
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 10, background: logoBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff', flexShrink: 0 }}>{logoText}</div>
@@ -387,14 +387,14 @@ export default function TrustMatch({ user, memory, updateMemory }) {
                 {(job.perks || job.skills_required || []).length > 0 && (
                   <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 14 }}>
                     {(job.perks || job.skills_required || []).map(p => (
-                      <span key={p} style={{ fontSize: 10, padding: '3px 9px', borderRadius: 20, background: 'rgba(176,38,255,.08)', color: T.violetTxt, border: '1px solid rgba(176,38,255,.22)' }}>{p}</span>
+                      <span key={p} style={{ fontSize: 10, padding: '3px 9px', borderRadius: 20, background: 'rgba(245,158,11,.08)', color: T.violetTxt, border: '1px solid rgba(245,158,11,.22)' }}>{p}</span>
                     ))}
                   </div>
                 )}
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <button className="tm-btn-interested" onClick={() => toggleInterest(job.id)}
-                    style={{ padding: 10, borderRadius: 8, fontSize: 12, fontWeight: 600, border: `1px solid ${on ? T.emeraldB : 'rgba(176,38,255,.3)'}`, background: on ? 'rgba(0,229,160,.12)' : 'rgba(176,38,255,.1)', color: on ? T.emerald : T.violetTxt, cursor: 'pointer', transition: 'all .2s', fontFamily: FF }}>
+                    style={{ padding: 10, borderRadius: 8, fontSize: 12, fontWeight: 600, border: `1px solid ${on ? T.emeraldB : 'rgba(245,158,11,.3)'}`, background: on ? 'rgba(0,229,160,.12)' : 'rgba(245,158,11,.1)', color: on ? T.emerald : T.violetTxt, cursor: 'pointer', transition: 'all .2s', fontFamily: FF }}>
                     {on ? '✓ Interested' : "I'm interested →"}
                   </button>
                   <button className="tm-btn-learn" onClick={() => openChat(job.id)}
@@ -480,7 +480,7 @@ export default function TrustMatch({ user, memory, updateMemory }) {
             {trustProfile?.is_visible ? 'Employers with verified accounts can discover your profile.' : 'Toggle visibility in your profile to enter the TrustMatch marketplace.'}
           </div>
           <button onClick={() => setShowProfile(true)}
-            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, background: trustProfile?.is_visible ? 'rgba(0,229,160,.1)' : 'rgba(176,38,255,.1)', border: `1px solid ${trustProfile?.is_visible ? T.emeraldB : T.violetB}`, color: trustProfile?.is_visible ? T.emerald : T.violetTxt, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: FF, transition: 'all .15s' }}>
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, background: trustProfile?.is_visible ? 'rgba(0,229,160,.1)' : 'rgba(245,158,11,.1)', border: `1px solid ${trustProfile?.is_visible ? T.emeraldB : T.violetB}`, color: trustProfile?.is_visible ? T.emerald : T.violetTxt, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: FF, transition: 'all .15s' }}>
             {trustProfile?.is_visible ? 'Edit profile' : 'Set up visibility →'}
           </button>
         </div>
@@ -507,7 +507,7 @@ export default function TrustMatch({ user, memory, updateMemory }) {
               const isRight = msg.type === 'right';
               return (
                 <div key={i} style={{ display: 'flex', justifyContent: isRight ? 'flex-end' : 'flex-start' }}>
-                  <div style={{ maxWidth: '80%', padding: '9px 13px', fontSize: 12, lineHeight: 1.55, background: isRight ? 'rgba(176,38,255,.15)' : 'rgba(255,255,255,.05)', color: isRight ? '#D4ADFF' : T.text2, borderRadius: isRight ? '12px 12px 2px 12px' : '12px 12px 12px 2px' }}>
+                  <div style={{ maxWidth: '80%', padding: '9px 13px', fontSize: 12, lineHeight: 1.55, background: isRight ? 'rgba(245,158,11,.15)' : 'rgba(255,255,255,.05)', color: isRight ? '#D4ADFF' : T.text2, borderRadius: isRight ? '12px 12px 2px 12px' : '12px 12px 12px 2px' }}>
                     <div style={{ fontSize: 9, color: T.text3, marginBottom: 3 }}>{msg.sender}</div>
                     {msg.text}
                   </div>
@@ -522,7 +522,7 @@ export default function TrustMatch({ user, memory, updateMemory }) {
               placeholder="Reply to recruiter…"
               style={{ flex: 1, background: 'rgba(255,255,255,.05)', border: `1px solid ${T.bdr2}`, borderRadius: 8, padding: '9px 12px', color: T.text, fontSize: 12, outline: 'none', fontFamily: FF }} />
             <button className="tm-send" onClick={sendMsg}
-              style={{ padding: '9px 16px', background: 'rgba(176,38,255,.15)', border: '1px solid rgba(176,38,255,.3)', borderRadius: 8, color: T.violetTxt, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: FF, flexShrink: 0 }}>
+              style={{ padding: '9px 16px', background: 'rgba(245,158,11,.15)', border: '1px solid rgba(245,158,11,.3)', borderRadius: 8, color: T.violetTxt, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: FF, flexShrink: 0 }}>
               Send
             </button>
           </div>
@@ -538,7 +538,7 @@ export default function TrustMatch({ user, memory, updateMemory }) {
       <div onClick={e => e.target === e.currentTarget && setModalJob(null)}
         style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.88)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
         <div className="tm-modal"
-          style={{ background: T.bg2, border: '1px solid rgba(176,38,255,.4)', borderRadius: 18, padding: '34px 28px', maxWidth: 400, width: '92%', textAlign: 'center', boxShadow: '0 0 100px rgba(176,38,255,.2),0 32px 80px rgba(0,0,0,.7)' }}>
+          style={{ background: T.bg2, border: '1px solid rgba(245,158,11,.4)', borderRadius: 18, padding: '34px 28px', maxWidth: 400, width: '92%', textAlign: 'center', boxShadow: '0 0 100px rgba(245,158,11,.2),0 32px 80px rgba(0,0,0,.7)' }}>
           <div style={{ fontSize: 36, marginBottom: 10 }}>✨</div>
           <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-.5px', marginBottom: 8, background: T.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>It's a Match!</div>
           <div style={{ fontSize: 13, color: T.text2, marginBottom: 22, lineHeight: 1.7 }}>
@@ -546,17 +546,17 @@ export default function TrustMatch({ user, memory, updateMemory }) {
             TrustChat is now open — credentials visible from message one.
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 22 }}>
-            <div style={{ width: 54, height: 54, borderRadius: '50%', background: '#534AB7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#fff', border: '2px solid rgba(0,212,255,.4)' }}>{userInits}</div>
+            <div style={{ width: 54, height: 54, borderRadius: '50%', background: '#534AB7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#fff', border: '2px solid rgba(236,72,153,.4)' }}>{userInits}</div>
             <div style={{ display: 'flex', gap: 5 }}>
-              {[0, 1, 2].map(i => <div key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(176,38,255,.5)' }} />)}
+              {[0, 1, 2].map(i => <div key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(245,158,11,.5)' }} />)}
             </div>
-            <div style={{ width: 54, height: 54, borderRadius: '50%', background: modalJob.employer_bg || '#534AB7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#fff', border: '2px solid rgba(176,38,255,.4)' }}>
+            <div style={{ width: 54, height: 54, borderRadius: '50%', background: modalJob.employer_bg || '#534AB7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#fff', border: '2px solid rgba(245,158,11,.4)' }}>
               {(modalJob.employer_logo || (modalJob.employer_name || 'Co').slice(0, 2)).toUpperCase()}
             </div>
           </div>
           <button className="tm-mm-btn"
             onClick={() => { setModalJob(null); openChat(modalJob.id); setActiveTab('matches'); }}
-            style={{ width: '100%', padding: 13, borderRadius: 12, background: 'rgba(176,38,255,.15)', border: '1px solid rgba(176,38,255,.4)', color: T.violetTxt, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: FF, transition: 'all .2s' }}>
+            style={{ width: '100%', padding: 13, borderRadius: 12, background: 'rgba(245,158,11,.15)', border: '1px solid rgba(245,158,11,.4)', color: T.violetTxt, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: FF, transition: 'all .2s' }}>
             Open TrustChat →
           </button>
         </div>

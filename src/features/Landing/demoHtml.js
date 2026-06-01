@@ -17,7 +17,7 @@ export const l1Html = `<!DOCTYPE html>
   --green:#00e5a0;--gdim:rgba(0,229,160,0.1);--gb:rgba(0,229,160,0.25);
   --gold:#f5c842;--goldim:rgba(245,200,66,0.1);
   --red:#ff5f6e;--rdim:rgba(255,95,110,0.1);
-  --purple:#b026ff;--pdim:rgba(176,38,255,0.1);--pb:rgba(176,38,255,0.25);
+  --purple:#F59E0B;--pdim:rgba(245,158,11,0.1);--pb:rgba(245,158,11,0.25);
   --mono:'JetBrains Mono',monospace;--disp:'Syne',sans-serif;--body:'DM Sans',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -203,7 +203,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:13
 <!-- TOPBAR -->
 <div class="topbar">
   <div style="display:flex;align-items:center;gap:12px">
-    <div class="logo"><svg width="28" height="28" viewBox="0 0 100 100" fill="none" style="flex-shrink:0"><defs><linearGradient id="orb-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6366F1"/><stop offset="55%" stop-color="#EC4899"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(-28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><circle cx="50" cy="50" r="11" fill="url(#orb-g)"/><circle cx="81.94" cy="26.03" r="4.5" fill="url(#orb-g)"/><circle cx="70.42" cy="75.19" r="4" fill="url(#orb-g)"/><circle cx="18.06" cy="73.97" r="3.5" fill="url(#orb-g)"/></svg>career<span style="background:linear-gradient(110deg,#6366F1 0%,#EC4899 55%,#F59E0B 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">ai</span>hub</div>
+    <div class="logo"><svg width="28" height="28" viewBox="0 0 100 100" fill="none" style="flex-shrink:0"><defs><linearGradient id="orb-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#EC4899"/><stop offset="55%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(-28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><circle cx="50" cy="50" r="11" fill="url(#orb-g)"/><circle cx="81.94" cy="26.03" r="4.5" fill="url(#orb-g)"/><circle cx="70.42" cy="75.19" r="4" fill="url(#orb-g)"/><circle cx="18.06" cy="73.97" r="3.5" fill="url(#orb-g)"/></svg>career<span style="background:linear-gradient(110deg,#EC4899 0%,#F59E0B 55%,#F59E0B 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">ai</span>hub</div>
     <div class="layer-pill"><div class="ldot"></div>LAYER 01 — RESUME CREATION</div>
   </div>
   <div class="top-right">
@@ -578,7 +578,7 @@ export const l2Html = `<!DOCTYPE html>
   --green:#00e5a0;--gdim:rgba(0,229,160,0.1);--gb:rgba(0,229,160,0.25);
   --gold:#f5c842;--goldim:rgba(245,200,66,0.1);--goldb:rgba(245,200,66,0.25);
   --red:#ff5f6e;--rdim:rgba(255,95,110,0.1);
-  --purple:#b026ff;--pdim:rgba(176,38,255,0.1);--pb:rgba(176,38,255,0.25);
+  --purple:#F59E0B;--pdim:rgba(245,158,11,0.1);--pb:rgba(245,158,11,0.25);
   --mono:'JetBrains Mono',monospace;--disp:'Syne',sans-serif;--body:'DM Sans',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -737,7 +737,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:13
 <!-- TOPBAR -->
 <div class="topbar">
   <div style="display:flex;align-items:center;gap:12px">
-    <div class="logo"><svg width="28" height="28" viewBox="0 0 100 100" fill="none" style="flex-shrink:0"><defs><linearGradient id="orb-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6366F1"/><stop offset="55%" stop-color="#EC4899"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(-28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><circle cx="50" cy="50" r="11" fill="url(#orb-g)"/><circle cx="81.94" cy="26.03" r="4.5" fill="url(#orb-g)"/><circle cx="70.42" cy="75.19" r="4" fill="url(#orb-g)"/><circle cx="18.06" cy="73.97" r="3.5" fill="url(#orb-g)"/></svg>career<span style="background:linear-gradient(110deg,#6366F1 0%,#EC4899 55%,#F59E0B 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">ai</span>hub</div>
+    <div class="logo"><svg width="28" height="28" viewBox="0 0 100 100" fill="none" style="flex-shrink:0"><defs><linearGradient id="orb-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#EC4899"/><stop offset="55%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(-28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><circle cx="50" cy="50" r="11" fill="url(#orb-g)"/><circle cx="81.94" cy="26.03" r="4.5" fill="url(#orb-g)"/><circle cx="70.42" cy="75.19" r="4" fill="url(#orb-g)"/><circle cx="18.06" cy="73.97" r="3.5" fill="url(#orb-g)"/></svg>career<span style="background:linear-gradient(110deg,#EC4899 0%,#F59E0B 55%,#F59E0B 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">ai</span>hub</div>
     <div class="layer-pill"><div class="ldot"></div>LAYER 02 — INTERVIEW + SALARY PREP</div>
   </div>
   <div style="display:flex;gap:8px;">
@@ -1550,7 +1550,7 @@ export const l3Html = `<!DOCTYPE html>
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo"><svg width="28" height="28" viewBox="0 0 100 100" fill="none" style="flex-shrink:0"><defs><linearGradient id="orb-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6366F1"/><stop offset="55%" stop-color="#EC4899"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(-28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><circle cx="50" cy="50" r="11" fill="url(#orb-g)"/><circle cx="81.94" cy="26.03" r="4.5" fill="url(#orb-g)"/><circle cx="70.42" cy="75.19" r="4" fill="url(#orb-g)"/><circle cx="18.06" cy="73.97" r="3.5" fill="url(#orb-g)"/></svg>career<span style="background:linear-gradient(110deg,#6366F1 0%,#EC4899 55%,#F59E0B 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">ai</span>hub</div>
+  <div class="nav-logo"><svg width="28" height="28" viewBox="0 0 100 100" fill="none" style="flex-shrink:0"><defs><linearGradient id="orb-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#EC4899"/><stop offset="55%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(-28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><circle cx="50" cy="50" r="11" fill="url(#orb-g)"/><circle cx="81.94" cy="26.03" r="4.5" fill="url(#orb-g)"/><circle cx="70.42" cy="75.19" r="4" fill="url(#orb-g)"/><circle cx="18.06" cy="73.97" r="3.5" fill="url(#orb-g)"/></svg>career<span style="background:linear-gradient(110deg,#EC4899 0%,#F59E0B 55%,#F59E0B 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">ai</span>hub</div>
   <div class="nav-tabs">
     <button class="nav-tab"><span>Job Search</span><span style="font-size:9px;color:var(--text-dim)">Always free</span></button>
     <button class="nav-tab"><span class="dot"></span>Get Seen</button>
@@ -2095,7 +2095,7 @@ export const l4Html = `<!DOCTYPE html>
   --text:#e8eaf0;--text2:#8b92a8;--text3:#3d4560;
   --green:#00e5a0;--gdim:rgba(0,229,160,0.1);--gb:rgba(0,229,160,0.25);
   --cyan:#00c8ff;--cdim:rgba(0,200,255,0.1);--cb:rgba(0,200,255,0.25);
-  --purple:#b026ff;--pdim:rgba(176,38,255,0.1);--pb:rgba(176,38,255,0.3);
+  --purple:#F59E0B;--pdim:rgba(245,158,11,0.1);--pb:rgba(245,158,11,0.3);
   --gold:#f5c842;--gdold:rgba(245,200,66,0.1);
   --red:#ff5f6e;
   --mono:'JetBrains Mono',monospace;
@@ -2141,8 +2141,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:13
 .tag.add{background:transparent;color:var(--text3);border:1px dashed var(--bdr2);}
 .salary-row{display:flex;gap:6px;}
 .salary-row .field-input{width:50%;}
-.match-btn{margin:4px 0 0;padding:10px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--cyan));color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:var(--disp);width:100%;transition:all .2s;box-shadow:0 0 20px rgba(176,38,255,0.25);}
-.match-btn:hover{box-shadow:0 0 30px rgba(176,38,255,0.45);transform:translateY(-1px);}
+.match-btn{margin:4px 0 0;padding:10px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--cyan));color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:var(--disp);width:100%;transition:all .2s;box-shadow:0 0 20px rgba(245,158,11,0.25);}
+.match-btn:hover{box-shadow:0 0 30px rgba(245,158,11,0.45);transform:translateY(-1px);}
 
 /* criteria summary */
 .criteria-summary{padding:10px 16px;border-top:1px solid var(--bdr);flex-shrink:0;}
@@ -2263,7 +2263,7 @@ svg.donut{overflow:visible;}
 <div class="topbar">
   <div class="topbar-left">
     <div class="logo">
-<svg width="28" height="28" viewBox="0 0 100 100" fill="none" style="flex-shrink:0"><defs><linearGradient id="orb-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6366F1"/><stop offset="55%" stop-color="#EC4899"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(-28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><circle cx="50" cy="50" r="11" fill="url(#orb-g)"/><circle cx="81.94" cy="26.03" r="4.5" fill="url(#orb-g)"/><circle cx="70.42" cy="75.19" r="4" fill="url(#orb-g)"/><circle cx="18.06" cy="73.97" r="3.5" fill="url(#orb-g)"/></svg>career<span style="background:linear-gradient(110deg,#6366F1 0%,#EC4899 55%,#F59E0B 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">ai</span>hub
+<svg width="28" height="28" viewBox="0 0 100 100" fill="none" style="flex-shrink:0"><defs><linearGradient id="orb-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#EC4899"/><stop offset="55%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient></defs><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(-28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><ellipse cx="50" cy="50" rx="42" ry="18" transform="rotate(28 50 50)" stroke="url(#orb-g)" stroke-width="2" opacity="0.32"/><circle cx="50" cy="50" r="11" fill="url(#orb-g)"/><circle cx="81.94" cy="26.03" r="4.5" fill="url(#orb-g)"/><circle cx="70.42" cy="75.19" r="4" fill="url(#orb-g)"/><circle cx="18.06" cy="73.97" r="3.5" fill="url(#orb-g)"/></svg>career<span style="background:linear-gradient(110deg,#EC4899 0%,#F59E0B 55%,#F59E0B 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">ai</span>hub
     </div>
     <div class="layer-badge"><div class="dot"></div>LAYER 04 — AI MARKETPLACE</div>
   </div>
@@ -2392,7 +2392,7 @@ svg.donut{overflow:visible;}
         <!-- Candidate 2 -->
         <div class="cand-card" onclick="selectCand(this,1)">
           <div class="cand-top">
-            <div class="cand-avatar" style="background:linear-gradient(135deg,#b026ff22,#b026ff44);color:var(--purple)">
+            <div class="cand-avatar" style="background:linear-gradient(135deg,#F59E0B22,#F59E0B44);color:var(--purple)">
               BT
               <div class="vbadge">✓</div>
             </div>

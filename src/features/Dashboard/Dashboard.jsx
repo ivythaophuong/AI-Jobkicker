@@ -10,7 +10,7 @@ function timeAgo(dateStr) {
   return Math.floor(s / 86400) + 'd ago';
 }
 
-const ACT_COLORS = { scan: '#00D4FF', star: '#FFB800', jd: '#FF6B9D', mock: '#8B7CF6', cover: '#F5B340', salary: '#00E5A0' };
+const ACT_COLORS = { scan: '#EC4899', star: '#FFB800', jd: '#FF6B9D', mock: '#8B7CF6', cover: '#F5B340', salary: '#00E5A0' };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 function SectionLabel({ children }) {
@@ -81,9 +81,9 @@ function StreakBar({ activities, topGap }) {
   const count = activities.length;
 
   return (
-    <div style={{ ...cardStyle, background: 'linear-gradient(135deg,rgba(0,212,255,.04),rgba(99,102,241,.03))' }}>
+    <div style={{ ...cardStyle, background: 'linear-gradient(135deg,rgba(236,72,153,.04),rgba(236,72,153,.03))' }}>
       <SectionLabel>This Week</SectionLabel>
-      <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 26, fontWeight: 800, color: count > 0 ? '#00D4FF' : 'var(--lp-text3)', lineHeight: 1, marginBottom: 8 }}>
+      <div style={{ fontFamily: 'var(--lp-ff)', fontSize: 26, fontWeight: 800, color: count > 0 ? '#EC4899' : 'var(--lp-text3)', lineHeight: 1, marginBottom: 8 }}>
         {count} <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--lp-text2)' }}>actions logged</span>
       </div>
       <div style={{ display: 'flex', gap: 5, marginBottom: 14 }}>
@@ -91,8 +91,8 @@ function StreakBar({ activities, topGap }) {
           <div key={i} style={{ textAlign: 'center' }}>
             <div style={{
               width: 28, height: 28, borderRadius: 7,
-              background: d.active ? '#00D4FF' : d.isToday ? 'rgba(0,212,255,.1)' : 'var(--lp-bg3)',
-              border: `1px solid ${d.isToday ? 'rgba(0,212,255,.3)' : 'transparent'}`,
+              background: d.active ? '#EC4899' : d.isToday ? 'rgba(236,72,153,.1)' : 'var(--lp-bg3)',
+              border: `1px solid ${d.isToday ? 'rgba(236,72,153,.3)' : 'transparent'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <span style={{ fontSize: 9, fontWeight: 700, color: d.active ? '#000' : 'var(--lp-text3)' }}>
@@ -144,7 +144,7 @@ function AiMemoryPanel({ aiInsight, weeklyPlan, setActiveModule }) {
   return (
     <div style={{ ...cardStyle, borderLeft: '3px solid #8B7CF6', display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-        <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg,#00D4FF,#B026FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#000', flexShrink: 0 }}>AI</div>
+        <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg,#EC4899,#F59E0B)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#000', flexShrink: 0 }}>AI</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#8B7CF6', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 4, fontFamily: 'var(--lp-ffm)' }}>AI Memory · live</div>
           <div style={{ fontSize: 12, color: 'var(--lp-text)', lineHeight: 1.65 }}>{aiInsight}</div>
@@ -268,7 +268,7 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
   const actionItems = useMemo(() => [
     atsScore < 70   && { label: 'Improve ATS Score',  why: `Score ${atsScore}/100 — add missing keywords from your target JD`,         color: '#FF5A5A', id: 'scan'       },
     starCount < 5   && { label: 'Build STAR Bank',     why: `${starCount} of 8 stories saved — cover all behavioral categories`,         color: '#FFB84D', id: 'star'       },
-    readiness < 70  && { label: 'Run Mock Interview',  why: `Readiness ${readiness}/100 — simulate to sharpen your answers`,             color: '#00D4FF', id: 'simulate'   },
+    readiness < 70  && { label: 'Run Mock Interview',  why: `Readiness ${readiness}/100 — simulate to sharpen your answers`,             color: '#EC4899', id: 'simulate'   },
     trustScore < 65 && { label: 'Verify Credentials', why: `Trust score ${trustScore}/100 — verification unlocks TrustMatch hiring`,    color: '#8B7CF6', id: 'trustmatch' },
     jdCount < 3     && { label: 'Analyze More JDs',   why: `${jdCount} JD${jdCount !== 1 ? 's' : ''} scanned — tailor prep to each role`, color: '#00E5A0', id: 'jd'        },
   ].filter(Boolean).slice(0, 4), [atsScore, starCount, readiness, trustScore, jdCount]);
@@ -278,7 +278,7 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
     : atsScore >= 80 ? '✓ Strong' : atsScore > 0 ? 'Rescan to track progress' : 'No scans yet';
 
   const milestones = [
-    { iconLabel: 'ATS Score',   value: atsScore > 0 ? atsScore : '—',    label: 'Resume ATS',        delta: atsDeltaLabel,              color: '#00D4FF', pct: atsScore,                        onClick: () => setActiveModule('scan')       },
+    { iconLabel: 'ATS Score',   value: atsScore > 0 ? atsScore : '—',    label: 'Resume ATS',        delta: atsDeltaLabel,              color: '#EC4899', pct: atsScore,                        onClick: () => setActiveModule('scan')       },
     { iconLabel: 'Readiness',   value: readiness > 0 ? readiness : '—',  label: 'Interview prep',    delta: readiness > 0 ? `${100 - readiness} pts to go` : 'Start a session',                      color: '#FFB84D', pct: readiness,                       onClick: () => setActiveModule('simulate')   },
     { iconLabel: 'STAR Bank',   value: starCount,                         label: 'Stories saved',     delta: starCount >= 8 ? '✓ Solid bank' : `target: 8`,                                            color: '#FFB800', pct: Math.min(100, starCount * 12.5), onClick: () => setActiveModule('star')       },
     { iconLabel: 'Trust Score', value: trustScore > 0 ? trustScore : '—', label: 'Verified profile', delta: trustScore >= 65 ? '✓ TrustMatch on' : 'Verify → unlock',                                 color: trustScore >= 65 ? '#00E5A0' : '#FF5A5A', pct: trustScore, onClick: () => setActiveModule('trustmatch') },
@@ -311,7 +311,7 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
 
       {/* No resume — upload CTA */}
       {!resumeText && atsScore === 0 && (
-        <div style={{ marginBottom: 16, background: 'rgba(0,212,255,.05)', border: '1px solid rgba(0,212,255,.2)', borderRadius: 10, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ marginBottom: 16, background: 'rgba(236,72,153,.05)', border: '1px solid rgba(236,72,153,.2)', borderRadius: 10, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 200 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 4 }}>Upload your resume to unlock everything</div>
             <div style={{ fontSize: 11.5, color: 'var(--lp-text2)', lineHeight: 1.5 }}>Your ATS score, skills gap, readiness, and AI coaching all activate after your first scan.</div>
@@ -322,11 +322,11 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
 
       {/* Resume exists, no scan yet — show profile or loading spinner */}
       {resumeText && atsScore === 0 && (
-        <div style={{ marginBottom: 16, background: 'rgba(0,212,255,.04)', border: '1px solid rgba(0,212,255,.18)', borderRadius: 12, padding: '16px 20px' }}>
+        <div style={{ marginBottom: 16, background: 'rgba(236,72,153,.04)', border: '1px solid rgba(236,72,153,.18)', borderRadius: 12, padding: '16px 20px' }}>
           {profileLoading ? (
             /* Loading state */
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(0,212,255,.15)', borderTopColor: '#00D4FF', animation: 'spin 0.9s linear infinite', flexShrink: 0 }} />
+              <div style={{ width: 32, height: 32, borderRadius: '50%', border: '3px solid rgba(236,72,153,.15)', borderTopColor: '#EC4899', animation: 'spin 0.9s linear infinite', flexShrink: 0 }} />
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 2 }}>Analyzing your resume…</div>
                 <div style={{ fontSize: 11.5, color: 'var(--lp-text2)' }}>Extracting your role, skills, and experience. Takes a few seconds.</div>
@@ -336,7 +336,7 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
             /* Profile extracted */
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#00D4FF', fontFamily: 'var(--lp-ffm)' }}>📄 Resume analyzed</span>
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#EC4899', fontFamily: 'var(--lp-ffm)' }}>📄 Resume analyzed</span>
               </div>
               <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1, minWidth: 180 }}>
@@ -345,7 +345,7 @@ export default function Dashboard({ memory, form, user, setActiveModule, resumeT
                   {resumeProfile.topSkills?.length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                       {resumeProfile.topSkills.slice(0, 8).map(s => (
-                        <span key={s} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(0,212,255,.08)', border: '1px solid rgba(0,212,255,.2)', color: '#00D4FF', fontFamily: 'var(--lp-ffm)', fontWeight: 600 }}>{s}</span>
+                        <span key={s} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(236,72,153,.08)', border: '1px solid rgba(236,72,153,.2)', color: '#EC4899', fontFamily: 'var(--lp-ffm)', fontWeight: 600 }}>{s}</span>
                       ))}
                     </div>
                   )}
@@ -422,9 +422,9 @@ const cardStyle = {
 
 function btnStyle(variant) {
   const base = { fontFamily: 'var(--lp-ff)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 7, fontWeight: 600, fontSize: 12, transition: 'all .14s', border: 'none', whiteSpace: 'nowrap' };
-  if (variant === 'primary')        return { ...base, background: 'var(--lp-teal, #00D4FF)', color: '#000', padding: '8px 16px' };
+  if (variant === 'primary')        return { ...base, background: 'var(--lp-teal, #EC4899)', color: '#000', padding: '8px 16px' };
   if (variant === 'secondary')      return { ...base, background: 'var(--lp-bg3)', color: 'var(--lp-text)', border: '1px solid var(--lp-bdr2)', padding: '8px 14px' };
-  if (variant === 'outline-sm')     return { ...base, background: 'transparent', color: 'var(--lp-teal)', border: '1px solid rgba(0,212,255,.25)', padding: '5px 12px', fontSize: 11 };
+  if (variant === 'outline-sm')     return { ...base, background: 'transparent', color: 'var(--lp-teal)', border: '1px solid rgba(236,72,153,.25)', padding: '5px 12px', fontSize: 11 };
   if (variant === 'ghost-sm')       return { ...base, background: 'var(--lp-bg3)', color: 'var(--lp-text2)', border: '1px solid var(--lp-bdr)', padding: '5px 12px', fontSize: 11 };
   if (variant === 'full-secondary') return { ...base, background: 'var(--lp-bg3)', color: 'var(--lp-text2)', border: '1px solid var(--lp-bdr)', padding: '7px 12px', width: '100%', justifyContent: 'flex-start', fontSize: 12 };
   return base;

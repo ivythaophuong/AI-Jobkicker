@@ -666,7 +666,7 @@ function AppHubPill({ cat, activeModule, onNavigate }) {
         <span className="lp-hub-pill-label">{cat.label}</span>
         {cat.tag === 'Free' && <span className="lp-hub-pill-sub">Always free</span>}
         {cat.tag === 'Pro'  && <span className="lp-hub-pill-badge">Pro</span>}
-        {cat.tag === 'New'  && <span className="lp-hub-pill-badge" style={{ background: 'linear-gradient(135deg,#B026FF,#00D4FF)' }}>NEW</span>}
+        {cat.tag === 'New'  && <span className="lp-hub-pill-badge" style={{ background: 'linear-gradient(135deg,#F59E0B,#EC4899)' }}>NEW</span>}
       </button>
       {open && typeof document !== 'undefined' && ReactDOM.createPortal(
         <div
@@ -679,7 +679,7 @@ function AppHubPill({ cat, activeModule, onNavigate }) {
             <button
               key={i}
               className="lp-ncd-item"
-              style={ t.moduleId === activeModule ? { background: 'rgba(0,212,255,.1)' } : {} }
+              style={ t.moduleId === activeModule ? { background: 'rgba(236,72,153,.1)' } : {} }
               onClick={() => { onNavigate(t.moduleId); setOpen(false); }}
             >
               <span className="lp-ncd-item-icon">{t.icon}</span>
@@ -1367,7 +1367,7 @@ const DS = {
   green:'#00e5a0', gdim:'rgba(0,229,160,0.1)', gb:'rgba(0,229,160,0.25)',
   gold:'#f5c842', goldim:'rgba(245,200,66,0.1)', goldb:'rgba(245,200,66,0.25)',
   red:'#ff5f6e', rdim:'rgba(255,95,110,0.1)',
-  purple:'#b026ff', pdim:'rgba(176,38,255,0.1)', pb:'rgba(176,38,255,0.25)',
+  purple:'#F59E0B', pdim:'rgba(245,158,11,0.1)', pb:'rgba(245,158,11,0.25)',
 };
 
 function DemoShell({ label, accent, borderC, onClose, onNext, children }) {
@@ -1383,7 +1383,7 @@ function DemoShell({ label, accent, borderC, onClose, onNext, children }) {
           <button onClick={onClose} style={{ background:'none', border:'none', color:DS.text3, cursor:'pointer', fontSize:11, fontFamily:'var(--lp-ffm)' }}>✕ Close</button>
         </div>
       </div>
-      <div style={{ background:DS.bg, color:DS.text, fontFamily:'DM Sans, sans-serif', fontSize:13 }}>
+      <div style={{ background:DS.bg, color:DS.text, fontFamily:'Inter, sans-serif', fontSize:13 }}>
         {children}
       </div>
     </div>
@@ -1537,19 +1537,19 @@ function S0Card1({ color: c, active }) {
       <div style={{display:'flex',alignItems:'center',gap:9,background:'rgba(30,201,138,.03)',border:'1px solid rgba(30,201,138,.12)',borderRadius:7,padding:'7px 10px'}}>
         <span style={{fontSize:14}}>📄</span>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontFamily:'monospace',fontSize:8,color:'rgba(255,255,255,.3)',marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>resume_ivy_chen_seniorAI.pdf</div>
+          <div style={{fontFamily:'monospace',fontSize:11,color:'rgba(255,255,255,.3)',marginBottom:3,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>resume_ivy_chen_seniorAI.pdf</div>
           <div style={{height:2,background:'rgba(255,255,255,.08)',borderRadius:2,overflow:'hidden'}}>
             <div style={{height:2,width:`${upW}%`,background:c,borderRadius:2,transition:'width .6s steps(14,end)'}}/>
           </div>
         </div>
-        <div style={{fontSize:8,color:upDone?c:'rgba(255,255,255,.3)',fontFamily:'monospace',whiteSpace:'nowrap',transition:'color .3s'}}>{upDone?'✓ Memory seeded':'uploading…'}</div>
+        <div style={{fontSize:11,color:upDone?c:'rgba(255,255,255,.3)',fontFamily:'monospace',whiteSpace:'nowrap',transition:'color .3s'}}>{upDone?'✓ Memory seeded':'uploading…'}</div>
       </div>
       <div style={{display:'flex',alignItems:'center',gap:8}}>
         <div>
-          <div style={{fontSize:7,fontFamily:'monospace',color:'rgba(255,255,255,.25)',letterSpacing:1,textTransform:'uppercase',marginBottom:2}}>ATS Score</div>
+          <div style={{fontSize:10,fontFamily:'monospace',color:'rgba(255,255,255,.25)',letterSpacing:1,textTransform:'uppercase',marginBottom:2}}>ATS Score</div>
           <div style={{display:'flex',alignItems:'baseline',gap:3}}>
             <span style={{fontFamily:'monospace',fontSize:24,fontWeight:700,color:scoreCol,lineHeight:1,transition:'color .4s'}}>{score}</span>
-            <span style={{fontSize:9,color:'rgba(255,255,255,.25)',fontFamily:'monospace'}}>/100</span>
+            <span style={{fontSize:11,color:'rgba(255,255,255,.25)',fontFamily:'monospace'}}>/100</span>
           </div>
         </div>
         <div style={{flex:1,padding:'0 6px'}}>
@@ -1557,7 +1557,7 @@ function S0Card1({ color: c, active }) {
             <div style={{height:'100%',borderRadius:3,background:scoreCol,width:`${score}%`,transition:'width .7s cubic-bezier(.22,1,.36,1),background .5s'}}/>
           </div>
         </div>
-        <div style={{fontSize:7.5,fontFamily:'monospace',padding:'1px 6px',borderRadius:10,background:'rgba(30,201,138,.1)',color:c,border:'1px solid rgba(30,201,138,.22)',opacity:tagVis?1:0,transition:'opacity .3s',whiteSpace:'nowrap'}}>+52 pts</div>
+        <div style={{fontSize:10,fontFamily:'monospace',padding:'1px 6px',borderRadius:10,background:'rgba(30,201,138,.1)',color:c,border:'1px solid rgba(30,201,138,.22)',opacity:tagVis?1:0,transition:'opacity .3s',whiteSpace:'nowrap'}}>+52 pts</div>
       </div>
       {[b0,b1,b2].map((b,i)=>(
         <div key={i} className={`jny-ats-bullet${b.cls?' '+b.cls:''}`}>{b.txt}</div>
@@ -1591,7 +1591,7 @@ function S0Card2({ color: c, active }) {
   }, [active]);
   return (
     <JnyCard step="Step 02" title="JD Match · 94% — gap analysis" statusCls="run" statusTxt="⚡ 94%">
-      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Senior AI Engineer · Vertex AI Labs</div>
+      <div style={{fontFamily:'monospace',fontSize:10,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Senior AI Engineer · Vertex AI Labs</div>
       <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:7}}>
         {bLabels.map((l,i)=>(
           <div key={i} className="jny-mbar-row">
@@ -1602,8 +1602,8 @@ function S0Card2({ color: c, active }) {
         ))}
       </div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5}}>
-        <span style={{fontSize:8,fontFamily:'monospace',color:'rgba(255,255,255,.3)',textTransform:'uppercase',letterSpacing:.5}}>Keyword gaps</span>
-        <span style={{fontSize:8,fontFamily:'monospace',color:'rgba(255,255,255,.3)'}}>→ injected by AI</span>
+        <span style={{fontSize:11,fontFamily:'monospace',color:'rgba(255,255,255,.3)',textTransform:'uppercase',letterSpacing:.5}}>Keyword gaps</span>
+        <span style={{fontSize:11,fontFamily:'monospace',color:'rgba(255,255,255,.3)'}}>→ injected by AI</span>
       </div>
       <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
         {[{t:'✗ "LLM fine-tuning"',k:'gap'},{t:'✗ "MLOps pipeline"',k:'gap'},{t:'✓ AWS SageMaker',k:'match'},{t:'✓ Python / PyTorch',k:'match'},{t:'✓ cross-functional',k:'match'}].map((p,i)=>(
@@ -1631,8 +1631,8 @@ function S0Card3({ color: c, active }) {
   }, [active]);
   return (
     <JnyCard step="Step 03" title="AI cover letter · memory-personalised" statusCls="done" statusTxt="✓ Ready">
-      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Auto-seeded from resume + JD match</div>
-      <div style={{fontSize:9.5,lineHeight:1.68,color:'rgba(255,255,255,.5)',fontStyle:'italic',minHeight:80,flex:1}}>{text}</div>
+      <div style={{fontFamily:'monospace',fontSize:10,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Auto-seeded from resume + JD match</div>
+      <div style={{fontSize:11.5,lineHeight:1.68,color:'rgba(255,255,255,.5)',fontStyle:'italic',minHeight:80,flex:1}}>{text}</div>
       <div style={{display:'flex',flexWrap:'wrap',gap:4,marginTop:4}}>
         {['Role-matched','Memory-seeded','PDF ready','30 seconds'].map((t,i)=>(
           <span key={i} className={`jny-kpill match${pills[i]?' vis':''}`}>{t}</span>
@@ -1670,7 +1670,7 @@ function S1Card1({ color: c, active }) {
   }, [active]);
   return (
     <JnyCard step="Step 01" title="Personalised readiness plan" statusCls="done" statusTxt="✓ Plan ready">
-      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:7}}>Your scores — built from last 2 sessions</div>
+      <div style={{fontFamily:'monospace',fontSize:10,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:7}}>Your scores — built from last 2 sessions</div>
       <div className="jny-dim-grid">
         {[0,1,2,3].map(i=>(
           <div key={i} className="jny-dim-cell">
@@ -1681,8 +1681,8 @@ function S1Card1({ color: c, active }) {
         ))}
       </div>
       <div style={{display:'flex',gap:7,alignItems:'flex-start',background:'rgba(139,130,240,.07)',border:'1px solid rgba(139,130,240,.18)',borderRadius:7,padding:'7px 9px',opacity:aiVis?1:0,transition:'opacity .5s'}}>
-        <div style={{width:18,height:18,borderRadius:4,background:c,display:'flex',alignItems:'center',justifyContent:'center',fontSize:7,fontWeight:700,color:'#000',flexShrink:0}}>AI</div>
-        <div style={{fontSize:9,color:'rgba(255,255,255,.55)',lineHeight:1.6}}>{aiText}</div>
+        <div style={{width:18,height:18,borderRadius:4,background:c,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#000',flexShrink:0}}>AI</div>
+        <div style={{fontSize:11,color:'rgba(255,255,255,.55)',lineHeight:1.6}}>{aiText}</div>
       </div>
     </JnyCard>
   );
@@ -1713,17 +1713,17 @@ function S1Card2({ color: c, active }) {
   }, [active]);
   return (
     <JnyCard step="Step 02" title="HM Simulator — mock interview" statusCls="live" statusTxt="● Live">
-      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>AI Hiring Manager · Senior AI Engineer</div>
-      <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:7,padding:'8px 10px',fontSize:9.5,color:'rgba(255,255,255,.6)',lineHeight:1.6,marginBottom:6,minHeight:38}}>{q}</div>
+      <div style={{fontFamily:'monospace',fontSize:10,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>AI Hiring Manager · Senior AI Engineer</div>
+      <div style={{background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:7,padding:'8px 10px',fontSize:11.5,color:'rgba(255,255,255,.6)',lineHeight:1.6,marginBottom:6,minHeight:38}}>{q}</div>
       <div style={{display:'flex',gap:5,marginBottom:7}}>
         {[0,1,2,3].map(i=>(
           <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,background:'rgba(255,255,255,.03)',border:'1px solid rgba(255,255,255,.07)',borderRadius:6,padding:'6px 4px'}}>
             <div style={{fontFamily:'monospace',fontSize:15,fontWeight:700,color:sCols[i],lineHeight:1}}>{scores[i]||'–'}</div>
-            <div style={{fontSize:7.5,color:'rgba(255,255,255,.3)'}}>{sLabels[i]}</div>
+            <div style={{fontSize:10,color:'rgba(255,255,255,.3)'}}>{sLabels[i]}</div>
           </div>
         ))}
       </div>
-      <div style={{fontSize:8.5,color:'rgba(255,255,255,.4)',lineHeight:1.55,fontStyle:'italic',minHeight:22,opacity:fbVis?1:0,transition:'opacity .4s'}}>{fb}</div>
+      <div style={{fontSize:11,color:'rgba(255,255,255,.4)',lineHeight:1.55,fontStyle:'italic',minHeight:22,opacity:fbVis?1:0,transition:'opacity .4s'}}>{fb}</div>
     </JnyCard>
   );
 }
@@ -1742,19 +1742,19 @@ function S1Card3({ color: c, active }) {
   }, [active]);
   return (
     <JnyCard step="Step 03" title="STAR builder — story bank" statusCls="done" statusTxt="✓ 3 stories">
-      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Story bank · grows with every session</div>
+      <div style={{fontFamily:'monospace',fontSize:10,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Story bank · grows with every session</div>
       <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:7}}>
         {stories.map((st,i)=>(
           <div key={i} className={`jny-story${vis[i]?' vis':''}`}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:2}}>
-              <span style={{fontSize:9.5,fontWeight:600,color:'rgba(255,255,255,.8)'}}>{st.t}</span>
-              <span style={{fontFamily:'monospace',fontSize:7.5,color:st.ac,background:st.ac+'18',padding:'1px 6px',borderRadius:10}}>{st.a}</span>
+              <span style={{fontSize:11.5,fontWeight:600,color:'rgba(255,255,255,.8)'}}>{st.t}</span>
+              <span style={{fontFamily:'monospace',fontSize:10,color:st.ac,background:st.ac+'18',padding:'1px 6px',borderRadius:10}}>{st.a}</span>
             </div>
-            <div style={{fontSize:8.5,color:'rgba(255,255,255,.3)'}}>Situation · Task · Action · Result — AI-structured</div>
+            <div style={{fontSize:11,color:'rgba(255,255,255,.3)'}}>Situation · Task · Action · Result — AI-structured</div>
           </div>
         ))}
       </div>
-      <div style={{fontSize:8.5,color:'rgba(255,255,255,.3)'}}><span style={{fontFamily:'monospace',fontSize:9,color:c,fontWeight:700}}>3</span> stories ready · reused in every interview question</div>
+      <div style={{fontSize:11,color:'rgba(255,255,255,.3)'}}><span style={{fontFamily:'monospace',fontSize:11,color:c,fontWeight:700}}>3</span> stories ready · reused in every interview question</div>
     </JnyCard>
   );
 }
@@ -1778,11 +1778,11 @@ function S1Card4({ color: c, active }) {
   }, [active]);
   return (
     <JnyCard step="Step 04" title="Salary coach — SGD market benchmarks" statusCls="done" statusTxt="✓ Benchmarked">
-      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Market Intel · Senior AI Engineer · Singapore</div>
+      <div style={{fontFamily:'monospace',fontSize:10,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Market Intel · Senior AI Engineer · Singapore</div>
       <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:8}}>
         {labels.map((l,i)=>(
           <div key={i} className="jny-mbar-row">
-            <span className="jny-mbar-label" style={{width:42,fontSize:8}}>{l}</span>
+            <span className="jny-mbar-label" style={{width:42,fontSize:11}}>{l}</span>
             <div className="jny-mbar-track"><div className="jny-mbar-fill smooth" style={{width:`${bars[i]}%`,background:bCols[i]}}/></div>
             <span className="jny-mbar-val" style={{color:vCols[i],width:42,opacity:valVis[i]?1:0}}>{vals[i]}</span>
           </div>
@@ -1790,7 +1790,7 @@ function S1Card4({ color: c, active }) {
       </div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'rgba(240,168,50,.07)',border:'1px solid rgba(240,168,50,.22)',borderRadius:7,padding:'7px 10px',opacity:anchorVis?1:0,transition:'opacity .5s'}}>
         <div>
-          <div style={{fontSize:7.5,fontFamily:'monospace',color:c,textTransform:'uppercase',letterSpacing:.5,marginBottom:2}}>AI anchor — P75 strategy</div>
+          <div style={{fontSize:10,fontFamily:'monospace',color:c,textTransform:'uppercase',letterSpacing:.5,marginBottom:2}}>AI anchor — P75 strategy</div>
           <div style={{fontSize:10,color:'rgba(255,255,255,.55)'}}>Open at <strong style={{color:'rgba(255,255,255,.9)'}}>SGD 16k</strong> · accept <strong style={{color:'#1ec98a'}}>≥ 14k</strong></div>
         </div>
         <div style={{fontFamily:'monospace',fontSize:13,fontWeight:700,color:c}}>+33%</div>
@@ -1805,7 +1805,7 @@ function S2Card1({ color: c, active }) {
   const [offerVis, setOfferVis] = useState(false);
   const [ancNum, setAncNum] = useState(0);
   const pcts=[40,55,72,100];
-  const bCols=['rgba(99,102,241,.5)','rgba(139,130,240,.6)','rgba(232,92,128,.55)',c];
+  const bCols=['rgba(236,72,153,.5)','rgba(139,130,240,.6)','rgba(232,92,128,.55)',c];
   const labels=['P25','Median','P75','Top 10%'];
   useEffect(() => {
     if (!active) { setBars([0,0,0,0]); setOfferVis(false); setAncNum(0); return; }
@@ -1818,25 +1818,25 @@ function S2Card1({ color: c, active }) {
   }, [active]);
   return (
     <JnyCard step="Step 01" title="Offer received · market benchmark" statusCls="run" statusTxt="⚡ Analysing">
-      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:7}}>Market Intel · Senior PM · Singapore</div>
+      <div style={{fontFamily:'monospace',fontSize:10,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:7}}>Market Intel · Senior PM · Singapore</div>
       <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:8}}>
         {labels.map((l,i)=>(
           <div key={i} className="jny-mbar-row">
-            <span className="jny-mbar-label" style={{width:40,fontSize:8}}>{l}</span>
+            <span className="jny-mbar-label" style={{width:40,fontSize:11}}>{l}</span>
             <div className="jny-mbar-track"><div className="jny-mbar-fill smooth" style={{width:`${bars[i]}%`,background:bCols[i]}}/></div>
           </div>
         ))}
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6,opacity:offerVis?1:0,transition:'opacity .5s'}}>
         <div style={{background:'rgba(239,68,68,.05)',border:'1px solid rgba(239,68,68,.18)',borderRadius:7,padding:'7px 9px'}}>
-          <div style={{fontFamily:'monospace',fontSize:7,color:'rgba(239,68,68,.65)',textTransform:'uppercase',letterSpacing:.5,marginBottom:3}}>Their offer</div>
+          <div style={{fontFamily:'monospace',fontSize:10,color:'rgba(239,68,68,.65)',textTransform:'uppercase',letterSpacing:.5,marginBottom:3}}>Their offer</div>
           <div style={{fontSize:16,fontWeight:700,color:'#ef4444',fontFamily:'monospace'}}>$10,500</div>
-          <div style={{fontSize:8,color:'rgba(239,68,68,.45)'}}>P28 · below market</div>
+          <div style={{fontSize:11,color:'rgba(239,68,68,.45)'}}>P28 · below market</div>
         </div>
         <div style={{background:'rgba(240,168,50,.07)',border:'1px solid rgba(240,168,50,.25)',borderRadius:7,padding:'7px 9px'}}>
-          <div style={{fontFamily:'monospace',fontSize:7,color:c,textTransform:'uppercase',letterSpacing:.5,marginBottom:3}}>AI anchor</div>
+          <div style={{fontFamily:'monospace',fontSize:10,color:c,textTransform:'uppercase',letterSpacing:.5,marginBottom:3}}>AI anchor</div>
           <div style={{fontSize:16,fontWeight:700,color:c,fontFamily:'monospace'}}>${ancNum.toLocaleString()}</div>
-          <div style={{fontSize:8,color:'rgba(240,168,50,.5)'}}>P75 · AI-set</div>
+          <div style={{fontSize:11,color:'rgba(240,168,50,.5)'}}>P75 · AI-set</div>
         </div>
       </div>
     </JnyCard>
@@ -1864,7 +1864,7 @@ function S2Card2({ color: c, active }) {
   }, [active]);
   return (
     <JnyCard step="Step 02" title="4-step negotiation script" statusCls="run" statusTxt="⚡ Active">
-      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Word-for-word · ready to say or send</div>
+      <div style={{fontFamily:'monospace',fontSize:10,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Word-for-word · ready to say or send</div>
       <div className="jny-neg-steps">
         {stepsData.map((st,i)=>(
           <div key={i} className={`jny-nstep${steps[i]?' '+steps[i]:''}`}>
@@ -1939,7 +1939,7 @@ function S3Card1({ color: c, active }) {
   }, [active]);
   return (
     <JnyCard step="Step 01" title="Credential verify · blockchain-backed" statusCls="done" statusTxt="✓ All verified">
-      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:7}}>Singpass · OpenCerts · Credly · Work history</div>
+      <div style={{fontFamily:'monospace',fontSize:10,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:7}}>Singpass · OpenCerts · Credly · Work history</div>
       <div className="jny-cred-list" style={{marginBottom:7}}>
         {creds.map((cr,i)=>(
           <div key={i} className="jny-cred-row">
@@ -1950,9 +1950,9 @@ function S3Card1({ color: c, active }) {
         ))}
       </div>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'rgba(232,92,128,.06)',border:'1px solid rgba(232,92,128,.18)',borderRadius:7,padding:'7px 10px',opacity:cosVis?1:0,transition:'opacity .5s'}}>
-        <span style={{fontSize:9,color:'rgba(255,255,255,.5)'}}>Career OS Score</span>
+        <span style={{fontSize:11,color:'rgba(255,255,255,.5)'}}>Career OS Score</span>
         <span style={{fontFamily:'monospace',fontSize:16,fontWeight:700,color:c}}>{cosVal} / 100</span>
-        <span style={{fontSize:8,padding:'2px 7px',background:'rgba(232,92,128,.09)',color:c,border:'1px solid rgba(232,92,128,.22)',borderRadius:20,fontFamily:'monospace'}}>Top 8%</span>
+        <span style={{fontSize:11,padding:'2px 7px',background:'rgba(232,92,128,.09)',color:c,border:'1px solid rgba(232,92,128,.22)',borderRadius:20,fontFamily:'monospace'}}>Top 8%</span>
       </div>
     </JnyCard>
   );
@@ -2044,16 +2044,16 @@ function S3Card3({ color: c, active }) {
           <div style={{width:22,height:22,borderRadius:'50%',background:'rgba(232,92,128,.15)',border:'1px solid rgba(232,92,128,.28)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,flexShrink:0}}>👤</div>
           <div>
             <div style={{fontSize:10,fontWeight:600,color:'rgba(255,255,255,.85)'}}>Sarah L. · Head of Talent · Vertex AI Labs</div>
-            <div style={{fontSize:9,color:'rgba(255,255,255,.3)'}}>Senior AI Engineer · 95% match</div>
+            <div style={{fontSize:11,color:'rgba(255,255,255,.3)'}}>Senior AI Engineer · 95% match</div>
           </div>
         </div>
         <div style={{fontSize:10,lineHeight:1.58,color:'rgba(255,255,255,.6)',marginBottom:6,minHeight:48}}>{msg}</div>
         <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:6}}>
           {['✓ NUS CS','✓ AWS SAA','✓ Singpass'].map(t=>(
-            <span key={t} style={{fontSize:8,padding:'1px 6px',borderRadius:10,background:'rgba(30,201,138,.08)',color:'#1ec98a',border:'1px solid rgba(30,201,138,.18)',fontFamily:'monospace'}}>{t}</span>
+            <span key={t} style={{fontSize:11,padding:'1px 6px',borderRadius:10,background:'rgba(30,201,138,.08)',color:'#1ec98a',border:'1px solid rgba(30,201,138,.18)',fontFamily:'monospace'}}>{t}</span>
           ))}
         </div>
-        <div style={{display:'flex',alignItems:'center',gap:5,fontFamily:'monospace',fontSize:8.5,color:c}}>
+        <div style={{display:'flex',alignItems:'center',gap:5,fontFamily:'monospace',fontSize:11,color:c}}>
           <span>Response window</span>
           <div className="jny-rtbar"><div style={{height:'100%',borderRadius:2,background:c,width:`${timerW}%`,transition:'width 4s linear'}}/></div>
           <span>{m}:{s2<10?'0':''}{s2}</span>
@@ -2079,12 +2079,12 @@ function S3Card4({ color: c, active }) {
   }, [active]);
   return (
     <JnyCard step="Step 04" title="TrustMatch profile · Trust Score 88" statusCls="done" statusTxt="✓ Top 8%">
-      <div style={{fontFamily:'monospace',fontSize:7.5,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Candidate view · Ivy Chen</div>
+      <div style={{fontFamily:'monospace',fontSize:10,color:'rgba(255,255,255,.3)',letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Candidate view · Ivy Chen</div>
       <div style={{display:'flex',alignItems:'center',gap:9,marginBottom:8}}>
         <div style={{width:32,height:32,borderRadius:'50%',background:'rgba(232,92,128,.15)',border:'2px solid rgba(232,92,128,.35)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'rgba(255,255,255,.8)',flexShrink:0}}>IC</div>
         <div style={{flex:1}}>
           <div style={{fontSize:11,fontWeight:600,color:'rgba(255,255,255,.85)'}}>Ivy Chen · Senior AI Engineer</div>
-          <div style={{fontSize:8.5,color:'rgba(255,255,255,.3)'}}>Trust Score <span style={{fontFamily:'monospace',fontWeight:700,color:c}}>{tscore}</span>/100 · <span style={{color:'#1ec98a'}}>Top 8%</span></div>
+          <div style={{fontSize:11,color:'rgba(255,255,255,.3)'}}>Trust Score <span style={{fontFamily:'monospace',fontWeight:700,color:c}}>{tscore}</span>/100 · <span style={{color:'#1ec98a'}}>Top 8%</span></div>
         </div>
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:7}}>
@@ -2097,7 +2097,7 @@ function S3Card4({ color: c, active }) {
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:3}}>
         {bdgTxt.map((t,i)=>(
-          <div key={i} className={`jny-tbadge${badges[i]?' vis':''}`}>{t}<span style={{marginLeft:'auto',color:'#1ec98a',fontSize:9.5}}>✓</span></div>
+          <div key={i} className={`jny-tbadge${badges[i]?' vis':''}`}>{t}<span style={{marginLeft:'auto',color:'#1ec98a',fontSize:11.5}}>✓</span></div>
         ))}
       </div>
     </JnyCard>
@@ -2244,13 +2244,13 @@ function TrustChatSection({ onJoin }) {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  {['NTU OpenCerts ✓', 'TensorFlow cert ✓'].map(v => <span key={v} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(0,212,255,.07)', border: '1px solid rgba(0,212,255,.2)', color: 'var(--lp-teal)' }}>{v}</span>)}
+                  {['NTU OpenCerts ✓', 'TensorFlow cert ✓'].map(v => <span key={v} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, background: 'rgba(236,72,153,.07)', border: '1px solid rgba(236,72,153,.2)', color: 'var(--lp-teal)' }}>{v}</span>)}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                   <div style={{ position: 'relative', width: 54, height: 54 }}>
                     <svg width="54" height="54" viewBox="0 0 54 54" style={{ position: 'absolute', inset: 0 }}>
-                      <circle cx="27" cy="27" r="21" fill="none" stroke="rgba(0,212,255,.1)" strokeWidth="4"/>
-                      <circle cx="27" cy="27" r="21" fill="none" stroke="#00D4FF" strokeWidth="4" strokeDasharray="131.9" strokeDashoffset="23.7" strokeLinecap="round" transform="rotate(-90 27 27)"/>
+                      <circle cx="27" cy="27" r="21" fill="none" stroke="rgba(236,72,153,.1)" strokeWidth="4"/>
+                      <circle cx="27" cy="27" r="21" fill="none" stroke="#EC4899" strokeWidth="4" strokeDasharray="131.9" strokeDashoffset="23.7" strokeLinecap="round" transform="rotate(-90 27 27)"/>
                     </svg>
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                       <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--lp-teal)', lineHeight: 1 }}>82</span>
@@ -2273,7 +2273,7 @@ function TrustChatSection({ onJoin }) {
               </div>
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
                 {['TensorFlow', 'CUDA', 'Python', 'Research'].map((s, i) => (
-                  <span key={s} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: 'rgba(255,255,255,.03)', border: `1px solid ${i < 3 ? 'rgba(0,212,255,.2)' : 'rgba(255,255,255,.08)'}`, color: i < 3 ? 'rgba(0,212,255,.75)' : 'rgba(255,255,255,.4)' }}>{s}</span>
+                  <span key={s} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, background: 'rgba(255,255,255,.03)', border: `1px solid ${i < 3 ? 'rgba(236,72,153,.2)' : 'rgba(255,255,255,.08)'}`, color: i < 3 ? 'rgba(236,72,153,.75)' : 'rgba(255,255,255,.4)' }}>{s}</span>
                 ))}
               </div>
               <div style={{ textAlign: 'right', fontSize: 12, fontWeight: 800, color: 'var(--lp-teal)' }}>91% match</div>
@@ -2289,7 +2289,7 @@ function TrustChatSection({ onJoin }) {
             </div>
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', textAlign: 'center', lineHeight: 1.55 }}>Verified trust<br/>matches the<br/>right opportunities</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {[...Array(4)].map((_, i) => <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(0,212,255,.4)', animation: `tsmPulse 2s ${i * 0.4}s infinite` }} />)}
+              {[...Array(4)].map((_, i) => <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(236,72,153,.4)', animation: `tsmPulse 2s ${i * 0.4}s infinite` }} />)}
             </div>
           </div>
 
@@ -2302,11 +2302,11 @@ function TrustChatSection({ onJoin }) {
               { logo: 'VA', logoClr: 'rgba(139,124,246,.2)', logoBdr: 'rgba(139,124,246,.3)', logoTxt: '#a89bf8', co: 'Vertex AI Labs', tag: 'verified employer', role: 'Senior AI Engineer · SGD 12–16k', pct: '95%', tags: ['Remote-first','Visa sponsorship','Equity'], active: true },
               { logo: 'GR', logoClr: 'rgba(0,229,160,.1)', logoBdr: 'rgba(0,229,160,.2)', logoTxt: '#00e5a0', co: 'Grab', tag: 'verified employer', role: 'ML Research Scientist · SGD 14–18k', pct: '88%', tags: ['Hybrid','L7 senior track','Stock options'], active: false },
             ].map((job, i) => (
-              <div key={i} style={{ background: job.active ? 'rgba(0,212,255,.04)' : 'rgba(255,255,255,.02)', border: `1px solid ${job.active ? 'rgba(0,212,255,.18)' : 'rgba(255,255,255,.06)'}`, borderRadius: 12, padding: '12px 14px', marginBottom: i === 0 ? 10 : 0 }}>
+              <div key={i} style={{ background: job.active ? 'rgba(236,72,153,.04)' : 'rgba(255,255,255,.02)', border: `1px solid ${job.active ? 'rgba(236,72,153,.18)' : 'rgba(255,255,255,.06)'}`, borderRadius: 12, padding: '12px 14px', marginBottom: i === 0 ? 10 : 0 }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
                   <div style={{ width: 32, height: 32, borderRadius: 8, background: job.logoClr, border: `1px solid ${job.logoBdr}`, color: job.logoTxt, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 }}>{job.logo}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text)' }}>{job.co} <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--lp-teal)', background: 'rgba(0,212,255,.1)', borderRadius: 10, padding: '1px 6px', border: '1px solid rgba(0,212,255,.2)' }}>{job.tag}</span></div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text)' }}>{job.co} <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--lp-teal)', background: 'rgba(236,72,153,.1)', borderRadius: 10, padding: '1px 6px', border: '1px solid rgba(236,72,153,.2)' }}>{job.tag}</span></div>
                     <div style={{ fontSize: 11, color: 'var(--lp-text2)' }}>{job.role}</div>
                   </div>
                   <div style={{ fontSize: 14, fontWeight: 900, color: 'var(--lp-teal)', fontFamily: 'var(--lp-ffm)', flexShrink: 0 }}>{job.pct}<span style={{ fontSize: 9, fontWeight: 400, color: 'rgba(255,255,255,.35)' }}>fit</span></div>
@@ -2343,7 +2343,7 @@ function JourneyStage({ stage, cards, swapped, stageIdx, isLast }) {
     <div className="jny-tcard" style={{ borderColor: stage.color + '22' }}>
       <div className="jny-stage-badge" style={{ color: stage.color, background: stage.color + '12', border: `1px solid ${stage.color}30` }}>
         <span className="jny-badge-dot" style={{ background: stage.color }} />
-        {stage.num} · {stage.label}
+        {stage.label}
       </div>
       <h3 className="jny-copy-h3">{stage.problem}</h3>
       <p className="jny-pain" style={{ borderLeftColor: stage.color + '44' }}>{stage.pain}</p>
@@ -2901,7 +2901,6 @@ function HowItWorksSection({ onJoin, onSampleReport }) {
           <div key={i} className={`lp-hiw6-step${isPremium(s) ? ' premium' : ''}`}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
               <span className={`lp-hiw6-tag ${s.tagCls}`}>{s.tag}</span>
-              <div className="lp-hiw6-step-num" style={{ margin:0, fontSize:11 }}>{s.num}</div>
             </div>
             <div className="lp-hiw6-step-title">{s.title}</div>
             <div className="lp-hiw6-step-desc">{s.desc}</div>
@@ -2926,9 +2925,9 @@ function HowItWorksSection({ onJoin, onSampleReport }) {
       </div>
 
       <div className="lp-hiw6-divider reveal d2">
-        <div style={{flex:1,height:1,background:'linear-gradient(90deg,transparent,rgba(176,38,255,.3))'}}/>
+        <div style={{flex:1,height:1,background:'linear-gradient(90deg,transparent,rgba(245,158,11,.3))'}}/>
         <button onClick={() => ss('price-sec')} className="lp-hiw6-plans-btn">See pricing plans</button>
-        <div style={{flex:1,height:1,background:'linear-gradient(90deg,rgba(176,38,255,.3),transparent)'}}/>
+        <div style={{flex:1,height:1,background:'linear-gradient(90deg,rgba(245,158,11,.3),transparent)'}}/>
       </div>
 
       <div className="lp-hiw-sample reveal d2">
@@ -2998,7 +2997,7 @@ function PricingSection({ onJoin, onGetReady }) {
         </article>
       </div>
 
-      <div className="reveal d2" style={{ marginTop: 22, background: 'linear-gradient(135deg,rgba(0,212,255,.06) 0%,rgba(176,38,255,.05) 100%)', border: '1px solid var(--lp-teal-b)', borderRadius: 'var(--lp-rl)', padding: '22px 28px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+      <div className="reveal d2" style={{ marginTop: 22, background: 'linear-gradient(135deg,rgba(236,72,153,.06) 0%,rgba(245,158,11,.05) 100%)', border: '1px solid var(--lp-teal-b)', borderRadius: 'var(--lp-rl)', padding: '22px 28px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 240 }}>
           <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--lp-teal)', marginBottom: 6 }}>Included in Premium · Pro — Get Ready</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--lp-text)', marginBottom: 6, lineHeight: 1.3 }}>Interview-ready in 9 days.<br />AI builds your plan from your exact weaknesses.</div>
@@ -3272,12 +3271,12 @@ function CoverLetterModal({ onClose }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.72)', zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', backdropFilter: 'blur(8px)' }} onClick={onClose}>
-      <div style={{ background: '#0F1219', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 16, width: '100%', maxWidth: 720, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: '#0F1219', border: '1px solid rgba(236,72,153,0.3)', borderRadius: 16, width: '100%', maxWidth: 720, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.6)' }} onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div style={{ padding: '18px 24px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>
-            <div style={{ color: '#6366F1', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>Agentic Job Search</div>
+            <div style={{ color: '#EC4899', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>Agentic Job Search</div>
             <div style={{ color: '#EDF1F8', fontWeight: 800, fontSize: 16 }}>Drafted Cover Letters · 3 matches found</div>
           </div>
           <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#8896AD', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 16 }}>✕</button>
@@ -3290,8 +3289,8 @@ function CoverLetterModal({ onClose }) {
               key={i}
               onClick={() => setActive(i)}
               style={{
-                flex: 1, padding: '12px 8px', border: 'none', cursor: 'pointer', background: active === i ? 'rgba(99,102,241,0.09)' : 'transparent',
-                borderBottom: active === i ? '2px solid #6366F1' : '2px solid transparent',
+                flex: 1, padding: '12px 8px', border: 'none', cursor: 'pointer', background: active === i ? 'rgba(236,72,153,0.09)' : 'transparent',
+                borderBottom: active === i ? '2px solid #EC4899' : '2px solid transparent',
                 color: active === i ? '#EDF1F8' : '#8896AD', fontSize: 12, fontWeight: active === i ? 700 : 500,
                 transition: 'all 0.18s', fontFamily: 'inherit', textAlign: 'center', lineHeight: 1.4
               }}
@@ -3308,7 +3307,7 @@ function CoverLetterModal({ onClose }) {
             <div style={{ fontSize: 11, fontWeight: 700, color: '#EDF1F8' }}>{letter.role} · {letter.company}</div>
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: letter.statusColor + '18', color: letter.statusColor, border: `1px solid ${letter.statusColor}33` }}>{letter.status}</div>
-              <div style={{ fontSize: 11, fontWeight: 800, color: '#6366F1', fontFamily: 'monospace' }}>ATS {letter.score}%</div>
+              <div style={{ fontSize: 11, fontWeight: 800, color: '#EC4899', fontFamily: 'monospace' }}>ATS {letter.score}%</div>
             </div>
           </div>
 
@@ -3319,7 +3318,7 @@ function CoverLetterModal({ onClose }) {
 
         {/* Footer */}
         <div style={{ padding: '14px 24px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 10, flexShrink: 0 }}>
-          <button style={{ flex: 1, padding: '11px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: 9, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button style={{ flex: 1, padding: '11px', background: '#EC4899', color: '#fff', border: 'none', borderRadius: 9, fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
             Use This Letter →
           </button>
           <button onClick={onClose} style={{ padding: '11px 18px', background: 'transparent', color: '#8896AD', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 9, fontWeight: 600, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -3346,9 +3345,9 @@ const GR_TABS_DEF = [
 
 export function GetReadyTabStrip({ activeModuleId, onNavigate, onStudyPlan }) {
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 20px', background:'rgba(0,212,255,.04)', borderBottom:'1px solid rgba(0,212,255,.1)', fontFamily:'var(--lp-ff)', overflowX:'auto', flexWrap:'nowrap', scrollbarWidth:'none' }}>
-      <span style={{ fontSize:9, fontWeight:800, color:'var(--lp-teal)', textTransform:'uppercase', letterSpacing:'.12em', flexShrink:0, marginRight:6, whiteSpace:'nowrap' }}>✦ GET READY</span>
-      <div style={{ width:1, height:16, background:'rgba(0,212,255,.15)', flexShrink:0, marginRight:2 }} />
+    <div style={{ display:'flex', alignItems:'center', gap:6, padding:'8px 20px', background:'rgba(236,72,153,.04)', borderBottom:'1px solid rgba(236,72,153,.1)', fontFamily:'var(--lp-ff)', overflowX:'auto', flexWrap:'nowrap', scrollbarWidth:'none' }}>
+      <span style={{ fontSize:11, fontWeight:800, color:'var(--lp-teal)', textTransform:'uppercase', letterSpacing:'.12em', flexShrink:0, marginRight:6, whiteSpace:'nowrap' }}>✦ GET READY</span>
+      <div style={{ width:1, height:16, background:'rgba(236,72,153,.15)', flexShrink:0, marginRight:2 }} />
       {GR_TABS_DEF.map(t => {
         const isActive = t.moduleId && t.moduleId === activeModuleId;
         return (
@@ -3701,7 +3700,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
   useEffect(() => {
     const fontLink = document.createElement('link');
     fontLink.rel = 'stylesheet';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@300;400;500;600&family=DM+Mono:wght@300;400&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800;12..96,900&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap';
     document.head.appendChild(fontLink);
     document.documentElement.style.scrollBehavior = 'smooth';
     const io = new IntersectionObserver(entries => {
@@ -3753,14 +3752,14 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
           {/* LEFT */}
           <div className="v36-hero-left reveal visible">
             {/* Eyebrow */}
-            <div style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(99,102,241,0.08)',border:'1px solid rgba(99,102,241,0.2)',borderRadius:100,padding:'5px 14px',marginBottom:28,width:'fit-content'}}>
-              <span style={{width:6,height:6,borderRadius:'50%',background:'#6366f1',boxShadow:'0 0 8px rgba(99,102,241,0.8)',flexShrink:0,animation:'v36blink 2s ease-in-out infinite',display:'inline-block'}}></span>
+            <div style={{display:'inline-flex',alignItems:'center',gap:7,background:'rgba(236,72,153,0.08)',border:'1px solid rgba(236,72,153,0.2)',borderRadius:100,padding:'5px 14px',marginBottom:28,width:'fit-content'}}>
+              <span style={{width:6,height:6,borderRadius:'50%',background:'#ec4899',boxShadow:'0 0 8px rgba(236,72,153,0.8)',flexShrink:0,animation:'v36blink 2s ease-in-out infinite',display:'inline-block'}}></span>
               <span style={{fontSize:12,fontWeight:500,color:'rgba(160,174,192,0.75)',letterSpacing:'0.02em'}}>Singapore's verified career platform</span>
             </div>
             {/* Headline */}
-            <h1 style={{fontSize:58,fontWeight:800,lineHeight:1.0,letterSpacing:'-0.045em',margin:'0 0 20px',fontFamily:"'Bricolage Grotesque','Sora','Inter',sans-serif"}}>
+            <h1 style={{fontSize:58,fontWeight:700,lineHeight:1.08,letterSpacing:'-0.025em',margin:'0 0 20px',fontFamily:"'Inter',sans-serif"}}>
               <span style={{display:'block',color:'#ffffff'}}>From Invisible</span>
-              <span style={{display:'block',background:'linear-gradient(100deg,#6366f1 0%,#8b5cf6 55%,#ec4899 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>To Get Hired.</span>
+              <span style={{display:'block',background:'linear-gradient(100deg,#ec4899 0%,#8b5cf6 55%,#f59e0b 100%)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>To Get Hired.</span>
             </h1>
             {/* Sub */}
             <p style={{fontSize:16,color:'rgba(160,174,192,0.6)',lineHeight:1.65,margin:'0 0 36px',maxWidth:420,fontWeight:400,letterSpacing:'-0.01em'}}>
@@ -3768,7 +3767,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
             </p>
             {/* CTAs */}
             <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:40,flexWrap:'wrap'}}>
-              <button onClick={join} style={{display:'inline-flex',alignItems:'center',gap:8,background:'#6366f1',color:'#fff',border:'none',fontSize:15,fontWeight:600,padding:'15px 32px',borderRadius:100,cursor:'pointer',fontFamily:"'Bricolage Grotesque','Inter',sans-serif",letterSpacing:'-0.02em',boxShadow:'0 0 40px rgba(99,102,241,0.4),0 1px 0 rgba(255,255,255,0.12) inset'}}>
+              <button onClick={join} style={{display:'inline-flex',alignItems:'center',gap:8,background:'#ec4899',color:'#fff',border:'none',fontSize:15,fontWeight:600,padding:'15px 32px',borderRadius:100,cursor:'pointer',fontFamily:"'Inter',sans-serif",letterSpacing:'-0.02em',boxShadow:'0 0 40px rgba(236,72,153,0.4),0 1px 0 rgba(255,255,255,0.12) inset'}}>
                 Build My Profile Free &nbsp;→
               </button>
               <button onClick={join} style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(255,255,255,0.04)',color:'rgba(200,215,235,0.85)',border:'1px solid rgba(255,255,255,0.14)',fontSize:14,fontWeight:500,padding:'13px 22px',borderRadius:100,cursor:'pointer',fontFamily:"'Inter',sans-serif",letterSpacing:'-0.01em'}}>
@@ -3896,6 +3895,17 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
                       </div>
                       <span className="ndc-match-pct ndc-pct-teal">92% Match</span>
                     </div>
+                    <div className="ndc-match-row">
+                      <div className="ndc-match-logo">
+                        <svg width="32" height="32" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="#0a66c2"/><text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="14" fontWeight="800" fontFamily="sans-serif">in</text></svg>
+                      </div>
+                      <div className="ndc-match-info">
+                        <div className="ndc-match-title">Head of Product</div>
+                        <div className="ndc-match-company">Gojek · Hybrid</div>
+                      </div>
+                      <span className="ndc-match-pct ndc-pct-purple">88% Match</span>
+                    </div>
+                    <div className="ndc-matches-cta">View all 12 matches →</div>
                   </div>
                   <div className="ndc-stats-row">
                     <div className="ndc-stat-item">
@@ -3917,10 +3927,10 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
                       <div><div className="ndc-stat-num">7</div><div className="ndc-stat-lbl">Interviews<br />This Month</div></div>
                     </div>
                     <div className="ndc-stat-item">
-                      <div className="ndc-stat-icon" style={{color:'#ec4899'}}>
+                      <div className="ndc-stat-icon" style={{color:'#f59e0b'}}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                       </div>
-                      <div><div className="ndc-stat-num" style={{color:'#ec4899'}}>High</div><div className="ndc-stat-lbl">Interview<br />Confidence</div></div>
+                      <div><div className="ndc-stat-num" style={{color:'#f59e0b'}}>High</div><div className="ndc-stat-lbl">Interview<br />Confidence</div></div>
                     </div>
                   </div>
                 </div>
@@ -3968,19 +3978,19 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
           </div>
           <div className="v36-mem-timeline reveal">
             {[
-              { day:'Day 1', title:'Upload your resume', desc:'AI scans and scores your resume. ATS match calculated instantly.', metric:'ATS Score: 72 → optimised to 95', color:'#8b5cf6', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> },
-              { day:'Week 1', title:'Practice interviews', desc:'AI coaches your answers, remembers your STAR stories, tracks improvement.', metric:'Interview Score: 6.2 → 8.5 / 10', color:'#ec4899', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> },
-              { day:'Week 2', title:'Verify credentials', desc:'Connect OpenCerts, Credly, Singpass. Trust Score rises with every verification.', metric:'Trust Score: 61 → 87 / 100', color:'#29c492', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#29c492" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> },
-              { day:'Week 3+', title:'Get discovered', desc:'Recruiters find your verified profile. TrustChat connects you to the right roles.', metric:'3 recruiter messages · 95% role match', color:'#f59e0b', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> },
+              { day:'Day 1', title:'Upload your resume', desc:'AI scans and scores your resume. ATS match calculated instantly.', metric:'ATS Score: 72 → optimised to 95', color:'#EC4899', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.75" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> },
+              { day:'Week 1', title:'Practice interviews', desc:'AI coaches your answers, remembers your STAR stories, tracks improvement.', metric:'Interview Score: 6.2 → 8.5 / 10', color:'#EC4899', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.75" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> },
+              { day:'Week 2', title:'Verify credentials', desc:'Connect OpenCerts, Credly, Singpass. Trust Score rises with every verification.', metric:'Trust Score: 61 → 87 / 100', color:'#EC4899', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.75" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg> },
+              { day:'Week 3+', title:'Get discovered', desc:'Recruiters find your verified profile. TrustChat connects you to the right roles.', metric:'3 recruiter messages · 95% role match', color:'#EC4899', icon:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="1.75" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> },
             ].map((step, i) => (
               <div className="v36-mem-tl-item" key={i}>
-                <div className="v36-mem-tl-node" style={{'--nc': step.color}}>{step.icon}</div>
+                <div className="v36-mem-tl-node">{step.icon}</div>
                 {i < 3 && <div className="v36-mem-tl-line"></div>}
                 <div className="v36-mem-tl-card">
                   <div className="v36-mem-tl-day">{step.day}</div>
                   <div className="v36-mem-tl-title">{step.title}</div>
-                  <div className="v36-mem-tl-desc">{step.desc}</div>
                   <div className="v36-mem-tl-metric" style={{color:step.color}}>{step.metric}</div>
+                  <div className="v36-mem-tl-desc">{step.desc}</div>
                 </div>
               </div>
             ))}
@@ -3998,7 +4008,6 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
           <div className="v36-plat-grid reveal">
             {/* Card 1 */}
             <div className="v36-plat-card rd1">
-              <div className="v36-plat-num">0<span className="v36-num-accent">1</span></div>
               <div className="v36-plat-title">Resume &amp; ATS</div>
               <ul className="v36-plat-feats">
                 <li><span className="v36-feat-check">✓</span> AI Resume Builder</li>
@@ -4017,13 +4026,13 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
                     </svg>
                     <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
                       <div style={{fontSize:16,fontWeight:800,color:'#fff',lineHeight:1,letterSpacing:'-0.04em'}}>92</div>
-                      <div style={{fontSize:7,color:'#29c492',fontWeight:600,letterSpacing:'0.04em'}}>Excellent</div>
+                      <div style={{fontSize:10,color:'#29c492',fontWeight:600,letterSpacing:'0.04em'}}>Excellent</div>
                     </div>
                   </div>
                   <div style={{flex:1}}>
-                    <div style={{fontSize:9,color:'#4a5568',marginBottom:5,fontWeight:500}}>Top Keywords</div>
-                    <div style={{height:4,background:'linear-gradient(90deg,#8b5cf6,#6366f1)',borderRadius:2,width:'90%',marginBottom:4}}></div>
-                    <div style={{display:'inline-block',background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',borderRadius:4,padding:'2px 7px',fontSize:9,color:'#818cf8',fontWeight:600,marginBottom:4}}>Product Strategy</div>
+                    <div style={{fontSize:11,color:'#4a5568',marginBottom:5,fontWeight:500}}>Top Keywords</div>
+                    <div style={{height:4,background:'linear-gradient(90deg,#8b5cf6,#ec4899)',borderRadius:2,width:'90%',marginBottom:4}}></div>
+                    <div style={{display:'inline-block',background:'rgba(236,72,153,0.15)',border:'1px solid rgba(236,72,153,0.3)',borderRadius:4,padding:'2px 7px',fontSize:11,color:'#818cf8',fontWeight:600,marginBottom:4}}>Product Strategy</div>
                   </div>
                 </div>
               </div>
@@ -4035,7 +4044,6 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
             </div>
             {/* Card 2 */}
             <div className="v36-plat-card rd2">
-              <div className="v36-plat-num">0<span className="v36-num-accent">2</span></div>
               <div className="v36-plat-title">Interview Intelligence</div>
               <ul className="v36-plat-feats">
                 <li><span className="v36-feat-check">✓</span> AI Mock Interviews</li>
@@ -4046,14 +4054,14 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
               <div className="v36-plat-divider"></div>
               <div className="v36-plat-mock">
                 <div style={{background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:10,overflow:'hidden',position:'relative'}}>
-                  <div style={{height:90,background:'linear-gradient(135deg,rgba(139,92,246,0.12),rgba(99,102,241,0.06))',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    <div style={{width:44,height:44,borderRadius:'50%',background:'linear-gradient(135deg,#ec4899,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,boxShadow:'0 4px 20px rgba(139,92,246,0.4)'}}>👤</div>
+                  <div style={{height:90,background:'linear-gradient(135deg,rgba(139,92,246,0.12),rgba(236,72,153,0.06))',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    <div style={{width:44,height:44,borderRadius:'50%',background:'linear-gradient(135deg,#f59e0b,#8b5cf6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,boxShadow:'0 4px 20px rgba(139,92,246,0.4)'}}>👤</div>
                   </div>
                 </div>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:7,padding:'7px 10px',marginTop:6}}>
-                  <span style={{fontSize:'9.5px',color:'#4a5568',fontWeight:500}}>Feedback</span>
-                  <span style={{fontSize:'9.5px',color:'#29c492',fontWeight:600}}>Great structure!</span>
-                  <span style={{background:'rgba(41,196,146,0.15)',border:'1px solid rgba(41,196,146,0.3)',borderRadius:4,padding:'2px 6px',fontSize:9,color:'#29c492',fontWeight:700}}>8.5/10</span>
+                  <span style={{fontSize:'11px',color:'#4a5568',fontWeight:500}}>Feedback</span>
+                  <span style={{fontSize:'11px',color:'#29c492',fontWeight:600}}>Great structure!</span>
+                  <span style={{background:'rgba(41,196,146,0.15)',border:'1px solid rgba(41,196,146,0.3)',borderRadius:4,padding:'2px 6px',fontSize:11,color:'#29c492',fontWeight:700}}>8.5/10</span>
                 </div>
               </div>
               <button className="v36-plat-cta-btn v36-plat-cta-int" onClick={() => setIntOpen(true)}>
@@ -4064,7 +4072,6 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
             </div>
             {/* Card 3 */}
             <div className="v36-plat-card rd3">
-              <div className="v36-plat-num">0<span className="v36-num-accent">3</span></div>
               <div className="v36-plat-title">Verification Engine</div>
               <ul className="v36-plat-feats">
                 <li><span className="v36-feat-check">✓</span> Credential Verification</li>
@@ -4079,14 +4086,14 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
                     <div key={i} style={{display:'flex',alignItems:'center',gap:8,padding:'5px 8px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.06)',borderRadius:7}}>
                       <span style={{fontSize:13}}>{c.icon}</span>
                       <div style={{flex:1}}>
-                        <div style={{fontSize:9,fontWeight:700,color:'#e2e8f0',lineHeight:1.2}}>{c.name} <span style={{color:'#4a5568',fontWeight:400}}>· {c.sub}</span></div>
+                        <div style={{fontSize:11,fontWeight:700,color:'#e2e8f0',lineHeight:1.2}}>{c.name} <span style={{color:'#4a5568',fontWeight:400}}>· {c.sub}</span></div>
                       </div>
-                      <span style={{fontSize:'7.5px',fontWeight:600,color:'#29c492',background:'rgba(41,196,146,0.1)',border:'1px solid rgba(41,196,146,0.22)',borderRadius:3,padding:'1px 5px',whiteSpace:'nowrap'}}>✓ Verified</span>
+                      <span style={{fontSize:'10px',fontWeight:600,color:'#29c492',background:'rgba(41,196,146,0.1)',border:'1px solid rgba(41,196,146,0.22)',borderRadius:3,padding:'1px 5px',whiteSpace:'nowrap'}}>✓ Verified</span>
                     </div>
                   ))}
                 </div>
                 <div style={{marginTop:8,paddingTop:7,borderTop:'1px solid rgba(255,255,255,0.05)'}}>
-                  <div style={{fontSize:8,fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',color:'#2e3d52',marginBottom:5}}>Supported by</div>
+                  <div style={{fontSize:11,fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',color:'#2e3d52',marginBottom:5}}>Supported by</div>
                   <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
                     <span className="v36-verif-logo-pill vl-singpass">🇸🇬 Singpass</span>
                     <span className="v36-verif-logo-pill vl-opencerts">🎓 OpenCerts</span>
@@ -4097,7 +4104,6 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
             </div>
             {/* Card 4 */}
             <div className="v36-plat-card" style={{transitionDelay:'.24s'}}>
-              <div className="v36-plat-num">0<span className="v36-num-accent">4</span></div>
               <div className="v36-plat-title">TrustMatch Marketplace</div>
               <ul className="v36-plat-feats">
                 <li><span className="v36-feat-check">✓</span> AI Matching Engine</li>
@@ -4107,24 +4113,24 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
               </ul>
               <div className="v36-plat-divider"></div>
               <div className="v36-plat-mock">
-                <div style={{fontSize:9,color:'#4a5568',marginBottom:6,fontWeight:600,letterSpacing:'0.06em',textTransform:'uppercase'}}>Top Match</div>
+                <div style={{fontSize:11,color:'#4a5568',marginBottom:6,fontWeight:600,letterSpacing:'0.06em',textTransform:'uppercase'}}>Top Match</div>
                 <div style={{background:'rgba(255,255,255,0.03)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:9,padding:'11px 12px'}}>
                   <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:8}}>
                     <div>
                       <div style={{fontSize:12,fontWeight:700,color:'#e2e8f0',lineHeight:1.2}}>Product Manager</div>
-                      <div style={{fontSize:'9.5px',color:'#4a5568',marginTop:2}}>ByteTech Pte. Ltd. · Singapore</div>
+                      <div style={{fontSize:'11px',color:'#4a5568',marginTop:2}}>ByteTech Pte. Ltd. · Singapore</div>
                     </div>
                     <div style={{textAlign:'right',flexShrink:0,marginLeft:8}}>
-                      <div style={{fontSize:14,fontWeight:800,color:'#6366f1',letterSpacing:'-0.04em',lineHeight:1}}>94%</div>
-                      <div style={{fontSize:8,color:'#4a5568',fontWeight:500}}>Match</div>
+                      <div style={{fontSize:14,fontWeight:800,color:'#ec4899',letterSpacing:'-0.04em',lineHeight:1}}>94%</div>
+                      <div style={{fontSize:11,color:'#4a5568',fontWeight:500}}>Match</div>
                     </div>
                   </div>
                   <div style={{display:'flex',gap:4,flexWrap:'wrap',marginBottom:8}}>
                     {['B2B SaaS','Series B','SGD 8-12k'].map(t=>(
-                      <span key={t} style={{background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.2)',borderRadius:3,padding:'1px 5px',fontSize:8,color:'#818cf8'}}>{t}</span>
+                      <span key={t} style={{background:'rgba(236,72,153,0.1)',border:'1px solid rgba(236,72,153,0.2)',borderRadius:3,padding:'1px 5px',fontSize:11,color:'#818cf8'}}>{t}</span>
                     ))}
                   </div>
-                  <button onClick={join} style={{background:'#6366f1',borderRadius:5,padding:5,textAlign:'center',fontSize:9,color:'#fff',fontWeight:600,cursor:'pointer',border:'none',width:'100%'}}>View Opportunity</button>
+                  <button onClick={join} style={{background:'#ec4899',borderRadius:5,padding:5,textAlign:'center',fontSize:11,color:'#fff',fontWeight:600,cursor:'pointer',border:'none',width:'100%'}}>View Opportunity</button>
                 </div>
               </div>
             </div>
@@ -4137,29 +4143,29 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
         <div className="v36-pricing-inner">
           <div className="reveal" style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:40,gap:32,flexWrap:'wrap'}}>
             <div>
-              <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--blue)',marginBottom:12,display:'flex',alignItems:'center',gap:8}}><span style={{width:20,height:1,background:'rgba(91,110,245,.4)',display:'block'}}></span>Pricing</div>
-              <h2 style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:'clamp(26px,3.5vw,38px)',fontWeight:800,letterSpacing:'-.03em',lineHeight:1.1,color:'var(--text)',margin:0}}>Free to start.<br /><span style={{background:'linear-gradient(95deg,#6366f1,#8b5cf6,#ec4899)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>Proven to pay off.</span></h2>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--blue)',marginBottom:12,display:'flex',alignItems:'center',gap:8}}><span style={{width:20,height:1,background:'rgba(91,110,245,.4)',display:'block'}}></span>Pricing</div>
+              <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:'clamp(26px,3.5vw,38px)',fontWeight:800,letterSpacing:'-.03em',lineHeight:1.1,color:'var(--text)',margin:0}}>Free to start.<br /><span style={{background:'linear-gradient(95deg,#ec4899,#8b5cf6,#f59e0b)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>Proven to pay off.</span></h2>
             </div>
             <p style={{fontSize:13,color:'var(--text3)',fontWeight:300,lineHeight:1.7,maxWidth:300,margin:0}}>Try everything free. Upgrade when you're ready to be found by the right recruiters.</p>
           </div>
           <div className="reveal" style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:1,background:'var(--border)',borderRadius:16,overflow:'hidden',border:'1px solid var(--border)'}}>
             {/* Free */}
             <div style={{background:'var(--bg2)',padding:'28px 24px',display:'flex',flexDirection:'column',gap:0}}>
-              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--text3)',marginBottom:20}}>Free</div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--text3)',marginBottom:20}}>Free</div>
               <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:4}}>
-                <span style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:36,fontWeight:800,letterSpacing:'-.04em',color:'var(--text)',lineHeight:1}}>$0</span>
+                <span style={{fontFamily:"'Inter',sans-serif",fontSize:36,fontWeight:800,letterSpacing:'-.04em',color:'var(--text)',lineHeight:1}}>$0</span>
                 <span style={{fontSize:12,color:'var(--text3)'}}>forever</span>
               </div>
               <div style={{fontSize:11,color:'var(--text3)',marginBottom:24,paddingBottom:24,borderBottom:'1px solid var(--border)'}}>No credit card required</div>
               <div style={{display:'flex',flexDirection:'column',gap:10,flex:1,marginBottom:24}}>
                 {['2 resume scans + ATS keyword fixes','JD gap analysis','1 AI cover letter','3 interview prep sessions','Basic Trust Score'].map(f=>(
                   <div key={f} style={{display:'flex',alignItems:'center',gap:9,fontSize:12,color:'var(--text2)'}}>
-                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:'#10b981',flexShrink:0}}>✓</span>{f}
+                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:'#10b981',flexShrink:0}}>✓</span>{f}
                   </div>
                 ))}
                 {['TrustMatch marketplace','Salary coach'].map(f=>(
                   <div key={f} style={{display:'flex',alignItems:'center',gap:9,fontSize:12,color:'var(--text3)'}}>
-                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(255,255,255,.03)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,color:'var(--text3)',flexShrink:0}}>—</span>{f}
+                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(255,255,255,.03)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:'var(--text3)',flexShrink:0}}>—</span>{f}
                   </div>
                 ))}
               </div>
@@ -4167,39 +4173,39 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
             </div>
             {/* Pro */}
             <div style={{background:'var(--card)',padding:'28px 24px',display:'flex',flexDirection:'column',position:'relative'}}>
-              <div style={{position:'absolute',top:0,left:0,right:0,height:2,background:'linear-gradient(90deg,#6366f1,#ec4899)'}}></div>
+              <div style={{position:'absolute',top:0,left:0,right:0,height:2,background:'linear-gradient(90deg,#ec4899,#f59e0b)'}}></div>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
-                <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:'.14em',textTransform:'uppercase',color:'#818cf8'}}>Pro</div>
-                <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,padding:'3px 8px',borderRadius:20,background:'rgba(99,102,241,.1)',color:'#818cf8',border:'1px solid rgba(99,102,241,.22)'}}>Most popular</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,letterSpacing:'.14em',textTransform:'uppercase',color:'#818cf8'}}>Pro</div>
+                <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,padding:'3px 8px',borderRadius:20,background:'rgba(236,72,153,.1)',color:'#818cf8',border:'1px solid rgba(236,72,153,.22)'}}>Most popular</div>
               </div>
               <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:4}}>
-                <span style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:36,fontWeight:800,letterSpacing:'-.04em',color:'var(--text)',lineHeight:1}}>SGD 19.90</span>
+                <span style={{fontFamily:"'Inter',sans-serif",fontSize:36,fontWeight:800,letterSpacing:'-.04em',color:'var(--text)',lineHeight:1}}>SGD 19.90</span>
                 <span style={{fontSize:12,color:'var(--text3)'}}>/mo</span>
               </div>
               <div style={{fontSize:11,color:'var(--text3)',marginBottom:8}}>after 7-day trial · cancel anytime</div>
-              <div style={{fontSize:11,color:'#818cf8',background:'rgba(99,102,241,.07)',border:'1px solid rgba(99,102,241,.15)',borderRadius:6,padding:'7px 10px',marginBottom:20}}>🎯 Start with 7 days full access — SGD 8.99</div>
+              <div style={{fontSize:11,color:'#818cf8',background:'rgba(236,72,153,.07)',border:'1px solid rgba(236,72,153,.15)',borderRadius:6,padding:'7px 10px',marginBottom:20}}>🎯 Start with 7 days full access — SGD 8.99</div>
               <div style={{height:1,background:'var(--border)',marginBottom:20}}></div>
               <div style={{display:'flex',flexDirection:'column',gap:10,flex:1,marginBottom:24}}>
                 {['Everything in Free','Unlimited scans, letters, verifications','TrustMatch marketplace — recruiter discovery','Salary coach + P75 negotiation scripts','HM Simulator · all 4 pressure personas','AI Memory Dashboard — full adaptive profile'].map(f=>(
                   <div key={f} style={{display:'flex',alignItems:'center',gap:9,fontSize:12,color:'var(--text2)'}}>
-                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(99,102,241,.15)',border:'1px solid rgba(99,102,241,.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:'#818cf8',flexShrink:0}}>✓</span>
+                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(236,72,153,.15)',border:'1px solid rgba(236,72,153,.3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:'#818cf8',flexShrink:0}}>✓</span>
                     <span dangerouslySetInnerHTML={{__html: f.replace('Unlimited','<strong style="color:var(--text);font-weight:500">Unlimited</strong>')}}></span>
                   </div>
                 ))}
               </div>
-              <button onClick={join} style={{display:'block',textAlign:'center',padding:11,borderRadius:8,background:'linear-gradient(110deg,#7c3aed,#db2777)',fontSize:'12.5px',fontWeight:700,color:'#fff',cursor:'pointer',border:'none',fontFamily:"'Inter',sans-serif",letterSpacing:'-.01em',boxShadow:'0 0 28px rgba(99,102,241,.25)'}}>Start free trial · SGD 8.99 →</button>
+              <button onClick={join} style={{display:'block',textAlign:'center',padding:11,borderRadius:8,background:'linear-gradient(110deg,#7c3aed,#db2777)',fontSize:'12.5px',fontWeight:700,color:'#fff',cursor:'pointer',border:'none',fontFamily:"'Inter',sans-serif",letterSpacing:'-.01em',boxShadow:'0 0 28px rgba(236,72,153,.25)'}}>Start free trial · SGD 8.99 →</button>
             </div>
             {/* Recruiter */}
             <div style={{background:'var(--bg2)',padding:'28px 24px',display:'flex',flexDirection:'column'}}>
-              <div style={{fontFamily:"'DM Mono',monospace",fontSize:8,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--cyan)',marginBottom:20}}>Recruiter</div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--cyan)',marginBottom:20}}>Recruiter</div>
               <div style={{display:'flex',alignItems:'baseline',gap:6,marginBottom:4}}>
-                <span style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:28,fontWeight:800,letterSpacing:'-.04em',color:'var(--text)',lineHeight:1}}>Custom</span>
+                <span style={{fontFamily:"'Inter',sans-serif",fontSize:28,fontWeight:800,letterSpacing:'-.04em',color:'var(--text)',lineHeight:1}}>Custom</span>
               </div>
               <div style={{fontSize:11,color:'var(--text3)',marginBottom:24,paddingBottom:24,borderBottom:'1px solid var(--border)'}}>Per seat · billed annually</div>
               <div style={{display:'flex',flexDirection:'column',gap:10,flex:1,marginBottom:24}}>
                 {['Full verified candidate pool','TrustMatch + TrustChat direct messaging','AI-ranked shortlists in minutes','Zero fake credentials — blockchain-verified','ATS integration + CSV export','Dedicated account manager'].map(f=>(
                   <div key={f} style={{display:'flex',alignItems:'center',gap:9,fontSize:12,color:'var(--text2)'}}>
-                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(6,182,212,.1)',border:'1px solid rgba(6,182,212,.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,color:'var(--cyan)',flexShrink:0}}>✓</span>{f}
+                    <span style={{width:14,height:14,borderRadius:'50%',background:'rgba(6,182,212,.1)',border:'1px solid rgba(6,182,212,.25)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,color:'var(--cyan)',flexShrink:0}}>✓</span>{f}
                   </div>
                 ))}
               </div>
@@ -4247,7 +4253,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
               </button>
             </div>
             <div className="reveal" style={{position:'sticky',top:80}}>
-              <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:'.16em',textTransform:'uppercase',color:'#f59e0b',marginBottom:14}}>FAQ</div>
+              <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,letterSpacing:'.16em',textTransform:'uppercase',color:'#f59e0b',marginBottom:14}}>FAQ</div>
               <h2 className="v36-s-title" style={{fontSize:26,textAlign:'left',marginBottom:12,lineHeight:1.12}}>Questions,<br /><em style={{color:'#f59e0b',fontStyle:'italic'}}>answered.</em></h2>
               <p style={{fontSize:13,color:'var(--text2)',lineHeight:1.7,fontWeight:300,marginBottom:20}}>Everything you need to know before signing up.</p>
               <a href="mailto:hello.careeraihub@gmail.com" style={{fontSize:12,color:'var(--blue)',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:5,opacity:.8}}>Still curious? Email us →</a>
@@ -4258,14 +4264,14 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
 
       {/* ── FUTURE OF HIRING ── */}
       <div id="v36-future" className="v36-future-section">
-        <div style={{position:'absolute',inset:0,background:'radial-gradient(ellipse 70% 60% at 50% 60%,rgba(99,102,241,.07),transparent 65%)',pointerEvents:'none'}}></div>
+        <div style={{position:'absolute',inset:0,background:'radial-gradient(ellipse 70% 60% at 50% 60%,rgba(236,72,153,.07),transparent 65%)',pointerEvents:'none'}}></div>
         <div className="v36-future-inner">
-          <div style={{fontFamily:"'DM Mono',monospace",fontSize:9,letterSpacing:'.16em',textTransform:'uppercase',color:'#818cf8',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
-            <span style={{width:24,height:1,background:'rgba(99,102,241,.3)',display:'block'}}></span>
+          <div style={{fontFamily:"'DM Mono',monospace",fontSize:11,letterSpacing:'.16em',textTransform:'uppercase',color:'#818cf8',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'center',gap:10}}>
+            <span style={{width:24,height:1,background:'rgba(236,72,153,.3)',display:'block'}}></span>
             The future of hiring
-            <span style={{width:24,height:1,background:'rgba(99,102,241,.3)',display:'block'}}></span>
+            <span style={{width:24,height:1,background:'rgba(236,72,153,.3)',display:'block'}}></span>
           </div>
-          <h2 style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:'clamp(40px,6vw,68px)',fontWeight:800,letterSpacing:'-.04em',lineHeight:.96,marginBottom:20,color:'var(--text)'}}>The future of hiring is<br /><span style={{background:'linear-gradient(95deg,#6366f1,#8b5cf6,#ec4899)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text',fontStyle:'italic'}}>proof,</span> not keywords.</h2>
+          <h2 style={{fontFamily:"'Inter',sans-serif",fontSize:'clamp(40px,6vw,68px)',fontWeight:800,letterSpacing:'-.04em',lineHeight:.96,marginBottom:20,color:'var(--text)'}}>The future of hiring is<br /><span style={{background:'linear-gradient(95deg,#ec4899,#8b5cf6,#f59e0b)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text',fontStyle:'italic'}}>proof,</span> not keywords.</h2>
           <p style={{fontSize:15,color:'var(--text2)',marginBottom:44,maxWidth:440,marginLeft:'auto',marginRight:'auto',fontWeight:300,lineHeight:1.7}}>CareerAiHub is building the trust infrastructure for modern hiring. Join 2,714 verified candidates and forward-thinking companies already on the platform.</p>
           <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:14,flexWrap:'wrap',marginBottom:22}}>
             <button onClick={join} className="v36-btn-cta">Get Started Free →</button>
@@ -4281,10 +4287,10 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
           <div className="v36-footer-grid">
             <div>
               <a href="#" onClick={e=>e.preventDefault()} style={{display:'inline-flex',alignItems:'center',gap:9,textDecoration:'none',marginBottom:14}}>
-                <div style={{width:28,height:28,borderRadius:7,background:'linear-gradient(110deg,#7c3aed,#db2777)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,color:'#fff',flexShrink:0}}>C</div>
+                <OrbitMark size={26} animated duration={18} />
                 <div>
                   <div style={{fontWeight:700,fontSize:14,color:'var(--text)',letterSpacing:'-.02em'}}>CareerAiHub</div>
-                  <div style={{fontSize:'8.5px',color:'var(--text3)',fontFamily:"'DM Mono',monospace",letterSpacing:'.08em',textTransform:'uppercase',marginTop:1}}>Proof over claims.</div>
+                  <div style={{fontSize:'11px',color:'var(--text3)',fontFamily:"'Inter',sans-serif",letterSpacing:'.08em',textTransform:'uppercase',marginTop:1}}>Proof over claims.</div>
                 </div>
               </a>
               <p style={{fontSize:12,color:'var(--text3)',lineHeight:1.7,maxWidth:220,fontWeight:300,marginBottom:18}}>The trust infrastructure for modern hiring. Built in Singapore.</p>
@@ -4326,7 +4332,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
             <div style={{fontSize:11,color:'var(--text3)',fontFamily:"'DM Mono',monospace"}}>© 2026 CareerAiHub Pte. Ltd. · Singapore</div>
             <div style={{display:'flex',alignItems:'center',gap:12}}>
               <span style={{fontSize:11,color:'var(--text3)',display:'flex',alignItems:'center',gap:5}}><span style={{width:5,height:5,borderRadius:'50%',background:'#10b981',display:'inline-block',boxShadow:'0 0 5px rgba(16,185,129,.6)'}}></span>All systems operational</span>
-              <span style={{fontFamily:"'DM Mono',monospace",fontSize:'9.5px',padding:'2px 8px',borderRadius:20,background:'rgba(16,185,129,.06)',color:'#10b981',border:'1px solid rgba(16,185,129,.15)'}}>PDPA Compliant</span>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:'11px',padding:'2px 8px',borderRadius:20,background:'rgba(16,185,129,.06)',color:'#10b981',border:'1px solid rgba(16,185,129,.15)'}}>PDPA Compliant</span>
             </div>
           </div>
         </div>
@@ -4345,7 +4351,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
           <div className="v36-deck-modal-body">
             {ATS_STEPS.map((step, i) => (
               <div key={i} className="v36-dm-step-card">
-                <div className="v36-dm-step-num" style={{color:'var(--c1)'}}>{step.num} <span style={{marginLeft:8,fontSize:8,padding:'2px 8px',borderRadius:20,background:'rgba(30,201,138,.09)',border:'1px solid rgba(30,201,138,.22)',color:'var(--c1)'}}>{step.status}</span></div>
+                <div className="v36-dm-step-num" style={{color:'var(--c1)'}}><span style={{fontSize:11,padding:'2px 8px',borderRadius:20,background:'rgba(30,201,138,.09)',border:'1px solid rgba(30,201,138,.22)',color:'var(--c1)'}}>{step.status}</span></div>
                 <div className="v36-dm-step-title">{step.title}</div>
                 <div className="v36-dm-step-desc">{step.desc}</div>
               </div>
@@ -4368,7 +4374,6 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
           <div className="v36-deck-modal-body">
             {INT_STEPS.map((step, i) => (
               <div key={i} className="v36-dm-step-card">
-                <div className="v36-dm-step-num" style={{color:'var(--c2)'}}>{step.num}</div>
                 <div className="v36-dm-step-title">{step.title}</div>
                 <div className="v36-dm-step-desc">{step.desc}</div>
               </div>
@@ -4382,7 +4387,7 @@ export default function LandingPage({ setAuthModal, onModuleSelect }) {
       <div className={`v36-legal-modal-bg${legalModal.open?' open':''}`} onClick={e=>{if(e.target===e.currentTarget)closeLegal();}}>
         <div className={`v36-legal-sheet${legalModal.open?' open':''}`}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 24px',borderBottom:'1px solid var(--border)',flexShrink:0}}>
-            <div style={{fontFamily:"'Bricolage Grotesque','Inter',sans-serif",fontSize:18,fontWeight:700,letterSpacing:'-.02em',color:'var(--text)'}}>{legal?.title}</div>
+            <div style={{fontFamily:"'Inter',sans-serif",fontSize:18,fontWeight:700,letterSpacing:'-.02em',color:'var(--text)'}}>{legal?.title}</div>
             <button onClick={closeLegal} style={{width:30,height:30,borderRadius:'50%',background:'var(--card3)',border:'1px solid var(--border2)',color:'var(--text2)',cursor:'pointer',fontSize:14,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
           </div>
           <div style={{overflowY:'auto',padding:24,fontSize:13,color:'var(--text2)',lineHeight:1.8,fontWeight:300}}>{legal?.body}</div>

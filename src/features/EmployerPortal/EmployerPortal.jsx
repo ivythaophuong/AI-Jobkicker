@@ -5,14 +5,14 @@ import { sb } from '../../lib/supabase';
 const T = {
   bg:  '#080C14', bg2: '#0B0F1A', bg3: '#0E1420', bg4: '#131B2E', bg5: '#1A2540',
   text: '#F0F4FF', text2: '#8B9DC3', text3: '#4A5A7A',
-  teal: '#00D4FF', tealDim: 'rgba(0,212,255,.08)', tealB: 'rgba(0,212,255,.22)',
-  violet: '#B026FF', violetDim: 'rgba(176,38,255,.08)', violetB: 'rgba(176,38,255,.28)', violetTxt: '#C470FF',
+  teal: '#EC4899', tealDim: 'rgba(236,72,153,.08)', tealB: 'rgba(236,72,153,.22)',
+  violet: '#F59E0B', violetDim: 'rgba(245,158,11,.08)', violetB: 'rgba(245,158,11,.28)', violetTxt: '#C470FF',
   emerald: '#00E5A0', emeraldDim: 'rgba(0,229,160,.08)', emeraldB: 'rgba(0,229,160,.25)',
   gold: '#FFD233', goldDim: 'rgba(255,210,51,.09)', goldB: 'rgba(255,210,51,.28)',
   red: '#FF4D6A', redDim: 'rgba(255,77,106,.09)', redB: 'rgba(255,77,106,.25)',
-  bdr: 'rgba(0,212,255,.09)', bdr2: 'rgba(0,212,255,.16)',
-  grad: 'linear-gradient(135deg,#00D4FF 0%,#B026FF 100%)',
-  gradHR: 'linear-gradient(135deg,#B026FF 0%,#FF46E5 60%,#FFD233 100%)',
+  bdr: 'rgba(236,72,153,.09)', bdr2: 'rgba(236,72,153,.16)',
+  grad: 'linear-gradient(135deg,#EC4899 0%,#F59E0B 100%)',
+  gradHR: 'linear-gradient(135deg,#F59E0B 0%,#FCD34D 60%,#FFD233 100%)',
   ff: "'Inter',system-ui,sans-serif",
   ffm: "'JetBrains Mono',monospace",
   r: 10, rs: 7, rl: 16,
@@ -39,18 +39,18 @@ const THREADS = [
 ];
 
 const STAGES = [
-  { id:'matched',    label:'Matched',    color: T.teal,      countBg:'rgba(0,212,255,.12)',    cards:[
+  { id:'matched',    label:'Matched',    color: T.teal,      countBg:'rgba(236,72,153,.12)',    cards:[
     {name:'Ivy Nguyen',   initials:'IN',bg:'#534AB7',role:'Senior AI Eng', trust:88,tags:['Python','LangChain'],date:'Today'},
     {name:'Ben Tan',      initials:'BT',bg:'#185FA5',role:'ML Research',   trust:82,tags:['TensorFlow','CUDA'],  date:'Today'},
     {name:'Priya Sharma', initials:'PS',bg:'#993C1D',role:'Data Lead',     trust:74,tags:['Spark','SQL'],        date:'Yesterday'},
     {name:'Sarah Lim',    initials:'SL',bg:'#72243E',role:'Frontend Eng',  trust:61,tags:['React','TypeScript'], date:'2d ago'},
   ]},
-  { id:'shortlisted',label:'Shortlisted',color: T.violetTxt, countBg:'rgba(176,38,255,.12)',  cards:[
+  { id:'shortlisted',label:'Shortlisted',color: T.violetTxt, countBg:'rgba(245,158,11,.12)',  cards:[
     {name:'Marcus Lim',  initials:'ML',bg:'#0F6E56',role:'ML Research',  trust:91,tags:['PyTorch','LLMs'], date:'Today'},
     {name:'Ivy Nguyen',  initials:'IN',bg:'#534AB7',role:'Senior AI Eng',trust:88,tags:['AWS','RAG'],     date:'1h ago'},
     {name:'Ben Tan',     initials:'BT',bg:'#185FA5',role:'ML Research',  trust:82,tags:['TensorFlow'],    date:'3h ago'},
   ]},
-  { id:'trustchat',  label:'TrustChat',  color: T.teal,      countBg:'rgba(0,212,255,.10)',    cards:[
+  { id:'trustchat',  label:'TrustChat',  color: T.teal,      countBg:'rgba(236,72,153,.10)',    cards:[
     {name:'Ivy Nguyen',   initials:'IN',bg:'#534AB7',role:'Senior AI Eng',trust:88,tags:['Active','2 msgs'],    date:'2m ago'},
     {name:'Priya Sharma', initials:'PS',bg:'#993C1D',role:'Data Lead',    trust:74,tags:['Awaiting reply'],     date:'1h ago'},
   ]},
@@ -92,8 +92,8 @@ function DashboardPage({ onNavigate, candidates = CANDIDATES }) {
   const recentCandidates = candidates.slice(0,4);
   const feed = [
     { icon:'✓', iconBg:'rgba(0,229,160,.1)', text:<><strong style={{color:T.text}}>Ivy Nguyen</strong> accepted TrustChat</>, time:'2 min ago' },
-    { icon:'⭐', iconBg:'rgba(176,38,255,.1)',text:<><strong style={{color:T.text}}>Marcus Lim</strong> moved to Offer stage</>, time:'1 hr ago' },
-    { icon:'👁', iconBg:'rgba(0,212,255,.1)', text:<><strong style={{color:T.text}}>Ben Tan</strong> completed mock interview — score 79</>, time:'3 hr ago' },
+    { icon:'⭐', iconBg:'rgba(245,158,11,.1)',text:<><strong style={{color:T.text}}>Marcus Lim</strong> moved to Offer stage</>, time:'1 hr ago' },
+    { icon:'👁', iconBg:'rgba(236,72,153,.1)', text:<><strong style={{color:T.text}}>Ben Tan</strong> completed mock interview — score 79</>, time:'3 hr ago' },
     { icon:'📋', iconBg:'rgba(255,210,51,.1)',text:<><strong style={{color:T.text}}>Senior AI Engineer</strong> role got 18 new matches</>, time:'Today 9am' },
   ];
 
@@ -151,7 +151,7 @@ function DashboardPage({ onNavigate, candidates = CANDIDATES }) {
               <tbody>
                 {recentCandidates.map((c,i) => {
                   const stages = ['TrustChat','Interview','Offer','Shortlisted'];
-                  const stageColors = { TrustChat:[T.violetTxt,'rgba(176,38,255,.1)',T.violetB], Interview:[T.gold,'rgba(255,210,51,.1)',T.goldB], Offer:[T.emerald,'rgba(0,229,160,.1)',T.emeraldB], Shortlisted:[T.teal,'rgba(0,212,255,.1)',T.tealB] };
+                  const stageColors = { TrustChat:[T.violetTxt,'rgba(245,158,11,.1)',T.violetB], Interview:[T.gold,'rgba(255,210,51,.1)',T.goldB], Offer:[T.emerald,'rgba(0,229,160,.1)',T.emeraldB], Shortlisted:[T.teal,'rgba(236,72,153,.1)',T.tealB] };
                   const stage = stages[i];
                   const [sc,sb2,sbdr] = stageColors[stage];
                   return (
@@ -271,7 +271,7 @@ function JobsPage({ onNavigate, employer, user }) {
                 ))}
               </div>
               <div style={{ display:'flex', gap:6 }}>
-                <button onClick={() => j.status==='active' && onNavigate('match')} style={{ flex:1, padding:7, borderRadius:T.rs, fontSize:11, fontWeight:600, background:'rgba(176,38,255,.15)', color:T.violetTxt, border:`1px solid ${T.violetB}`, cursor:'pointer' }}>
+                <button onClick={() => j.status==='active' && onNavigate('match')} style={{ flex:1, padding:7, borderRadius:T.rs, fontSize:11, fontWeight:600, background:'rgba(245,158,11,.15)', color:T.violetTxt, border:`1px solid ${T.violetB}`, cursor:'pointer' }}>
                   {j.status==='active' ? 'View matches' : 'Publish role'}
                 </button>
                 <button style={{ flex:1, padding:7, borderRadius:T.rs, fontSize:11, fontWeight:600, background:'rgba(255,255,255,.04)', color:T.text3, border:`1px solid ${T.bdr}`, cursor:'pointer' }}>Edit</button>
@@ -339,7 +339,7 @@ function MatchPage({ candidates = CANDIDATES }) {
               <>
                 <div
                   onMouseDown={onMouseDown}
-                  style={{ background:'linear-gradient(145deg,rgba(14,20,32,.98),rgba(11,16,26,1))', border:`1px solid rgba(0,212,255,.14)`, borderRadius:T.rl, padding:20, maxWidth:460, width:'100%', position:'relative', cursor:'grab', userSelect:'none', transform:`translateX(${dragX}px) rotate(${dragX*.07}deg)`, transition: dragging ? 'none' : 'transform .35s', marginBottom:14 }}>
+                  style={{ background:'linear-gradient(145deg,rgba(14,20,32,.98),rgba(11,16,26,1))', border:`1px solid rgba(236,72,153,.14)`, borderRadius:T.rl, padding:20, maxWidth:460, width:'100%', position:'relative', cursor:'grab', userSelect:'none', transform:`translateX(${dragX}px) rotate(${dragX*.07}deg)`, transition: dragging ? 'none' : 'transform .35s', marginBottom:14 }}>
                   {/* Drag labels */}
                   <div style={{ position:'absolute', top:16, left:14, padding:'5px 12px', borderRadius:T.rs, fontSize:13, fontWeight:800, fontFamily:T.ffm, color:T.emerald, border:`2px solid ${T.emerald}`, transform:'rotate(-12deg)', opacity: Math.max(0, Math.min(dragX/80, 1)), pointerEvents:'none' }}>SHORTLIST</div>
                   <div style={{ position:'absolute', top:16, right:14, padding:'5px 12px', borderRadius:T.rs, fontSize:13, fontWeight:800, fontFamily:T.ffm, color:T.red, border:`2px solid ${T.red}`, transform:'rotate(12deg)', opacity: Math.max(0, Math.min(-dragX/80, 1)), pointerEvents:'none' }}>PASS</div>
@@ -366,7 +366,7 @@ function MatchPage({ candidates = CANDIDATES }) {
                     </div>
                   </div>
 
-                  <div style={{ fontSize:11, color:T.text2, lineHeight:1.6, padding:'9px 11px', background:'rgba(0,212,255,.04)', borderRadius:T.rs, borderLeft:`2px solid rgba(0,212,255,.2)`, marginBottom:12 }}>{current.bio}</div>
+                  <div style={{ fontSize:11, color:T.text2, lineHeight:1.6, padding:'9px 11px', background:'rgba(236,72,153,.04)', borderRadius:T.rs, borderLeft:`2px solid rgba(236,72,153,.2)`, marginBottom:12 }}>{current.bio}</div>
 
                   <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:6, marginBottom:12 }}>
                     {[['ATS',current.ats],['Interview',current.interview],['STAR',current.star]].map(([l,v]) => (
@@ -514,7 +514,7 @@ function InboxPage() {
             <input placeholder="Search candidates…" style={{ width:'100%', padding:'7px 11px', background:'rgba(255,255,255,.04)', border:`1px solid ${T.bdr}`, borderRadius:T.rs, color:T.text, fontSize:11, outline:'none', fontFamily:T.ff }} />
           </div>
           {THREADS.map(t => (
-            <div key={t.id} onClick={() => setActiveThread(t)} style={{ display:'flex', gap:10, padding:'10px 12px', borderBottom:'1px solid rgba(255,255,255,.04)', cursor:'pointer', background: activeThread.id===t.id ? 'rgba(176,38,255,.08)' : 'transparent', borderRight: activeThread.id===t.id ? `2px solid ${T.violet}` : '2px solid transparent', transition:'background .15s' }}>
+            <div key={t.id} onClick={() => setActiveThread(t)} style={{ display:'flex', gap:10, padding:'10px 12px', borderBottom:'1px solid rgba(255,255,255,.04)', cursor:'pointer', background: activeThread.id===t.id ? 'rgba(245,158,11,.08)' : 'transparent', borderRight: activeThread.id===t.id ? `2px solid ${T.violet}` : '2px solid transparent', transition:'background .15s' }}>
               <div style={{ width:34, height:34, borderRadius:'50%', background:t.bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, color:'#fff', flexShrink:0 }}>{t.initials}</div>
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ fontSize:12, fontWeight:600, color:T.text, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{t.name}</div>
@@ -547,13 +547,13 @@ function InboxPage() {
           <div style={{ flex:1, overflowY:'auto', padding:16, display:'flex', flexDirection:'column', gap:10, minHeight:0 }}>
             {msgs.map((m,i) => (
               <div key={i} style={{ display:'flex', justifyContent: m.from==='you' ? 'flex-end' : 'flex-start' }}>
-                <div style={{ maxWidth:'75%', padding:'9px 13px', fontSize:12, lineHeight:1.55, borderRadius: m.from==='you' ? '12px 12px 2px 12px' : '12px 12px 12px 2px', background: m.from==='you' ? 'rgba(176,38,255,.18)' : 'rgba(255,255,255,.06)', color: m.from==='you' ? '#D4ADFF' : T.text2 }}>{m.text}</div>
+                <div style={{ maxWidth:'75%', padding:'9px 13px', fontSize:12, lineHeight:1.55, borderRadius: m.from==='you' ? '12px 12px 2px 12px' : '12px 12px 12px 2px', background: m.from==='you' ? 'rgba(245,158,11,.18)' : 'rgba(255,255,255,.06)', color: m.from==='you' ? '#D4ADFF' : T.text2 }}>{m.text}</div>
               </div>
             ))}
           </div>
           <div style={{ padding:'12px 16px', borderTop:`1px solid ${T.bdr}`, display:'flex', gap:8, flexShrink:0 }}>
             <input value={msgInput} onChange={e => setMsgInput(e.target.value)} onKeyDown={e => e.key==='Enter' && sendMsg()} placeholder="Type a message…" style={{ flex:1, padding:'9px 13px', background:'rgba(255,255,255,.05)', border:`1px solid ${T.bdr2}`, borderRadius:T.rs, color:T.text, fontSize:12, outline:'none', fontFamily:T.ff }} />
-            <button onClick={sendMsg} style={{ padding:'9px 18px', background:'rgba(176,38,255,.18)', border:`1px solid ${T.violetB}`, borderRadius:T.rs, color:T.violetTxt, fontSize:12, fontWeight:600, cursor:'pointer' }}>Send</button>
+            <button onClick={sendMsg} style={{ padding:'9px 18px', background:'rgba(245,158,11,.18)', border:`1px solid ${T.violetB}`, borderRadius:T.rs, color:T.violetTxt, fontSize:12, fontWeight:600, cursor:'pointer' }}>Send</button>
           </div>
         </div>
       </div>
@@ -564,9 +564,9 @@ function InboxPage() {
 // ── Analytics ─────────────────────────────────────────────────────────────────
 function AnalyticsPage() {
   const funnel = [
-    { label:'Matched',    n:47, pct:100, color:'rgba(0,212,255,.4)' },
-    { label:'Shortlisted',n:28, pct:60,  color:'rgba(176,38,255,.45)' },
-    { label:'TrustChat',  n:18, pct:38,  color:'rgba(0,212,255,.35)' },
+    { label:'Matched',    n:47, pct:100, color:'rgba(236,72,153,.4)' },
+    { label:'Shortlisted',n:28, pct:60,  color:'rgba(245,158,11,.45)' },
+    { label:'TrustChat',  n:18, pct:38,  color:'rgba(236,72,153,.35)' },
     { label:'Interview',  n:9,  pct:20,  color:'rgba(255,210,51,.45)' },
     { label:'Offer',      n:4,  pct:8,   color:'rgba(0,229,160,.5)' },
   ];
@@ -646,7 +646,7 @@ function AnalyticsPage() {
               <div key={r.label} style={{ display:'flex', alignItems:'center', gap:10 }}>
                 <span style={{ fontSize:10, color:T.text2, width:110, textAlign:'right', flexShrink:0 }}>{r.label}</span>
                 <div style={{ flex:1, height:8, background:'rgba(255,255,255,.06)', borderRadius:4, overflow:'hidden' }}>
-                  <div style={{ width:`${r.pct}%`, height:8, background:'linear-gradient(90deg,#00D4FF,#B026FF)', borderRadius:4 }} />
+                  <div style={{ width:`${r.pct}%`, height:8, background:'linear-gradient(90deg,#EC4899,#F59E0B)', borderRadius:4 }} />
                 </div>
                 <span style={{ fontSize:10, fontFamily:T.ffm, fontWeight:700, color:T.teal, width:24, flexShrink:0 }}>{r.n}</span>
               </div>
@@ -673,8 +673,8 @@ function AnalyticsPage() {
 // ── Team ──────────────────────────────────────────────────────────────────────
 function TeamPage() {
   const members = [
-    { initials:'SW', name:'Sarah Wong',  role:'Head of Talent', badge:'Admin',  badgeBg:'rgba(176,38,255,.15)', badgeColor:T.violetTxt, badgeBdr:T.violetB, bg:T.gradHR, shortlisted:12, chats:8,  offers:2 },
-    { initials:'JL', name:'James Liu',   role:'Recruiter',      badge:'Member', badgeBg:'rgba(0,212,255,.1)',   badgeColor:T.teal,     badgeBdr:T.tealB,   bg:'#185FA5', shortlisted:7,  chats:3,  offers:1 },
+    { initials:'SW', name:'Sarah Wong',  role:'Head of Talent', badge:'Admin',  badgeBg:'rgba(245,158,11,.15)', badgeColor:T.violetTxt, badgeBdr:T.violetB, bg:T.gradHR, shortlisted:12, chats:8,  offers:2 },
+    { initials:'JL', name:'James Liu',   role:'Recruiter',      badge:'Member', badgeBg:'rgba(236,72,153,.1)',   badgeColor:T.teal,     badgeBdr:T.tealB,   bg:'#185FA5', shortlisted:7,  chats:3,  offers:1 },
     { initials:'AK', name:'Anika Kumar', role:'Hiring Manager',  badge:'Viewer', badgeBg:'rgba(255,210,51,.1)', badgeColor:T.gold,     badgeBdr:T.goldB,   bg:'#0F6E56', shortlisted:null,chats:2, offers:null },
   ];
 
@@ -715,7 +715,7 @@ function TeamPage() {
           </div>
         ))}
         {/* Invite card */}
-        <div style={{ background:'rgba(176,38,255,.06)', border:`1px dashed rgba(176,38,255,.3)`, borderRadius:T.r, padding:20, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8, cursor:'pointer', minHeight:180 }}>
+        <div style={{ background:'rgba(245,158,11,.06)', border:`1px dashed rgba(245,158,11,.3)`, borderRadius:T.r, padding:20, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8, cursor:'pointer', minHeight:180 }}>
           <div style={{ fontSize:28 }}>＋</div>
           <div style={{ fontSize:12, fontWeight:600, color:T.violetTxt }}>Invite a teammate</div>
           <div style={{ fontSize:10, color:T.text3, textAlign:'center' }}>7 seats remaining on Pro plan</div>
@@ -726,9 +726,9 @@ function TeamPage() {
 }
 
 // ── Shared button styles ──────────────────────────────────────────────────────
-const btnPrimary = { padding:'9px 18px', borderRadius:7, background:'linear-gradient(135deg,#B026FF 0%,#FF46E5 60%,#FFD233 100%)', border:'none', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap' };
-const btnOutline = { padding:'9px 16px', borderRadius:7, background:'rgba(255,255,255,.04)', border:'1px solid rgba(0,212,255,.16)', color:'#8B9DC3', fontSize:12, fontWeight:500, cursor:'pointer', whiteSpace:'nowrap' };
-const btnSm = { padding:'6px 12px', borderRadius:7, fontSize:11, fontWeight:600, border:'1px solid rgba(0,212,255,.16)', background:'rgba(255,255,255,.04)', color:'#8B9DC3', cursor:'pointer' };
+const btnPrimary = { padding:'9px 18px', borderRadius:7, background:'linear-gradient(135deg,#F59E0B 0%,#FCD34D 60%,#FFD233 100%)', border:'none', color:'#fff', fontSize:12, fontWeight:600, cursor:'pointer', whiteSpace:'nowrap' };
+const btnOutline = { padding:'9px 16px', borderRadius:7, background:'rgba(255,255,255,.04)', border:'1px solid rgba(236,72,153,.16)', color:'#8B9DC3', fontSize:12, fontWeight:500, cursor:'pointer', whiteSpace:'nowrap' };
+const btnSm = { padding:'6px 12px', borderRadius:7, fontSize:11, fontWeight:600, border:'1px solid rgba(236,72,153,.16)', background:'rgba(255,255,255,.04)', color:'#8B9DC3', cursor:'pointer' };
 
 // ── Nav items ─────────────────────────────────────────────────────────────────
 const NAV = [
@@ -820,10 +820,10 @@ export default function EmployerPortal({ user, onLogout }) {
   return (
     <div style={{ height:'100vh', display:'flex', flexDirection:'column', background:T.bg, color:T.text, fontFamily:T.ff, fontSize:13, lineHeight:1.55, WebkitFontSmoothing:'antialiased', overflow:'hidden', position:'relative' }}>
       {/* Ambient bg */}
-      <div style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0, background:'radial-gradient(ellipse 900px 600px at 10% 0%,rgba(176,38,255,.06),transparent 55%), radial-gradient(ellipse 700px 500px at 90% 100%,rgba(0,212,255,.05),transparent 55%)' }} />
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:0, background:'radial-gradient(ellipse 900px 600px at 10% 0%,rgba(245,158,11,.06),transparent 55%), radial-gradient(ellipse 700px 500px at 90% 100%,rgba(236,72,153,.05),transparent 55%)' }} />
 
       {/* Topbar */}
-      <div style={{ position:'relative', zIndex:2, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 20px', height:52, background:'rgba(8,12,20,.92)', borderBottom:`1px solid rgba(176,38,255,.14)`, flexShrink:0, backdropFilter:'blur(28px)' }}>
+      <div style={{ position:'relative', zIndex:2, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 20px', height:52, background:'rgba(8,12,20,.92)', borderBottom:`1px solid rgba(245,158,11,.14)`, flexShrink:0, backdropFilter:'blur(28px)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:16 }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:14, fontWeight:800, letterSpacing:'-.2px', background:T.gradHR, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>
             <div style={{ width:26, height:26, borderRadius:7, background:T.gradHR, display:'flex', alignItems:'center', justifyContent:'center' }}>
@@ -831,7 +831,7 @@ export default function EmployerPortal({ user, onLogout }) {
             </div>
             careerAIhub
           </div>
-          <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:5, background:'rgba(176,38,255,.12)', color:T.violetTxt, border:`1px solid rgba(176,38,255,.25)`, letterSpacing:'.04em' }}>EMPLOYER PORTAL</span>
+          <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:5, background:'rgba(245,158,11,.12)', color:T.violetTxt, border:`1px solid rgba(245,158,11,.25)`, letterSpacing:'.04em' }}>EMPLOYER PORTAL</span>
           <div style={{ display:'flex', alignItems:'center', gap:7, padding:'4px 10px', borderRadius:T.rs, background:'rgba(255,255,255,.04)', border:`1px solid ${T.bdr2}` }}>
             <div style={{ width:20, height:20, borderRadius:5, background:T.grad, display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:700, color:'#fff' }}>{companyName.slice(0,2).toUpperCase()}</div>
             <span style={{ fontSize:11, fontWeight:600, color:T.text2 }}>{companyName}</span>
@@ -839,7 +839,7 @@ export default function EmployerPortal({ user, onLogout }) {
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <span style={{ fontSize:10, fontWeight:700, padding:'4px 10px', borderRadius:5, background:T.goldDim, color:T.gold, border:`1px solid ${T.goldB}` }}>Pro Plan ✦</span>
-          <div style={{ width:30, height:30, borderRadius:'50%', background:T.gradHR, display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:700, color:'#fff', border:`2px solid rgba(176,38,255,.35)` }}>{initials}</div>
+          <div style={{ width:30, height:30, borderRadius:'50%', background:T.gradHR, display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:700, color:'#fff', border:`2px solid rgba(245,158,11,.35)` }}>{initials}</div>
         </div>
       </div>
 
@@ -851,7 +851,7 @@ export default function EmployerPortal({ user, onLogout }) {
             <div key={section.section} style={{ padding:'0 10px', marginBottom:4 }}>
               <div style={{ fontSize:9, fontWeight:700, textTransform:'uppercase', letterSpacing:'.1em', color:T.text3, padding:'8px 8px 4px' }}>{section.section}</div>
               {section.items.map(item => (
-                <button key={item.id} onClick={() => setPage(item.id)} style={{ display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:T.rs, fontSize:12, fontWeight:500, color: page===item.id ? T.text : T.text3, background: page===item.id ? 'rgba(176,38,255,.1)' : 'none', borderLeft: page===item.id ? `2px solid ${T.violet}` : '2px solid transparent', borderTop:'none', borderRight:'none', borderBottom:'none', width:'100%', textAlign:'left', cursor:'pointer', transition:'all .18s', fontFamily:T.ff, position:'relative' }}>
+                <button key={item.id} onClick={() => setPage(item.id)} style={{ display:'flex', alignItems:'center', gap:9, padding:'8px 10px', borderRadius:T.rs, fontSize:12, fontWeight:500, color: page===item.id ? T.text : T.text3, background: page===item.id ? 'rgba(245,158,11,.1)' : 'none', borderLeft: page===item.id ? `2px solid ${T.violet}` : '2px solid transparent', borderTop:'none', borderRight:'none', borderBottom:'none', width:'100%', textAlign:'left', cursor:'pointer', transition:'all .18s', fontFamily:T.ff, position:'relative' }}>
                   <span style={{ fontSize:14, width:18, textAlign:'center', flexShrink:0 }}>{item.icon}</span>
                   {item.label}
                   {item.badge && <span style={{ marginLeft:'auto', fontSize:9, fontWeight:700, padding:'1px 6px', borderRadius:8, background:'#FF4D6A', color:'#fff' }}>{item.badge}</span>}

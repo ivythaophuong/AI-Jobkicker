@@ -21,17 +21,17 @@
 .tm-chat-panel{ animation: tmSlideIn .3s cubic-bezier(.4,0,.2,1); }
 
 .tm-co-card:hover {
-  border-color: rgba(0,212,255,.25) !important;
-  box-shadow: 0 0 30px rgba(0,212,255,.06) !important;
+  border-color: rgba(236,72,153,.25) !important;
+  box-shadow: 0 0 30px rgba(236,72,153,.06) !important;
 }
 .tm-match-item:hover {
   border-color: rgba(0,229,160,.3) !important;
   background: rgba(0,229,160,.07) !important;
   transform: translateX(2px);
 }
-.tm-btn-interested:hover { background: rgba(176,38,255,.18) !important; transform: translateY(-1px); }
+.tm-btn-interested:hover { background: rgba(245,158,11,.18) !important; transform: translateY(-1px); }
 .tm-btn-learn:hover      { background: rgba(255,255,255,.06) !important; color: #8B9DC3 !important; }
 .tm-chat-back:hover      { color: #F0F4FF !important; }
-.tm-send:hover           { background: rgba(176,38,255,.25) !important; }
-.tm-mm-btn:hover         { background: rgba(176,38,255,.25) !important; transform: translateY(-2px); }
+.tm-send:hover           { background: rgba(245,158,11,.25) !important; }
+.tm-mm-btn:hover         { background: rgba(245,158,11,.25) !important; transform: translateY(-2px); }
 .tm-ms-dot { animation: tmPulse 2s infinite; }

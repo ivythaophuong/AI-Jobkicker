@@ -537,7 +537,7 @@ function AddModal({ onAdd, onClose, existingCredentials }) {
           style={{
             border: `2px dashed ${pdfDragOver ? 'var(--lp-teal)' : url ? 'rgba(0,229,160,.3)' : 'var(--lp-bdr)'}`,
             borderRadius: 12, padding: '18px 16px', cursor: extracting ? 'default' : 'pointer',
-            background: pdfDragOver ? 'rgba(0,212,255,.04)' : url ? 'rgba(0,229,160,.03)' : 'transparent',
+            background: pdfDragOver ? 'rgba(236,72,153,.04)' : url ? 'rgba(0,229,160,.03)' : 'transparent',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
             transition: 'all .15s',
           }}
@@ -708,7 +708,7 @@ function CredRow({ cred, onRemove, onReverify }) {
       {cred.skills?.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
           {cred.skills.map((s, i) => (
-            <span key={i} style={{ background: 'rgba(0,212,255,.08)', border: '1px solid rgba(0,212,255,.18)', color: 'var(--lp-teal)', borderRadius: 5, padding: '2px 8px', fontSize: 10, fontWeight: 600 }}>{s}</span>
+            <span key={i} style={{ background: 'rgba(236,72,153,.08)', border: '1px solid rgba(236,72,153,.18)', color: 'var(--lp-teal)', borderRadius: 5, padding: '2px 8px', fontSize: 10, fontWeight: 600 }}>{s}</span>
           ))}
         </div>
       )}
@@ -724,7 +724,7 @@ function CredRow({ cred, onRemove, onReverify }) {
         )}
         {cred.url && cred.status !== 'verified' && PLATFORMS[cred.platform]?.canVerify && (
           <button onClick={handleReverify} disabled={reverifying} style={{
-            background: 'none', border: '1px solid rgba(0,212,255,.3)', color: 'var(--lp-teal)',
+            background: 'none', border: '1px solid rgba(236,72,153,.3)', color: 'var(--lp-teal)',
             borderRadius: 6, padding: '4px 10px', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
           }}>{reverifying ? 'Verifying…' : 'Verify now →'}</button>
         )}
@@ -782,9 +782,9 @@ export default function VerifyCreds({ memory, updateMemory, setActiveModule }) {
           </div>
         </div>
         <button onClick={() => setShowAdd(true)} style={{
-          padding: '10px 18px', background: 'linear-gradient(135deg,#00D4FF,#B026FF)',
+          padding: '10px 18px', background: 'linear-gradient(135deg,#EC4899,#F59E0B)',
           color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800,
-          cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(0,212,255,.2)',
+          cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(236,72,153,.2)',
         }}>+ Add credential</button>
       </div>
 
@@ -819,7 +819,7 @@ export default function VerifyCreds({ memory, updateMemory, setActiveModule }) {
           </div>
 
           {total < 65 && (
-            <div style={{ background: 'rgba(0,212,255,.05)', border: '1px solid rgba(0,212,255,.12)', borderRadius: 8, padding: '10px 12px', fontSize: 11, color: 'var(--lp-text2)', lineHeight: 1.6 }}>
+            <div style={{ background: 'rgba(236,72,153,.05)', border: '1px solid rgba(236,72,153,.12)', borderRadius: 8, padding: '10px 12px', fontSize: 11, color: 'var(--lp-text2)', lineHeight: 1.6 }}>
               Reach <strong style={{ color: C.accent }}>65+</strong> to unlock TrustMatch recruiter visibility.
             </div>
           )}

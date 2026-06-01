@@ -157,7 +157,7 @@ Write a real letter — no [brackets] or placeholders. Match the tone exactly.` 
         {/* ── Right: preview ── */}
         <div style={{
           background: 'var(--lp-bg3)',
-          border: `1px solid ${result ? 'rgba(0,212,255,.25)' : 'var(--lp-bdr)'}`,
+          border: `1px solid ${result ? 'rgba(236,72,153,.25)' : 'var(--lp-bdr)'}`,
           borderRadius: 12, padding: 20, minHeight: 420,
           display: 'flex', flexDirection: 'column',
         }}>

@@ -16,14 +16,14 @@ function SLabel({ children }) {
 function AiBubble({ children }) {
   return (
     <div style={{
-      background: 'var(--lp-bg3)', border: '1px solid rgba(0,212,255,.18)',
+      background: 'var(--lp-bg3)', border: '1px solid rgba(236,72,153,.18)',
       borderLeft: '4px solid var(--lp-teal)',
       borderRadius: 10, padding: '14px 16px',
       display: 'flex', gap: 12, alignItems: 'flex-start',
     }}>
       <div style={{
         width: 24, height: 24, borderRadius: '50%',
-        background: 'linear-gradient(135deg,#00D4FF,#B026FF)',
+        background: 'linear-gradient(135deg,#EC4899,#F59E0B)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 9, fontWeight: 900, color: '#000', flexShrink: 0,
       }}>AI</div>
@@ -269,7 +269,7 @@ Be specific. Scripts must be ready to say out loud.` }], 1200);
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {STAGES.map(s => (
             <button key={s.id} onClick={() => setStage(s.id)} style={{
-              background: stage === s.id ? 'rgba(0,212,255,.12)' : 'transparent',
+              background: stage === s.id ? 'rgba(236,72,153,.12)' : 'transparent',
               border: `1px solid ${stage === s.id ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`,
               color: stage === s.id ? 'var(--lp-teal)' : 'var(--lp-text3)',
               borderRadius: 7, padding: '6px 12px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
