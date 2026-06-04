@@ -279,12 +279,36 @@ function TextResumePDF({ text, accent }) {
 }
 
 // ── ATS Scanner main view (matches reference: no tabs, left card + right results) ──
+function dataToResumeText(data) {
+  const lines = [];
+  if (data.contact?.name) lines.push(data.contact.name);
+  const ct = [data.contact?.email, data.contact?.phone, data.contact?.location, data.contact?.linkedin].filter(Boolean);
+  if (ct.length) lines.push(ct.join(' | '));
+  if (data.summary) { lines.push(''); lines.push('SUMMARY'); lines.push(data.summary); }
+  if (data.experience?.some(j => j.company || j.title)) {
+    lines.push(''); lines.push('EXPERIENCE');
+    data.experience.forEach(j => {
+      if (!j.company && !j.title) return;
+      lines.push(`${j.title || ''} — ${j.company || ''} (${j.period || ''})`);
+      (j.bullets || []).filter(b => b.trim()).forEach(b => lines.push(`• ${b}`));
+    });
+  }
+  if (data.education?.some(e => e.institution)) {
+    lines.push(''); lines.push('EDUCATION');
+    data.education.forEach(e => { if (e.institution) lines.push(`${e.degree || ''} — ${e.institution} (${e.year || ''})`); });
+  }
+  const skills = (data.skills || []).filter(s => s.trim());
+  if (skills.length) { lines.push(''); lines.push('SKILLS'); lines.push(skills.join(', ')); }
+  return lines.join('\n');
+}
+
 function JDMatchTab({ resumeText, setResumeText, form, setActiveModule, updateMemory, memory }) {
   const [jd, setJd]           = useState('');
   const [loading, setLoading] = useState(false);
   const [scanErr, setScanErr] = useState('');
   const [result, setResult]   = useState(null);
   const [prevMatchScore, setPrevMatchScore] = useState(null);
+  const [showVersionPicker, setShowVersionPicker] = useState(false);
   const [appliedFixes, setAppliedFixes]       = useState({});
   const [editingIdx, setEditingIdx]           = useState(null);
   const [editDraft, setEditDraft]             = useState('');
@@ -292,6 +316,32 @@ function JDMatchTab({ resumeText, setResumeText, form, setActiveModule, updateMe
   const [editorText, setEditorText]           = useState('');
   const [copyDone, setCopyDone]               = useState(false);
   const [editorPatchStatus, setEditorPatchStatus] = useState({});
+
+  const patchResume = (fixText, original, idx) => {
+    const base = editorText || resumeCtx;
+    const clean = (original?.replace(/^["'"]+|["'"]+$/g, '') || '').trim();
+    let patchedText = null;
+    if (clean) {
+      const exactPos = base.indexOf(clean);
+      if (exactPos !== -1) {
+        patchedText = base.slice(0, exactPos) + fixText + base.slice(exactPos + clean.length);
+      } else {
+        const escaped = clean.split(/\s+/).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s\\n]+');
+        const m = base.match(new RegExp(escaped, 'i'));
+        if (m) {
+          const start = base.indexOf(m[0]);
+          patchedText = base.slice(0, start) + fixText + base.slice(start + m[0].length);
+        }
+      }
+    }
+    if (patchedText !== null) {
+      setEditorText(patchedText);
+      setEditorPatchStatus(s => ({ ...s, [idx]: 'patched' }));
+    } else {
+      if (!editorText) setEditorText(base);
+      setEditorPatchStatus(s => ({ ...s, [idx]: 'not_found' }));
+    }
+  };
   const [selectedTpl, setSelectedTpl]         = useState('modern');
   const [pdfDownloading, setPdfDownloading]   = useState(false);
   const [pdfExported, setPdfExported]         = useState(false);
@@ -416,7 +466,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
     navigator.clipboard.writeText(text).catch(() => {});
   };
 
-  const openEditor = () => { setEditorText(resumeCtx); setEditMode(true); parseForTemplate(resumeCtx); };
+  const openEditor = () => { if (!editorText) setEditorText(resumeCtx); setEditMode(true); parseForTemplate(editorText || resumeCtx); };
 
   const copyEditor = () => {
     navigator.clipboard.writeText(editorText).catch(() => {});
@@ -440,7 +490,8 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
     if (!pdfExportRef.current) return;
     setPdfDownloading(true);
     const tpl = TEMPLATES.find(t => t.id === selectedTpl) || TEMPLATES[0];
-    const firstName = ((templateProfile?.name || editorText.split('\n').find(l => l.trim()) || 'resume')).replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_').slice(0, 30);
+    const exportText = editorText || resumeCtx;
+    const firstName = ((templateProfile?.name || exportText.split('\n').find(l => l.trim()) || 'resume')).replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_').slice(0, 30);
     try {
       await html2pdf()
         .set({
@@ -477,7 +528,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
           const T = tpl.component;
           return <T {...profileToTemplateData(templateProfile)} />;
         }
-        return <TextResumePDF text={editorText} accent={tpl.accent === '#111' ? '#333' : tpl.accent} />;
+        return <TextResumePDF text={editorText || resumeCtx} accent={tpl.accent === '#111' ? '#333' : tpl.accent} />;
       })()}
     </div>
   );
@@ -491,52 +542,90 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
         {/* Resume zone */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--lp-text3)', marginBottom: 10 }}>Your Resume</div>
-          {resumeCtx ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, background: 'rgba(0,229,160,.04)', border: '1.5px solid rgba(0,229,160,.25)', borderRadius: 14, padding: '20px 20px' }}>
+          {/* Loaded resume state */}
+          {resumeCtx && !showVersionPicker && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: 'rgba(0,229,160,.04)', border: '1.5px solid rgba(0,229,160,.25)', borderRadius: 14, padding: '20px 20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(0,229,160,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00E5A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#00E5A0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{resumeText?.fileName || 'Resume loaded'}</div>
-                  <div style={{ fontSize: 10, color: 'var(--lp-text3)', marginTop: 2 }}>{resumeCtx.length.toLocaleString()} characters extracted</div>
+                  <div style={{ fontSize: 10, color: 'var(--lp-text3)', marginTop: 2 }}>{resumeCtx.length.toLocaleString()} characters</div>
                 </div>
               </div>
               <input ref={uploadRef} type="file" accept=".pdf,.docx" style={{ display: 'none' }} onChange={e => handleResumeUpload(e.target.files[0])} />
-              <button onClick={() => uploadRef.current?.click()} style={{ alignSelf: 'flex-start', background: 'none', border: '1px solid rgba(0,229,160,.3)', color: '#00E5A0', borderRadius: 7, padding: '5px 12px', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                Change file
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => uploadRef.current?.click()} style={{ background: 'none', border: '1px solid rgba(0,229,160,.3)', color: '#00E5A0', borderRadius: 7, padding: '5px 12px', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  Upload new
+                </button>
+                {(memory?.resumeVersions?.length > 0) && (
+                  <button onClick={() => setShowVersionPicker(true)} style={{ background: 'none', border: '1px solid var(--lp-bdr)', color: 'var(--lp-text3)', borderRadius: 7, padding: '5px 12px', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    Choose version
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Version picker */}
+          {showVersionPicker && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, border: '1px solid var(--lp-bdr)', borderRadius: 14, padding: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--lp-text3)', textTransform: 'uppercase', letterSpacing: '.08em' }}>Saved versions</div>
+                <button onClick={() => setShowVersionPicker(false)} style={{ background: 'none', border: 'none', color: 'var(--lp-text3)', cursor: 'pointer', fontSize: 13, padding: 0, fontFamily: 'inherit' }}>✕</button>
+              </div>
+              {(memory?.resumeVersions || []).slice().reverse().map((v, i) => (
+                <button key={i} onClick={() => { setResumeText({ content: dataToResumeText(v.data), fileName: v.label || `Version ${i + 1}` }); setShowVersionPicker(false); }} style={{ textAlign: 'left', background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 9, padding: '10px 14px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--lp-text)' }}>{v.label || `Version ${i + 1}`}</div>
+                  <div style={{ fontSize: 10, color: 'var(--lp-text3)', marginTop: 2 }}>{v.templateLabel} · {new Date(v.date).toLocaleDateString()}</div>
+                </button>
+              ))}
+              <input ref={uploadRef} type="file" accept=".pdf,.docx" style={{ display: 'none' }} onChange={e => { handleResumeUpload(e.target.files[0]); setShowVersionPicker(false); }} />
+              <button onClick={() => uploadRef.current?.click()} style={{ background: 'none', border: '1px dashed var(--lp-bdr)', borderRadius: 9, padding: '10px 14px', cursor: 'pointer', fontSize: 12, color: 'var(--lp-text3)', fontFamily: 'inherit', textAlign: 'left' }}>
+                Upload new file instead
               </button>
             </div>
-          ) : (
-            <div
-              onDragOver={e => { e.preventDefault(); setUploadDragOver(true); }}
-              onDragLeave={() => setUploadDragOver(false)}
-              onDrop={e => { e.preventDefault(); setUploadDragOver(false); handleResumeUpload(e.dataTransfer.files[0]); }}
-              onClick={() => !uploadParsing && uploadRef.current?.click()}
-              style={{
-                flex: 1, minHeight: 180,
-                border: `2px dashed ${uploadDragOver ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`,
-                borderRadius: 14, display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', gap: 10, cursor: uploadParsing ? 'default' : 'pointer',
-                background: uploadDragOver ? 'rgba(236,72,153,.04)' : 'transparent',
-                transition: 'all .2s',
-              }}
-            >
-              <input ref={uploadRef} type="file" accept=".pdf,.docx" style={{ display: 'none' }} onChange={e => handleResumeUpload(e.target.files[0])} />
-              {uploadParsing ? (
-                <><OrbitSpinner size={28} /><div style={{ fontSize: 12, color: 'var(--lp-text3)' }}>Parsing resume…</div></>
-              ) : (
-                <>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--lp-bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lp-teal)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text2)' }}>Drop resume here</div>
-                    <div style={{ fontSize: 11, color: 'var(--lp-text3)', marginTop: 3 }}>PDF or DOCX · click to browse</div>
-                  </div>
-                </>
+          )}
+
+          {/* Upload drop zone (no resume loaded, no picker) */}
+          {!resumeCtx && !showVersionPicker && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div
+                onDragOver={e => { e.preventDefault(); setUploadDragOver(true); }}
+                onDragLeave={() => setUploadDragOver(false)}
+                onDrop={e => { e.preventDefault(); setUploadDragOver(false); handleResumeUpload(e.dataTransfer.files[0]); }}
+                onClick={() => !uploadParsing && uploadRef.current?.click()}
+                style={{
+                  minHeight: 140,
+                  border: `2px dashed ${uploadDragOver ? 'var(--lp-teal)' : 'var(--lp-bdr)'}`,
+                  borderRadius: 14, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  justifyContent: 'center', gap: 10, cursor: uploadParsing ? 'default' : 'pointer',
+                  background: uploadDragOver ? 'rgba(236,72,153,.04)' : 'transparent',
+                  transition: 'all .2s',
+                }}
+              >
+                <input ref={uploadRef} type="file" accept=".pdf,.docx" style={{ display: 'none' }} onChange={e => handleResumeUpload(e.target.files[0])} />
+                {uploadParsing ? (
+                  <><OrbitSpinner size={28} /><div style={{ fontSize: 12, color: 'var(--lp-text3)' }}>Parsing resume…</div></>
+                ) : (
+                  <>
+                    <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--lp-bg3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lp-teal)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--lp-text2)' }}>Drop resume here</div>
+                      <div style={{ fontSize: 11, color: 'var(--lp-text3)', marginTop: 3 }}>PDF or DOCX · click to browse</div>
+                    </div>
+                  </>
+                )}
+                {uploadErr && <div style={{ fontSize: 10, color: '#FF5A5A' }}>⚠ {uploadErr}</div>}
+              </div>
+              {(memory?.resumeVersions?.length > 0) && (
+                <button onClick={() => setShowVersionPicker(true)} style={{ background: 'none', border: '1px solid var(--lp-bdr)', borderRadius: 9, padding: '10px 14px', cursor: 'pointer', fontSize: 12, color: 'var(--lp-text3)', fontFamily: 'inherit', textAlign: 'left' }}>
+                  Or choose a saved version →
+                </button>
               )}
-              {uploadErr && <div style={{ fontSize: 10, color: '#FF5A5A' }}>⚠ {uploadErr}</div>}
             </div>
           )}
         </div>
@@ -813,6 +902,12 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
           </div>
         </div>
 
+        {/* Scan another job */}
+        <button
+          onClick={() => { setResult(null); setScanErr(''); setAppliedFixes({}); setEditingIdx(null); setEditMode(false); setEditorText(''); setEditorPatchStatus({}); setFailDismissed(false); setPdfExported(false); }}
+          style={{ alignSelf: 'flex-start', background: 'transparent', border: '1px solid var(--lp-bdr)', borderRadius: 8, color: 'var(--lp-text3)', fontSize: 12, fontWeight: 600, padding: '7px 16px', cursor: 'pointer' }}
+        >Scan another job</button>
+
         {/* Missing keywords */}
         {result.missingKeywords?.length > 0 && (
           <div style={{ background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 14, padding: '18px 22px' }}>
@@ -907,26 +1002,13 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
                     "{issue.original?.replace(/^["'"]+|["'"]+$/g, '')}"
                   </div>
 
-                  {!editing && !applied && (
-                    <>
-                      {/* Arrow + fix */}
-                      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                        <div style={{ fontSize: 18, color: 'var(--lp-teal)', flexShrink: 0, lineHeight: 1.4, marginTop: 1 }}>→</div>
-                        <div style={{ fontSize: 13, color: 'var(--lp-text)', lineHeight: 1.6 }}>{issue.fix}</div>
-                      </div>
-                      <button
-                        onClick={() => { setEditingIdx(i); setEditDraft(issue.fix); }}
-                        style={{
-                          alignSelf: 'flex-start', padding: '8px 18px',
-                          background: 'linear-gradient(135deg, rgba(236,72,153,.15), rgba(245,158,11,.1))',
-                          border: '1px solid rgba(236,72,153,.3)',
-                          color: 'var(--lp-teal)', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                          transition: 'all .15s',
-                        }}
-                      >Apply fix →</button>
-                    </>
-                  )}
+                  {/* Suggested fix text — always visible */}
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <div style={{ fontSize: 18, color: 'var(--lp-teal)', flexShrink: 0, lineHeight: 1.4, marginTop: 1 }}>→</div>
+                    <div style={{ fontSize: 13, color: applied ? '#00E5A0' : 'var(--lp-text)', lineHeight: 1.6 }}>{applied || issue.fix}</div>
+                  </div>
 
+                  {/* Edit textarea (shown when editing an already-applied fix) */}
                   {editing && (
                     <>
                       <textarea
@@ -942,19 +1024,9 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button
                           onClick={() => {
-                            const savedFix = editDraft;
-                            setAppliedFixes(f => ({ ...f, [i]: savedFix }));
+                            setAppliedFixes(f => ({ ...f, [i]: editDraft }));
                             setEditingIdx(null);
-                            if (editMode) {
-                              const clean = issue.original?.replace(/^["'"]+|["'"]+$/g, '') || '';
-                              const pos = clean ? editorText.indexOf(clean) : -1;
-                              if (pos !== -1) {
-                                setEditorText(editorText.slice(0, pos) + savedFix + editorText.slice(pos + clean.length));
-                                setEditorPatchStatus(s => ({ ...s, [i]: 'patched' }));
-                              } else {
-                                setEditorPatchStatus(s => ({ ...s, [i]: 'not_found' }));
-                              }
-                            }
+                            patchResume(editDraft, applied, i);
                           }}
                           style={{ padding: '8px 18px', background: '#00E5A0', color: '#000', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
                         >Save ✓</button>
@@ -966,15 +1038,31 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
                     </>
                   )}
 
-                  {applied && !editing && (
-                    <div style={{ fontSize: 13, color: '#00E5A0', lineHeight: 1.6, background: 'rgba(0,229,160,.06)', borderRadius: 9, padding: '10px 14px' }}>
-                      {applied}
-                      <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                        <button onClick={() => { setEditingIdx(i); setEditDraft(applied); }}
-                          style={{ padding: '4px 12px', background: 'transparent', border: '1px solid rgba(0,229,160,.3)', color: '#00E5A0', borderRadius: 6, fontSize: 10, cursor: 'pointer' }}>Edit</button>
-                        <button onClick={() => setAppliedFixes(f => { const n = { ...f }; delete n[i]; return n; })}
-                          style={{ padding: '4px 12px', background: 'transparent', border: '1px solid rgba(255,90,90,.25)', color: '#FF5A5A', borderRadius: 6, fontSize: 10, cursor: 'pointer' }}>Revert</button>
-                      </div>
+                  {/* Action buttons */}
+                  {!editing && (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {!applied && (
+                        <button
+                          onClick={() => {
+                            setAppliedFixes(f => ({ ...f, [i]: issue.fix }));
+                            patchResume(issue.fix, issue.original, i);
+                          }}
+                          style={{
+                            alignSelf: 'flex-start', padding: '8px 18px',
+                            background: 'linear-gradient(135deg, rgba(236,72,153,.15), rgba(245,158,11,.1))',
+                            border: '1px solid rgba(236,72,153,.3)',
+                            color: 'var(--lp-teal)', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                          }}
+                        >Apply fix →</button>
+                      )}
+                      {applied && (
+                        <>
+                          <button onClick={() => { setEditingIdx(i); setEditDraft(applied); }}
+                            style={{ padding: '4px 12px', background: 'transparent', border: '1px solid rgba(0,229,160,.3)', color: '#00E5A0', borderRadius: 6, fontSize: 10, cursor: 'pointer' }}>Edit</button>
+                          <button onClick={() => { setAppliedFixes(f => { const n = { ...f }; delete n[i]; return n; }); setEditorPatchStatus(s => { const n = { ...s }; delete n[i]; return n; }); }}
+                            style={{ padding: '4px 12px', background: 'transparent', border: '1px solid rgba(255,90,90,.25)', color: '#FF5A5A', borderRadius: 6, fontSize: 10, cursor: 'pointer' }}>Revert</button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -984,7 +1072,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
         )}
 
         {/* Edit & Export CTA */}
-        <div style={{ paddingTop: 8, paddingBottom: 8 }}>
+        <div style={{ paddingTop: 8, paddingBottom: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <button
             onClick={openEditor}
             style={{
@@ -995,6 +1083,7 @@ Generate 3-5 issues. Each issue must target an actual weak bullet from the resum
               letterSpacing: .2, transition: 'all .2s',
             }}
           >Edit & export resume →</button>
+
         </div>
 
       </div>

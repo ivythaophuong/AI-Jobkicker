@@ -4,6 +4,56 @@
    ResumeScan and ATSBuilder have their own CSS files and are unaffected.
 */
 
+/* ── Light mode variable overrides ──────────────────────────────────────────── */
+[data-theme="light"] {
+  --lp-bg:    #F8FAFC;
+  --lp-bg2:   #FFFFFF;
+  --lp-bg3:   #F1F5F9;
+  --lp-bg4:   #E9EEF6;
+  --lp-bg5:   #DDE4EE;
+  --lp-text:  #0F172A;
+  --lp-text2: #334155;
+  --lp-text3: #94A3B8;
+  --lp-teal:         #2563EB;
+  --lp-teal-d:       #1D4ED8;
+  --lp-teal-dim:     rgba(37,99,235,.08);
+  --lp-teal-b:       rgba(37,99,235,.22);
+  --lp-teal-b2:      rgba(37,99,235,.45);
+  --lp-bdr:  rgba(15,23,42,.08);
+  --lp-bdr2: rgba(15,23,42,.14);
+  --lp-bdr3: rgba(15,23,42,.24);
+}
+
+/* Sidebar hover in light mode */
+[data-theme="light"] .app-sidebar-item:hover {
+  background: rgba(0,0,0,.04);
+}
+[data-theme="light"] .app-sidebar-item.active {
+  background: rgba(37,99,235,.07);
+  border-color: rgba(37,99,235,.15);
+}
+[data-theme="light"] .app-sidebar {
+  background: #FFFFFF;
+  border-right-color: rgba(15,23,42,.08);
+}
+[data-theme="light"] .app-sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,.07); }
+
+/* Mobile bars in light mode */
+[data-theme="light"] .mob-glass-bar {
+  background: rgba(248,250,252,.92);
+  border-bottom-color: rgba(15,23,42,.08);
+}
+[data-theme="light"] .mob-bottom-nav {
+  background: rgba(248,250,252,.95);
+  border-top-color: rgba(15,23,42,.08);
+}
+[data-theme="light"] .mob-drawer { background: #FFFFFF; border-top-color: rgba(15,23,42,.08); }
+[data-theme="light"] .mob-drawer-handle { background: rgba(15,23,42,.12); }
+[data-theme="light"] .mob-di { background: #F1F5F9; border-color: rgba(15,23,42,.08); }
+[data-theme="light"] .mob-di-label { color: #64748B; }
+[data-theme="light"] .mob-bn-label { color: #94A3B8; }
+[data-theme="light"] .mob-glass-name { color: #0F172A; }
+
 .app-module-area {
   background: var(--lp-bg);
   color: var(--lp-text);
@@ -204,6 +254,7 @@
   justify-content: center;
   padding: 16px 0 14px;
 }
+.app-sidebar.collapsed .app-sidebar-logo > div:first-child { display: none; }
 .app-sidebar.collapsed .app-sidebar-user {
   justify-content: center;
   padding: 12px 0;

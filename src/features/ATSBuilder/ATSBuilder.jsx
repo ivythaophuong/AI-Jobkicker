@@ -734,11 +734,32 @@ function ResultsView({ oldText, newText, newHtml, oldScore, newScore, oldParams,
     URL.revokeObjectURL(url);
   };
 
-  const downloadPdf = () => {
-    const win = window.open('', '_blank');
-    if (!win) return;
-    win.document.write(newHtml || `<pre style="font-family:sans-serif;padding:40px">${newText}</pre>`);
-    win.document.close(); win.print();
+  const [pdfLoading, setPdfLoading] = React.useState(false);
+  const downloadPdf = async () => {
+    if (pdfLoading) return;
+    setPdfLoading(true);
+    let wrapper = null;
+    try {
+      const source = newHtml || `<pre style="font-family:sans-serif;padding:40px">${newText}</pre>`;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(source, 'text/html');
+      const styleTag = doc.head.querySelector('style')?.outerHTML || '';
+      wrapper = document.createElement('div');
+      wrapper.innerHTML = styleTag + doc.body.innerHTML;
+      wrapper.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;font-family:Calibri,Arial,sans-serif;';
+      document.body.appendChild(wrapper);
+      await html2pdf().set({
+        margin: 0,
+        filename: 'resume-optimized.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, width: 794, windowWidth: 794 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+      }).from(wrapper).save();
+    } finally {
+      if (wrapper && wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+      setPdfLoading(false);
+    }
   };
 
   return (
@@ -764,7 +785,7 @@ function ResultsView({ oldText, newText, newHtml, oldScore, newScore, oldParams,
         </div>
         <div className="atb-res-actions">
           <button className="atb-dl-btn" onClick={downloadDoc}>↓ DOCX</button>
-          <button className="atb-dl-btn" onClick={downloadPdf}>↓ PDF</button>
+          <button className="atb-dl-btn" onClick={downloadPdf} disabled={pdfLoading}>{pdfLoading ? 'Generating…' : '↓ PDF'}</button>
           <button className="atb-back-btn" onClick={onEditMore}>↺ Edit more</button>
           <button className="atb-rebuild-btn" onClick={onRebuildFromThis}>Rebuild from this ↗</button>
         </div>
@@ -1770,7 +1791,7 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData, setAc
 
         {/* ── Contact ── */}
         {step === 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 13, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
             <div style={field}><label style={lbl}>Full Name</label><input style={inp} value={data.contact.name} onChange={e => setContact('name', e.target.value)} placeholder="Aman Ashwin" /></div>
             <div style={field}><label style={lbl}>Email</label><input style={inp} value={data.contact.email} onChange={e => setContact('email', e.target.value)} placeholder="you@email.com" /></div>
             <div style={field}><label style={lbl}>Phone</label><input style={inp} value={data.contact.phone} onChange={e => setContact('phone', e.target.value)} placeholder="+1 234 567 8900" /></div>
@@ -1781,7 +1802,7 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData, setAc
 
         {/* ── Experience ── */}
         {step === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {data.experience.map((job, i) => (
               <div key={job.id ?? i}>
                 {sectionBox(<>
@@ -1812,7 +1833,7 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData, setAc
 
         {/* ── Education ── */}
         {step === 2 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {data.education.map((edu, i) => (
               <div key={edu.id ?? i}>
                 {sectionBox(<>
@@ -1834,56 +1855,50 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData, setAc
 
         {/* ── Skills ── */}
         {step === 3 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-            <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>Press Enter or comma to add a skill. Click × to remove.</div>
-            <div
-              style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '10px 12px', background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 8, minHeight: 80, cursor: 'text', alignContent: 'flex-start' }}
-              onClick={() => document.getElementById('skill-inp')?.focus()}
-            >
-              {data.skills.filter(s => s.trim()).map((skill, i) => (
-                <span key={skill + i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(236,72,153,.1)', border: '1px solid rgba(236,72,153,.25)', color: 'var(--lp-teal)', borderRadius: 5, padding: '3px 8px 3px 10px', fontSize: 12, fontWeight: 600, lineHeight: 1.4, whiteSpace: 'nowrap' }}>
-                  {skill}
-                  <button
-                    type="button"
-                    onClick={e => { e.stopPropagation(); edit(d => { const filled = d.skills.filter(s => s.trim()); filled.splice(i, 1); return { ...d, skills: filled }; }); }}
-                    style={{ background: 'none', border: 'none', color: 'rgba(236,72,153,.6)', cursor: 'pointer', padding: '0 2px', fontSize: 14, lineHeight: 1, fontFamily: 'inherit', minHeight: 'unset' }}
-                  >×</button>
-                </span>
-              ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* Skill pills */}
+            {data.skills.filter(s => s.trim()).length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '10px 12px', background: 'var(--lp-bg2)', border: '1px solid var(--lp-bdr)', borderRadius: 8, alignContent: 'flex-start' }}>
+                {data.skills.filter(s => s.trim()).map((skill, i) => (
+                  <span key={skill + i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(236,72,153,.1)', border: '1px solid rgba(236,72,153,.25)', color: 'var(--lp-teal)', borderRadius: 5, padding: '3px 8px 3px 10px', fontSize: 12, fontWeight: 600, lineHeight: 1.4, whiteSpace: 'nowrap' }}>
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => edit(d => { const filled = d.skills.filter(s => s.trim()); filled.splice(i, 1); return { ...d, skills: filled }; })}
+                      style={{ background: 'none', border: 'none', color: 'rgba(236,72,153,.6)', cursor: 'pointer', padding: '0 2px', fontSize: 14, lineHeight: 1, fontFamily: 'inherit', minHeight: 'unset' }}
+                    >×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {/* Add skill row */}
+            <div style={{ display: 'flex', gap: 8 }}>
               <input
                 id="skill-inp"
                 value={skillInput}
-                onChange={e => setSkillInput(e.target.value.replace(/,/g, ''))}
+                onChange={e => setSkillInput(e.target.value)}
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
                     const val = skillInput.trim();
                     if (val) { edit(d => ({ ...d, skills: [...d.skills.filter(s => s.trim()), val] })); setSkillInput(''); }
-                  } else if (e.key === ',' ) {
-                    e.preventDefault();
-                    const val = skillInput.trim();
-                    if (val) { edit(d => ({ ...d, skills: [...d.skills.filter(s => s.trim()), val] })); setSkillInput(''); }
-                  } else if (e.key === 'Backspace' && !skillInput) {
-                    edit(d => {
-                      const filled = d.skills.filter(s => s.trim());
-                      return filled.length > 0 ? { ...d, skills: filled.slice(0, -1) } : d;
-                    });
                   }
                 }}
-                onBlur={() => {
-                  const val = skillInput.trim();
-                  if (val) { edit(d => ({ ...d, skills: [...d.skills.filter(s => s.trim()), val] })); setSkillInput(''); }
-                }}
-                placeholder={data.skills.filter(s => s.trim()).length ? '' : 'Python, Machine Learning, SQL…'}
-                style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 12, color: 'var(--lp-text)', fontFamily: 'var(--lp-ff)', minWidth: 140, padding: '3px 4px', flex: 1 }}
+                placeholder="e.g. Python"
+                style={{ ...inp, flex: 1 }}
               />
+              <button
+                type="button"
+                onClick={() => { const val = skillInput.trim(); if (val) { edit(d => ({ ...d, skills: [...d.skills.filter(s => s.trim()), val] })); setSkillInput(''); document.getElementById('skill-inp')?.focus(); } }}
+                style={{ padding: '8px 18px', background: 'var(--lp-teal)', border: 'none', borderRadius: 8, color: '#000', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+              >Add</button>
             </div>
           </div>
         )}
 
         {/* ── Summary ── */}
         {step === 4 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>2-3 sentences: years of experience, key skills, what you bring.</div>
             <textarea style={{ ...inp, minHeight: 120, resize: 'vertical' }}
               value={data.summary}
@@ -1894,7 +1909,7 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData, setAc
 
         {/* ── Review ── */}
         {step === 5 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>Pick a template from the right panel, then save your version.</div>
             {sectionBox(<>
               <div style={{ fontSize: 10.5, color: 'var(--lp-text3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Resume Summary</div>
@@ -1953,7 +1968,7 @@ function BuilderTab({ initialProfile, memory, onSaveVersion, restoredData, setAc
         )}
 
         {/* Navigation */}
-        <div style={{ position: 'sticky', bottom: 0, display: 'flex', justifyContent: 'space-between', paddingTop: 14, paddingBottom: 10, borderTop: '1px solid var(--lp-bdr)', background: 'var(--lp-bg)', zIndex: 10, marginTop: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 14, paddingBottom: 10, borderTop: '1px solid var(--lp-bdr)', marginTop: 16 }}>
           {step > 0 ? navBtn('← Back', () => setStep(s => s - 1), false) : <div />}
           {step < BUILDER_STEPS.length - 1 && navBtn('Next →', () => setStep(s => s + 1), true)}
         </div>

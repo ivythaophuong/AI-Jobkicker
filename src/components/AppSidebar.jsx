@@ -137,10 +137,29 @@ export default function AppSidebar({ activeModule, onNavigate, user, onLogout, c
     <>
       {/* ── Desktop sidebar ── */}
       <div className={`app-sidebar${collapsed ? ' collapsed' : ''}`}>
-        {/* Logo */}
-        <div className="app-sidebar-logo">
-          <LogoMark size={26} />
-          <div className="app-sidebar-logo-name">CareerAiHub</div>
+        {/* Logo + collapse toggle */}
+        <div className="app-sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+            <LogoMark size={26} />
+            <div className="app-sidebar-logo-name">CareerAiHub</div>
+          </div>
+          <button
+            onClick={onToggle}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 24, height: 24, flexShrink: 0,
+              background: 'transparent', border: '1px solid var(--lp-bdr)',
+              borderRadius: 6, color: 'var(--lp-text3)', cursor: 'pointer',
+              transition: 'color 0.15s, border-color 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--lp-text)'; e.currentTarget.style.borderColor = 'var(--lp-bdr2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--lp-text3)'; e.currentTarget.style.borderColor = 'var(--lp-bdr)'; }}
+          >
+            <svg viewBox="0 0 16 16" width={11} height={11} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              {collapsed ? <path d="M6 3l5 5-5 5"/> : <path d="M10 3L5 8l5 5"/>}
+            </svg>
+          </button>
         </div>
 
         {/* Nav groups */}
@@ -215,29 +234,6 @@ export default function AppSidebar({ activeModule, onNavigate, user, onLogout, c
           )}
         </div>
 
-        {/* Collapse toggle */}
-        <button
-          onClick={onToggle}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: '100%', padding: '10px 0',
-            background: 'transparent', border: 'none',
-            borderTop: '1px solid var(--lp-bdr, rgba(236,72,153,.08))',
-            color: 'var(--lp-text3)', cursor: 'pointer',
-            flexShrink: 0,
-            transition: 'color 0.15s ease',
-          }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--lp-text)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--lp-text3)'}
-        >
-          <svg viewBox="0 0 16 16" width={13} height={13} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-            {collapsed
-              ? <path d="M6 3l5 5-5 5"/>
-              : <path d="M10 3L5 8l5 5"/>
-            }
-          </svg>
-        </button>
       </div>
 
       {/* ── Mobile nav: glass top bar + bottom 5-tab nav + More drawer ── */}
