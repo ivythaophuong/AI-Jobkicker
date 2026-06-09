@@ -2206,8 +2206,12 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
     setPhase('kanban');
     setShowNextStep(true);
     if (updateMemory) {
+      const radarResult = { credibilityScore: parsed.atsScore ?? 0, issues: parsed.gaps || [], summary: parsed.summary || '', metricsFound: parsed.parameters ? Object.keys(parsed.parameters).length : 0 };
       updateMemory(
-        m => ({ scanHistory: [{ score: parsed.atsScore, date: new Date().toISOString() }, ...(m.scanHistory || [])].slice(0, 20) }),
+        m => ({
+          scanHistory: [{ score: parsed.atsScore, date: new Date().toISOString(), result: radarResult }, ...(m.scanHistory || [])].slice(0, 20),
+          scanResult: radarResult,
+        }),
         { table: 'resume_scans', data: { credibility_score: parsed.atsScore ?? 0, metrics_found: parsed.parameters ? Object.keys(parsed.parameters).length : 0, summary: parsed.summary || '', issues: parsed.gaps || [], questions: parsed.interrogationQuestions || [] } }
       );
     }
@@ -2317,15 +2321,21 @@ const ATSBuilder = ({ user, memory, updateMemory, onProTrigger, form, setActiveM
           </div>
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 640 }}>
             <button
-              onClick={() => setMainTab('parse')}
+              onClick={() => { if (memory?.parseProfile) { setEntryMode('existing'); } else { setMainTab('parse'); } }}
               style={{ flex: '1 1 260px', background: 'var(--lp-bg3)', border: '1px solid var(--lp-bdr)', borderRadius: 14, padding: '28px 24px', cursor: 'pointer', textAlign: 'left', transition: 'border-color .15s' }}
               onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--lp-teal)'}
               onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--lp-bdr)'}
             >
               <div style={{ fontSize: 28, marginBottom: 12 }}>📄</div>
               <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--lp-text)', marginBottom: 6 }}>Upload existing resume</div>
-              <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>Upload your current CV. We'll parse it, check it against the universal resume standard, and load it into the builder pre-filled.</div>
-              <div style={{ marginTop: 16, fontSize: 12, fontWeight: 700, color: 'var(--lp-teal)' }}>Go to Upload & Parse →</div>
+              <div style={{ fontSize: 12, color: 'var(--lp-text3)', lineHeight: 1.6 }}>
+                {memory?.parseProfile
+                  ? 'Resume from memory detected — load it straight into the builder pre-filled.'
+                  : "Upload your current CV. We'll parse it, check it against the universal resume standard, and load it into the builder pre-filled."}
+              </div>
+              <div style={{ marginTop: 16, fontSize: 12, fontWeight: 700, color: 'var(--lp-teal)' }}>
+                {memory?.parseProfile ? 'Load from memory →' : 'Go to Upload & Parse →'}
+              </div>
             </button>
             <button
               onClick={() => setEntryMode('scratch')}
